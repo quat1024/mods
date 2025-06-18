@@ -13,131 +13,252 @@ repositories {
 	}
 }
 
-//TODO: maybe four layers of configurations here
-// modAnyVersionAny
-// modAnyVersion1_21_1
-// modTestmodVersionAny
-// modTestmodVersion1_21_1
-
-//argument "1.21.1" returns the source set "minecraft1_21_1"
-def minecraftSourceSet(String v) {
-	return project.sourceSets.maybeCreate("minecraft${v.replace('.', '_')}")
+//not using the "main" source set
+tasks.named("jar") {
+	enabled = false
 }
 
-def setupMc(String v) {
-	println "vanilla ${v}"
+def getSourceSet(String mod, String version) {
+	if(mod == null) mod = "Any"
+	if(version == null) version = "Any"
+	return project.sourceSets.maybeCreate("mod${mod.capitalize()}Version${version.replace('.', '_').capitalize()}")
+}
+
+//modAnyVersionAny, containing code shared across literally every project
+sourceSets {
+	modAnyVersionAny
+}
+//thin jar
+def modAnyVersionAnyThinJar = tasks.register("modAnyVersionAnyThinJar", Jar) {
+	from sourceSets.modAnyVersionAny.output
+	archiveClassifier = "sharedMod-sharedVersion-thin"
+	destinationDirectory = tasks.jar.destinationDirectory
+}
+//hang it off jar task
+tasks.named("jar") { dependsOn modAnyVersionAnyThinJar }
+//publish under modAnyVersionAnyElements resolvable configuration
+project.artifacts.add(configurations.consumable("modAnyVersionAnyElements").get().name, modAnyVersionAnyThinJar)
+
+def setupMc2(String v) {
+	println "setupMc2 ${v}"
 	
-	//make a source set for this minecraft version
-	def set = minecraftSourceSet(v)
-	String setImpl = set.implementationConfigurationName //wordy
+	//source set for this version of minecraft
+	def set = getSourceSet(null, v)
 	
-	//inherit from main source set (contains code shared across all vanilla versions)
-	set.compileClasspath += sourceSets.main.compileClasspath
-	set.runtimeClasspath += sourceSets.main.runtimeClasspath
-	project.dependencies.add(setImpl, sourceSets.main.output)
+	//compile against modAnyVersionAny
+	def mAvA = getSourceSet(null, null)
+	set.compileClasspath += mAvA.compileClasspath
+	set.runtimeClasspath += mAvA.runtimeClasspath
+	project.dependencies.add(set.implementationConfigurationName, mAvA.output)
 	
-	//add minecraft and its dependencies to this source set
-	def mc = minivan.minecraftBuilder().version(v).build().getMinecraft() //fabric style ATs can go in there too...
-	mc.installTo(project, setImpl)
-	project.dependencies.add(setImpl, "com.mojang:logging:1.1.1") //TODO, why isn't this one showing up? minivan bug?
-	project.dependencies.add(setImpl, "org.spongepowered:mixin:0.8.5") //not vanilla but might as well
-	project.dependencies.add(setImpl, "org.jetbrains:annotations:16.0.2") //ditto
+	//compile against minecraft
+	def mc = minivan.minecraftBuilder().version(v).build().getMinecraft()
+	mc.installTo(project, set.implementationConfigurationName)
+	project.dependencies.add(set.implementationConfigurationName, "com.mojang:logging:1.1.1") //TODO, why isn't this one showing up? minivan bug?
+	project.dependencies.add(set.implementationConfigurationName, "org.spongepowered:mixin:0.8.5") //not vanilla but might as well
+	project.dependencies.add(set.implementationConfigurationName, "org.jetbrains:annotations:16.0.2") //ditto
 	
-	//do variable expansion in processResources
-	tasks.named(set.getProcessResourcesTaskName()) {
-		inputs.property "minecraftversion", v
-		filesMatching(["**/*.json", "**/*.toml", "**/*.properties"]) {
-			expand "minecraftversion": v
-		}
-	}
-	
-	//jar should include stuff from both the main and per-version source set
-	//name like "minecraft1_21_1Jar"
-	def jar = tasks.register(set.getJarTaskName(), Jar) {
+	//thin jar
+	def thinJar = tasks.register(set.getTaskName("", "ThinJar"), Jar) {
 		from set.output
-		from sourceSets.main.output
-		
-		archiveClassifier = set.name
+		archiveClassifier = "sharedMod-${v}-thin"
 		destinationDirectory = tasks.jar.destinationDirectory
 	}
-	tasks.named("jar") { dependsOn jar }
-	
-	//make a configuration and put the finished jar inside it, for consuming from other projects
-	//name like "minecraft1_21_1ApiElements"
-	Configuration myApiElements = configurations.consumable(set.getApiElementsConfigurationName()).get()
-	project.artifacts.add(myApiElements.name, jar)
+	tasks.named("jar") { dependsOn thinJar }
+	//publish under modAnyVersion(version)Elements resolvable configuration
+	project.artifacts.add(configurations.consumable("modAnyVersion${v.replace('.', '_')}Elements").get().name, thinJar)
 }
 
-def setupMod(String mod, String... mcVersions) {
-	println "mod ${mod} for ${Arrays.toString(mcVersions)}"
+def setupMod2(String mod, String... mcVersions) {
+	println "setupMod2 ${mod} for ${Arrays.toString(mcVersions)}"
 	
-	//source-set for code intended to be shared across all versions of the mod
-	def allVersionSet = sourceSets.create(mod)
+	//source set for all minecraft versions of this mod
+	def modThisVersionAny = getSourceSet(mod, null)
 	
-	//inherit from main source set
-	allVersionSet.compileClasspath += sourceSets.main.compileClasspath
-	allVersionSet.runtimeClasspath += sourceSets.main.runtimeClasspath
-	project.dependencies.add(allVersionSet.implementationConfigurationName, sourceSets.main.output)
+	//compile against modAnyVersionAny
+	def mAvA = getSourceSet(null, null)
+	modThisVersionAny.compileClasspath += mAvA.compileClasspath
+	modThisVersionAny.runtimeClasspath += mAvA.runtimeClasspath
+	project.dependencies.add(modThisVersionAny.implementationConfigurationName, mAvA.output)
 	
-	//for each minecraft version used by this mod...
-	for(String v : mcVersions) {
-		def verSet = sourceSets.create(mod + v.replace('.', '_'))
+	//thin jar
+	def anyVersionJar = tasks.register(modThisVersionAny.getTaskName("", "ThinJar"), Jar) {
+		from modThisVersionAny.output
+		archiveClassifier = "${mod}-sharedVersion-thin"
+		destinationDirectory = tasks.jar.destinationDirectory
+	}
+	tasks.named("jar") { dependsOn anyVersionJar }
+	//publish under mod(Mod)VersionAnyElements resolvable configuration
+	project.artifacts.add(configurations.consumable("mod${mod.capitalize()}VersionAnyElements").get().name, anyVersionJar)
+	
+	//for each minecraft version
+	for(String mcVersion : mcVersions) {
+		String mcVersion2 = mcVersion.replace('.', '_')
 		
-		//inherit from the all-version set
-		verSet.compileClasspath += allVersionSet.compileClasspath
-		verSet.runtimeClasspath += allVersionSet.runtimeClasspath
-		project.dependencies.add(verSet.implementationConfigurationName, allVersionSet.output)
+		//source set for this minecraft version of this mod
+		def modThisVersionThis = getSourceSet(mod, mcVersion)
 		
-		//inherit from the vanilla minecraft set
-		def minecraftSet = minecraftSourceSet(v)
-		verSet.compileClasspath += minecraftSet.compileClasspath
-		verSet.runtimeClasspath += minecraftSet.runtimeClasspath
-		project.dependencies.add(verSet.implementationConfigurationName, minecraftSet.output)
+		//compile against modAnyVersionAny
+		modThisVersionThis.compileClasspath += mAvA.compileClasspath
+		modThisVersionThis.runtimeClasspath += mAvA.runtimeClasspath
+		project.dependencies.add(modThisVersionThis.implementationConfigurationName, mAvA.output)
 		
-		//jar should include stuff from both the main and per-version source set without shading
-		def captureLmao = new String(v)
-		def jar = tasks.register(verSet.getJarTaskName(), Jar) {
-			group "build"
-			from sourceSets.main.output //everything shared //TODO shade this
-			from minecraftSet.output //shared across all mods on this version of minecraft //TODO shade this
-			from allVersionSet.output //shared across all minecraft versions of mod
-			from verSet.output //specific to this mod/version pair
-			
-			archiveBaseName = "${mod}-${captureLmao}" // "testmod-1.20.1"
+		//compile against mod(Mod)VersionAny
+		modThisVersionThis.compileClasspath += modThisVersionAny.compileClasspath
+		modThisVersionThis.runtimeClasspath += modThisVersionAny.runtimeClasspath
+		project.dependencies.add(modThisVersionThis.implementationConfigurationName, modThisVersionAny.output)
+		
+		//compile against modAnyVersion(Version)
+		def mAvT = getSourceSet(null, mcVersion)
+		modThisVersionThis.compileClasspath += mAvT.compileClasspath
+		modThisVersionThis.runtimeClasspath += mAvT.runtimeClasspath
+		project.dependencies.add(modThisVersionThis.implementationConfigurationName, mAvT.output)
+		
+		//thin jar
+		def thisVersionJar = tasks.register(modThisVersionThis.getTaskName("", "ThinJar"), Jar) {
+			from modThisVersionThis.output
+			archiveClassifier = "${mod}-${mcVersion}-thin"
 			destinationDirectory = tasks.jar.destinationDirectory
 		}
-		tasks.named("jar") { dependsOn jar }
-		
-		tasks.named(verSet.getProcessResourcesTaskName()) {
-			inputs.property "minecraftversion", v
-			filesMatching(["**/*.json", "**/*.toml", "**/*.properties"]) {
-				expand "minecraftversion": v
-			}
-		}
-		
-		//make a configuration and put the finished jar inside it, for consuming from other projects
-		//name like "testmod1_21_1ApiElements"
-		Configuration myApiElements = configurations.consumable(verSet.getApiElementsConfigurationName()).get()
-		project.artifacts.add(myApiElements.name, jar)
+		tasks.named("jar") { dependsOn thisVersionJar }
+		//publish under mod(Mod)VersionAnyElements resolvable configuration
+		project.artifacts.add(configurations.consumable("mod${mod.capitalize()}Version${mcVersion2}Elements").get().name, thisVersionJar)
 		
 		//a "Run config", not a full minecraft launcher but at least it's on the classpath
-		//name like "simpleRunTestmod1_21_1"
-		tasks.register(verSet.getTaskName("simpleRun", ""), JavaExec) {
+		//name like "simpleRunModTestmodVersion1_21_1"
+		tasks.register(modThisVersionThis.getTaskName("simpleRun", ""), JavaExec) {
 			group("simpleRun")
-			
+
 //			mainClass = "agency.highlysuspect.mods.test.Hi" //TODO
-			classpath = verSet.runtimeClasspath
+			classpath = modThisVersionThis.runtimeClasspath
 			
 			// ./run/testmod/1.20.1/
 			workingDir = project.layout.projectDirectory.asFile.toPath()
-				.resolve("run").resolve(mod).resolve(v).toFile()
+				.resolve("run").resolve(mod).resolve(mcVersion).toFile()
 			doFirst { workingDir.mkdirs() }
 		}
 	}
 }
 
-setupMc("1.20.1")
-setupMc("1.21.1")
+////argument "1.21.1" returns the source set "minecraft1_21_1"
+//def minecraftSourceSet(String v) {
+//	return project.sourceSets.maybeCreate("minecraft${v.replace('.', '_')}")
+//}
+//
+//def setupMc(String v) {
+//	println "vanilla ${v}"
+//
+//	//make a source set for this minecraft version
+//	def set = minecraftSourceSet(v)
+//	String setImpl = set.implementationConfigurationName //wordy
+//
+//	//inherit from main source set (contains code shared across all vanilla versions)
+//	set.compileClasspath += sourceSets.main.compileClasspath
+//	set.runtimeClasspath += sourceSets.main.runtimeClasspath
+//	project.dependencies.add(setImpl, sourceSets.main.output)
+//
+//	//add minecraft and its dependencies to this source set
+//	def mc = minivan.minecraftBuilder().version(v).build().getMinecraft() //fabric style ATs can go in there too...
+//	mc.installTo(project, setImpl)
+//	project.dependencies.add(setImpl, "com.mojang:logging:1.1.1") //TODO, why isn't this one showing up? minivan bug?
+//	project.dependencies.add(setImpl, "org.spongepowered:mixin:0.8.5") //not vanilla but might as well
+//	project.dependencies.add(setImpl, "org.jetbrains:annotations:16.0.2") //ditto
+//
+//	//do variable expansion in processResources
+//	tasks.named(set.getProcessResourcesTaskName()) {
+//		inputs.property "minecraftversion", v
+//		filesMatching(["**/*.json", "**/*.toml", "**/*.properties"]) {
+//			expand "minecraftversion": v
+//		}
+//	}
+//
+//	//jar should include stuff from both the main and per-version source set
+//	//name like "minecraft1_21_1Jar"
+//	def jar = tasks.register(set.getJarTaskName(), Jar) {
+//		from set.output
+//		from sourceSets.main.output
+//
+//		archiveClassifier = set.name
+//		destinationDirectory = tasks.jar.destinationDirectory
+//	}
+//	tasks.named("jar") { dependsOn jar }
+//
+//	//make a configuration and put the finished jar inside it, for consuming from other projects
+//	//name like "minecraft1_21_1ApiElements"
+//	Configuration myApiElements = configurations.consumable(set.getApiElementsConfigurationName()).get()
+//	project.artifacts.add(myApiElements.name, jar)
+//}
+//
+//def setupMod(String mod, String... mcVersions) {
+//	println "mod ${mod} for ${Arrays.toString(mcVersions)}"
+//
+//	//source-set for code intended to be shared across all versions of the mod
+//	def allVersionSet = sourceSets.create(mod)
+//
+//	//inherit from main source set
+//	allVersionSet.compileClasspath += sourceSets.main.compileClasspath
+//	allVersionSet.runtimeClasspath += sourceSets.main.runtimeClasspath
+//	project.dependencies.add(allVersionSet.implementationConfigurationName, sourceSets.main.output)
+//
+//	//for each minecraft version used by this mod...
+//	for(String v : mcVersions) {
+//		def verSet = sourceSets.create(mod + v.replace('.', '_'))
+//
+//		//inherit from the all-version set
+//		verSet.compileClasspath += allVersionSet.compileClasspath
+//		verSet.runtimeClasspath += allVersionSet.runtimeClasspath
+//		project.dependencies.add(verSet.implementationConfigurationName, allVersionSet.output)
+//
+//		//inherit from the vanilla minecraft set
+//		def minecraftSet = minecraftSourceSet(v)
+//		verSet.compileClasspath += minecraftSet.compileClasspath
+//		verSet.runtimeClasspath += minecraftSet.runtimeClasspath
+//		project.dependencies.add(verSet.implementationConfigurationName, minecraftSet.output)
+//
+//		//jar should include stuff from both the main and per-version source set without shading
+//		def captureLmao = new String(v)
+//		def jar = tasks.register(verSet.getJarTaskName(), Jar) {
+//			group "build"
+//			from sourceSets.main.output //everything shared //TODO shade this
+//			from minecraftSet.output //shared across all mods on this version of minecraft //TODO shade this
+//			from allVersionSet.output //shared across all minecraft versions of mod
+//			from verSet.output //specific to this mod/version pair
+//
+//			archiveBaseName = "${mod}-${captureLmao}" // "testmod-1.20.1"
+//			destinationDirectory = tasks.jar.destinationDirectory
+//		}
+//		tasks.named("jar") { dependsOn jar }
+//
+//		tasks.named(verSet.getProcessResourcesTaskName()) {
+//			inputs.property "minecraftversion", v
+//			filesMatching(["**/*.json", "**/*.toml", "**/*.properties"]) {
+//				expand "minecraftversion": v
+//			}
+//		}
+//
+//		//make a configuration and put the finished jar inside it, for consuming from other projects
+//		//name like "testmod1_21_1ApiElements"
+//		Configuration myApiElements = configurations.consumable(verSet.getApiElementsConfigurationName()).get()
+//		project.artifacts.add(myApiElements.name, jar)
+//
+//		//a "Run config", not a full minecraft launcher but at least it's on the classpath
+//		//name like "simpleRunTestmod1_21_1"
+//		tasks.register(verSet.getTaskName("simpleRun", ""), JavaExec) {
+//			group("simpleRun")
+//
+////			mainClass = "agency.highlysuspect.mods.test.Hi" //TODO
+//			classpath = verSet.runtimeClasspath
+//
+//			// ./run/testmod/1.20.1/
+//			workingDir = project.layout.projectDirectory.asFile.toPath()
+//				.resolve("run").resolve(mod).resolve(v).toFile()
+//			doFirst { workingDir.mkdirs() }
+//		}
+//	}
+//}
 
-setupMod("testmod", "1.20.1", "1.21.1")
-setupMod("testmod2", "1.20.1", "1.21.1")
+setupMc2("1.20.1")
+setupMc2("1.21.1")
+
+setupMod2("testmod", "1.20.1", "1.21.1")
+setupMod2("testmod2", "1.20.1", "1.21.1")
