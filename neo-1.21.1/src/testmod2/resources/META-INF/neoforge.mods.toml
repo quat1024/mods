@@ -1,0 +1,16 @@
+modLoader = "javafml"
+loaderVersion = "[1,)"
+license = "LGPL-3.0-or-later"
+issueTrackerURL = "https://github.com/quat1024/RebindNarrator/issues"
+logoFile = "rebindnarratoricon.png"
+
+[[mods]]
+modId = "testmod2"
+version = "0"
+displayName = "Test Mod 2"
+description = "welcome to test mod 2"
+authors = "quaternary"
+credits = "Your mom"
+
+#[[mixins]]
+#config = "rebind_narrator.mixins.json"

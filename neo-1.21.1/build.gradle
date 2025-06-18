@@ -3,7 +3,9 @@ plugins {
 	id "net.neoforged.moddev" version "2.0.95" // https://projects.neoforged.net/neoforged/ModDevGradle
 }
 
-archivesBaseName = "${rootProject.name}-neo-1.21.1"
+//archivesBaseName = "${rootProject.name}-neo-1.21.1"
+
+evaluationDependsOn(":vanilla")
 
 neoForge {
 	version "21.5.75" // https://projects.neoforged.net/neoforged/neoforge
@@ -19,53 +21,64 @@ configurations {
 	//dependencies to be included unshaded
 	//TODO: this absolutely should be for shading instead of direct ziptree splatting
 	// just havent set up shade plugin yet + itll interact funny with run configs blehh
-	DependencyScopeConfiguration unshade = dependencyScope("unshade").get()
-	
-	//(the jar task will resolve them against this one to decide what to actually put into the jar)
-	ResolvableConfiguration unshadeClasspath = resolvable("unshadeClasspath") { it.extendsFrom(unshade) }.get()
-	
+	Configuration vanillaSharedAllMods = create("vanillaSharedAllMods")
+
 	//hang them off the regular configurations too (?)
-	implementation.extendsFrom unshade
-	compileClasspath.extendsFrom unshadeClasspath
+	implementation.extendsFrom vanillaSharedAllMods
 }
 
+//MAIN SOURCESET (shared across all mods) should contain vanilla code shared across all mods
 dependencies {
-	unshade project(path: ":vanilla", configuration: "minecraft1_21_1ApiElements")
+	vanillaSharedAllMods project(path: ":vanilla", configuration: "minecraft1_21_1ApiElements")
 }
 
-def makeMod(String sourceSetName) {
-	println "neo 1.21 mod ${sourceSetName}"
-	SourceSet set = sourceSets.create(sourceSetName)
+def makeMod(String mod) {
+	println "neo 1.21 mod ${mod}"
+	SourceSet set = sourceSets.create(mod)
 
 	//inherit from main sourceset (contains code shared across all neo 1.21 mods)
 	set.compileClasspath += sourceSets.main.compileClasspath
 	set.runtimeClasspath += sourceSets.main.runtimeClasspath
 	project.dependencies.add(set.implementationConfigurationName, sourceSets.main.output)
 	
-	//jar task
-	def jarTask = tasks.register("${set.name}Jar", Jar) {
-		archivesBaseName = set.name
-		destinationDirectory = tasks.jar.destinationDirectory
-		
-		from set.output //this mod
-		from sourceSets.main.output //shared across all neo 1.21 mods
-		from configurations.unshadeClasspath.collect { zipTree it } //splat contents of 'unshade' directly into the jar
+	//for holding the :vanilla project...?
+	Configuration vanillaSharedThisMod = configurations.create("vanillaShared${mod.capitalize()}") {
+		extendsFrom(configurations.vanillaSharedAllMods)
 	}
-	tasks.named("jar") { dependsOn jarTask }
+	configurations.maybeCreate(set.implementationConfigurationName).extendsFrom vanillaSharedThisMod
+	
+	Dependency dep = dependencies.project(path: ":vanilla", configuration: "${mod}1_21_1ApiElements")
+	project.dependencies.add(vanillaSharedThisMod.name, dep)
+	
+	//jar task
+	def captureLol = new String(mod)
+	def coolJar = tasks.register("${captureLol}1_21_1Jar", Jar) {
+		group "build"
+		
+		from configurations.vanillaSharedAllMods.collect { zipTree it } //code shared all 1.21 mods //TODO shade
+		from sourceSets.main.output //neoforge code shared across all neo 1.21 mods //TODO shade
+		from vanillaSharedThisMod.collect { zipTree it } //vanilla code for this version of this mod on all loaders
+		from set.output //this mod
+		
+		it.archiveBaseName = "${captureLol}-1.21.1-neoforge"
+		it.destinationDirectory = tasks.jar.destinationDirectory
+		
+		//TODO: this should not be required ever - i must have more things in my sourcesets than i think i do...
+		it.duplicatesStrategy = DuplicatesStrategy.INCLUDE
+	}
+	tasks.named("jar") { dependsOn coolJar }
 	
 	//slap them in a configuration i guess
 	artifacts {
-		apiElements jarTask
-		runtimeElements jarTask
+		apiElements coolJar
+		runtimeElements coolJar
 	}
 	
 	//i have no idea brooo TODO fix run configs
 	neoForge {
 		mods {
-			"${set.name}" {
+			"${mod}" {
 				sourceSet set
-				sourceSet sourceSets.main
-				//TODO PROBABLY need to include :vanilla in here somehow...
 			}
 		}
 	}
