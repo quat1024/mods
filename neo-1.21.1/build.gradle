@@ -33,8 +33,11 @@ neoForge {
 
 def makeMod2(String mod) {
 	println "makeMod2 mod ${mod}"
+	String Mod = mod.capitalize()
+	String ver = "1.21.1"
+	String ver_ = "1_21_1"
 	
-	SourceSet set = sourceSets.create("mod${mod.capitalize()}Version1_21_1LoaderNeoforge")
+	SourceSet set = sourceSets.create("mod${Mod}Version${ver_}LoaderNeoforge")
 	
 	//inherit from main sourceset (which contains neoforge and code shared across neo 1.21 mods)
 	set.compileClasspath += sourceSets.main.compileClasspath
@@ -43,14 +46,14 @@ def makeMod2(String mod) {
 	
 	//inherit from the relevant :vanilla projects
 	Configuration modAnyVersionAnyShade = configurations.named("modAnyVersionAnyShade").get() //dep already created above
-	Configuration modAnyVersionThisShade = configurations.named("modAnyVersion1_21_1Shade").get() //above
+	Configuration modAnyVersionThisShade = configurations.named("modAnyVersion${ver_}Shade").get() //above
 	
-	Configuration modThisVersionAnyShade = configurations.create("mod${mod.capitalize()}VersionAnyVanilla")
-	Dependency modThisVanillaAnyDep = dependencies.project(path: ":vanilla", configuration: "mod${mod.capitalize()}VersionAnyElements")
+	Configuration modThisVersionAnyShade = configurations.create("mod${Mod}VersionAnyVanilla")
+	Dependency modThisVanillaAnyDep = dependencies.project(path: ":vanilla", configuration: "mod${Mod}VersionAnyElements")
 	project.dependencies.add(modThisVersionAnyShade.name, modThisVanillaAnyDep)
 	
-	Configuration modThisVersionThisShade = configurations.create("mod${mod.capitalize()}Version1_21_1Vanilla")
-	Dependency modThisVanillaThisDep = dependencies.project(path: ":vanilla", configuration: "mod${mod.capitalize()}Version1_21_1Elements")
+	Configuration modThisVersionThisShade = configurations.create("mod${Mod}Version${ver_}Vanilla")
+	Dependency modThisVanillaThisDep = dependencies.project(path: ":vanilla", configuration: "mod${Mod}Version${ver_}Elements")
 	project.dependencies.add(modThisVersionThisShade.name, modThisVanillaThisDep)
 	
 	configurations.named(set.implementationConfigurationName) {
@@ -63,15 +66,15 @@ def makeMod2(String mod) {
 	}
 	
 	//thinjar
-	def thinJar = tasks.register("mod${mod.capitalize()}Version1_21_1LoaderNeoforgeThinJar", Jar) {
+	def thinJar = tasks.register("mod${Mod}Version${ver_}LoaderNeoforgeThinJar", Jar) {
 		from set.output
-		archiveBaseName = "${mod}-1.21.1-neoforge-thin"
+		archiveBaseName = "${mod}-${ver}-neoforge-thin"
 		destinationDirectory = tasks.jar.destinationDirectory
 	}
 	tasks.named("jar") { dependsOn thinJar }
 	
 	//fatjar
-	def fatJar = tasks.register("mod${mod.capitalize()}Version1_21_1LoaderNeoforgeFatJar", Jar) {
+	def fatJar = tasks.register("mod${Mod}Version${ver_}LoaderNeoforgeFatJar", Jar) {
 		from set.output
 		from sourceSets.main.output //TODO shade
 		from modAnyVersionAnyShade.collect { zipTree it } //TODO shade
@@ -79,7 +82,7 @@ def makeMod2(String mod) {
 		from modThisVersionAnyShade.collect { zipTree it } //TODO shade
 		from modThisVersionThisShade.collect { zipTree it } //TODO shade
 		
-		archiveBaseName = "${mod}-1.21.1-neoforge"
+		archiveBaseName = "${mod}-${ver}-neoforge"
 		destinationDirectory = tasks.jar.destinationDirectory
 	}
 	tasks.named("jar") { dependsOn fatJar }
@@ -88,19 +91,23 @@ def makeMod2(String mod) {
 	neoForge {
 		mods {
 			"${mod}" {
-				sourceSet set
-				sourceSet project(":vanilla").sourceSets["mod${mod.capitalize()}Version1_21_1"]
-				sourceSet project(":vanilla").sourceSets["mod${mod.capitalize()}VersionAny"]
-				
-				//FOLLOWING SOURCE-SETS CRASH DUE TO SPLIT PACKAGES IF THERES MORE THAN ONE MOD
-				//will need to shade!!!!
-				sourceSet sourceSets.main
-				sourceSet project(":vanilla").sourceSets["modAnyVersion1_21_1"]
-				sourceSet project(":vanilla").sourceSets["modAnyVersionAny"]
+				sourceSet set // <- code specifically for this mod, this version, this modloader
+				sourceSet project(":vanilla").sourceSets["mod${Mod}Version${ver_}"]
+				sourceSet project(":vanilla").sourceSets["mod${Mod}VersionAny"]
 			}
 		}
 	}
 }
 
+neoForge {
+	mods {
+		quatlib {
+			sourceSet sourceSets.main // <- code shared between all mods on this version and this modloader
+			sourceSet project(":vanilla").sourceSets["modAnyVersion1_21_1"]
+			sourceSet project(":vanilla").sourceSets["modAnyVersionAny"]
+		}
+	}
+}
+
 makeMod2("testmod")
-//makeMod2("testmod2")
+makeMod2("testmod2")
