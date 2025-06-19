@@ -1,0 +1,25 @@
+{
+	"schemaVersion": 1,
+	"id": "testmod",
+	"version": "${version}",
+	"name": "Testmod1",
+	"description": "Test mod 1",
+	"authors": [
+		"quaternary"
+	],
+	"contact": {
+		"homepage": "https://highlysuspect.agency/",
+		"sources": "https://github.com/quat1024/mods/"
+	},
+	"license": "LGPL-3.0-or-later",
+	"icon": "rebindnarratoricon.png",
+	"entrypoints": {
+	},
+	"mixins": [
+	],
+	"depends": {
+		"minecraft": ">=1.21",
+		"fabricloader": "*",
+		"fabric-api": "*"
+	}
+}

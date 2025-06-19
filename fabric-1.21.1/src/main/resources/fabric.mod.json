@@ -1,0 +1,24 @@
+{
+	"schemaVersion": 1,
+	"id": "quatlib",
+	"version": "${version}",
+	"name": "quatlib",
+	"description": "quatlib for fabric 1.21",
+	"authors": [
+		"quaternary"
+	],
+	"contact": {
+		"homepage": "https://highlysuspect.agency/",
+		"sources": "https://github.com/quat1024/mods/"
+	},
+	"license": "LGPL-3.0-or-later",
+	"entrypoints": {
+	},
+	"mixins": [
+	],
+	"depends": {
+		"minecraft": ">=1.21",
+		"fabricloader": "*",
+		"fabric-api": "*"
+	}
+}

@@ -22,5 +22,6 @@ rootProject.name = "mods"
 
 include(
 	"vanilla",
-	"neo-1.21.1"
+	"neo-1.21.1",
+	"fabric-1.21.1"
 )

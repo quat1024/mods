@@ -48,6 +48,7 @@ neoForge {
 def makeMod2(String mod) {
 	println "makeMod2 mod ${mod}"
 	String ver = "1.21.1"
+	String loader = "neoforge"
 	
 	SourceSet set = sourceSets.create(mod)
 	
@@ -76,43 +77,24 @@ def makeMod2(String mod) {
 		}
 	}
 	
-	//thinjar
-	def thinJar = tasks.register("${modVersion(mod, ver)}LoaderNeoforgeThinJar", Jar) {
-		from set.output //code specifically for this version of this mod on neoforge
-		
-		archiveBaseName = "${mod}-${ver}-neoforge-thin"
-		destinationDirectory = tasks.jar.destinationDirectory
-	}
-	tasks.named("jar") { dependsOn thinJar }
+//	//thinjar
+//	def thinJar = tasks.register("${modVersion(mod, ver)}Loader${loader.capitalize()}ThinJar", Jar) {
+//		from set.output //code specifically for this version of this mod on neoforge
+//
+//		archiveBaseName = "${mod}-${ver}-${loader}-thin"
+//		destinationDirectory = tasks.jar.destinationDirectory
+//	}
+//	tasks.named("jar") { dependsOn thinJar }
 	
 	//"dep jar", not a full-fatjar, expects the vanilla stuff to be provided as a dep
-	def depJar = tasks.register("${modVersion(mod, ver)}LoaderNeoforgeDepJar", Jar) {
+	def depJar = tasks.register("${modVersion(mod, ver)}Loader${loader.capitalize()}DepJar", Jar) {
 		from set.output //code specifically for this version of this mod on neoforge
 		from modSplat.collect { zipTree it } //code for this mod in :vanilla
 		
-		archiveBaseName = "${mod}-${ver}-neoforge"
+		archiveBaseName = "${mod}-${ver}-${loader}"
 		destinationDirectory = tasks.jar.destinationDirectory
 	}
 	tasks.named("jar") { dependsOn depJar }
-	
-//	//shadejar
-//	def shadeJar = tasks.register("${modVersion(mod, ver)}LoaderNeoforgeFatJar", Jar) {
-//		//code shared across all neoforge mods //TODO actually shade
-//		from (sourceSets.main.output) {
-//			exclude("META-INF/**") //ends up being the quatlib identifier... yeah
-//		}
-//		//code shared across all mods
-//		from quatlibVanilla.collect { zipTree it } //TODO actually shade
-//
-//		from set.output //code specifically for this version of this mod on neoforge
-//		from modSplat.collect { zipTree it } //code for this mod in :vanilla
-//
-//		archiveBaseName = "${mod}-${ver}-neoforge-shaded"
-//		destinationDirectory = tasks.jar.destinationDirectory
-//
-//		duplicatesStrategy = DuplicatesStrategy.INCLUDE
-//	}
-//	tasks.named("jar") { dependsOn shadeJar }
 	
 	//neoforge run
 	neoForge {
