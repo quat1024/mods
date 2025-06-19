@@ -3,22 +3,36 @@ plugins {
 	id "net.neoforged.moddev" version "2.0.95" // https://projects.neoforged.net/neoforged/ModDevGradle
 }
 
-//archivesBaseName = "${rootProject.name}-neo-1.21.1"
-
 evaluationDependsOn(":vanilla") //reaching across sourceSets
 
-configurations {
-	modAnyVersionAnyShade
-	modAnyVersion1_21_1Shade
-	
-	implementation.extendsFrom modAnyVersionAnyShade
-	implementation.extendsFrom modAnyVersion1_21_1Shade
+static def modVersion(String mod, String version) {
+	//null, null -> "modAnyVersionAny"
+	//abcd, null -> "modAbcdVersionAny"
+	//null, 1.23 -> "modAnyVersion1_23"
+	//abcd, 1.23 -> "modAbcdVersion1_23"
+	return "mod${mod == null ? "Any" : mod.capitalize()}Version${version == null ? "Any" : version.replace('.', '_')}"
 }
 
-//MAIN SOURCESET contains vanilla for every version, vanilla for this version, and (added by MDG) a copy of neoforge
+def vanillaDep(String mod, String version) {
+	return dependencies.project(path: ":vanilla", configuration: "${modVersion(mod, version)}Elements")
+}
+
+//CONFIGURATION TOUR
+// "quatlibVanilla" contains :vanilla modAnyVersionAny and modAnyVersion1_21_1
+// "implementation" contains that plus a copy of Neoforge, as well as the quatlib stuff shared across neoforge 1.21.1 mods
+// each mod, e.g. 'testmod', gets a "testmodSplat" source-set containing :vanilla modTestmodVersionAny and modTestmodVersion1_21_1
+//
+// to assemble the artifacts, you splat together quatlibVanilla + the main source-set and produce quatlib for neoforge 1.21.1
+// then splat together modSplat + the mod's source-set to create the mod
+
+configurations {
+	quatlibVanilla
+	implementation.extendsFrom quatlibVanilla
+}
+
 dependencies {
-	modAnyVersionAnyShade project(path: ":vanilla", configuration: "modAnyVersionAnyElements")
-	modAnyVersion1_21_1Shade project(path: ":vanilla", configuration: "modAnyVersion1_21_1Elements")
+	quatlibVanilla vanillaDep(null, null)
+	quatlibVanilla vanillaDep(null, "1.21.1")
 }
 
 neoForge {
@@ -33,81 +47,105 @@ neoForge {
 
 def makeMod2(String mod) {
 	println "makeMod2 mod ${mod}"
-	String Mod = mod.capitalize()
 	String ver = "1.21.1"
-	String ver_ = "1_21_1"
 	
-	SourceSet set = sourceSets.create("mod${Mod}Version${ver_}LoaderNeoforge")
+	SourceSet set = sourceSets.create(mod)
 	
 	//inherit from main sourceset (which contains neoforge and code shared across neo 1.21 mods)
 	set.compileClasspath += sourceSets.main.compileClasspath
 	set.runtimeClasspath += sourceSets.main.runtimeClasspath
-	project.dependencies.add(set.implementationConfigurationName, sourceSets.main.output)
 	
 	//inherit from the relevant :vanilla projects
-	Configuration modAnyVersionAnyShade = configurations.named("modAnyVersionAnyShade").get() //dep already created above
-	Configuration modAnyVersionThisShade = configurations.named("modAnyVersion${ver_}Shade").get() //above
+	//first, the ones broadly applicable to all mods, which end up in quatlib
+	Configuration quatlibVanilla = configurations.quatlibVanilla
 	
-	Configuration modThisVersionAnyShade = configurations.create("mod${Mod}VersionAnyVanilla")
-	Dependency modThisVanillaAnyDep = dependencies.project(path: ":vanilla", configuration: "mod${Mod}VersionAnyElements")
-	project.dependencies.add(modThisVersionAnyShade.name, modThisVanillaAnyDep)
+	//then, the mod-specific stuff which is safe to splat into the jar
+	Configuration modSplat = configurations.create("${mod}Splat") {
+		withDependencies {
+			add vanillaDep(mod, null)
+			add vanillaDep(mod, ver)
+		}
+	}
 	
-	Configuration modThisVersionThisShade = configurations.create("mod${Mod}Version${ver_}Vanilla")
-	Dependency modThisVanillaThisDep = dependencies.project(path: ":vanilla", configuration: "mod${Mod}Version${ver_}Elements")
-	project.dependencies.add(modThisVersionThisShade.name, modThisVanillaThisDep)
-	
+	//build the mod's compile classpath (roughly speaking)
 	configurations.named(set.implementationConfigurationName) {
 		it.withDependencies {
-			it.add project.dependencies.create(modAnyVersionAnyShade)
-			it.add project.dependencies.create(modAnyVersionThisShade)
-			it.add project.dependencies.create(modThisVersionAnyShade)
-			it.add project.dependencies.create(modThisVersionThisShade)
+			add project.dependencies.create(sourceSets.main.output) //quatlib for neoforge 1.21.1
+			add project.dependencies.create(quatlibVanilla) //quatlib for everything
+			add project.dependencies.create(modSplat) //code for this mod
 		}
 	}
 	
 	//thinjar
-	def thinJar = tasks.register("mod${Mod}Version${ver_}LoaderNeoforgeThinJar", Jar) {
-		from set.output
+	def thinJar = tasks.register("${modVersion(mod, ver)}LoaderNeoforgeThinJar", Jar) {
+		from set.output //code specifically for this version of this mod on neoforge
+		
 		archiveBaseName = "${mod}-${ver}-neoforge-thin"
 		destinationDirectory = tasks.jar.destinationDirectory
 	}
 	tasks.named("jar") { dependsOn thinJar }
 	
-	//fatjar
-	def fatJar = tasks.register("mod${Mod}Version${ver_}LoaderNeoforgeFatJar", Jar) {
-		from set.output
-		from sourceSets.main.output //TODO shade
-		from modAnyVersionAnyShade.collect { zipTree it } //TODO shade
-		from modAnyVersionThisShade.collect { zipTree it } //TODO shade
-		from modThisVersionAnyShade.collect { zipTree it } //TODO shade
-		from modThisVersionThisShade.collect { zipTree it } //TODO shade
+	//"dep jar", not a full-fatjar, expects the vanilla stuff to be provided as a dep
+	def depJar = tasks.register("${modVersion(mod, ver)}LoaderNeoforgeDepJar", Jar) {
+		from set.output //code specifically for this version of this mod on neoforge
+		from modSplat.collect { zipTree it } //code for this mod in :vanilla
 		
 		archiveBaseName = "${mod}-${ver}-neoforge"
 		destinationDirectory = tasks.jar.destinationDirectory
 	}
-	tasks.named("jar") { dependsOn fatJar }
+	tasks.named("jar") { dependsOn depJar }
+	
+//	//shadejar
+//	def shadeJar = tasks.register("${modVersion(mod, ver)}LoaderNeoforgeFatJar", Jar) {
+//		//code shared across all neoforge mods //TODO actually shade
+//		from (sourceSets.main.output) {
+//			exclude("META-INF/**") //ends up being the quatlib identifier... yeah
+//		}
+//		//code shared across all mods
+//		from quatlibVanilla.collect { zipTree it } //TODO actually shade
+//
+//		from set.output //code specifically for this version of this mod on neoforge
+//		from modSplat.collect { zipTree it } //code for this mod in :vanilla
+//
+//		archiveBaseName = "${mod}-${ver}-neoforge-shaded"
+//		destinationDirectory = tasks.jar.destinationDirectory
+//
+//		duplicatesStrategy = DuplicatesStrategy.INCLUDE
+//	}
+//	tasks.named("jar") { dependsOn shadeJar }
 	
 	//neoforge run
 	neoForge {
 		mods {
 			"${mod}" {
 				sourceSet set // <- code specifically for this mod, this version, this modloader
-				sourceSet project(":vanilla").sourceSets["mod${Mod}Version${ver_}"]
-				sourceSet project(":vanilla").sourceSets["mod${Mod}VersionAny"]
+				sourceSet project(":vanilla").sourceSets[modVersion(mod, ver)]
+				sourceSet project(":vanilla").sourceSets[modVersion(mod, null)]
 			}
 		}
 	}
 }
 
+//all code that gets shared across multiple mods
 neoForge {
 	mods {
 		quatlib {
-			sourceSet sourceSets.main // <- code shared between all mods on this version and this modloader
-			sourceSet project(":vanilla").sourceSets["modAnyVersion1_21_1"]
-			sourceSet project(":vanilla").sourceSets["modAnyVersionAny"]
+			sourceSet sourceSets.main
+			sourceSet project(":vanilla").sourceSets[modVersion(null, "1.21.1")]
+			sourceSet project(":vanilla").sourceSets[modVersion(null, null)]
 		}
 	}
 }
+
+//produce the quatlib jar itself!
+def quatlibFatJar = tasks.register("quatlibFatJar", Jar) {
+	from sourceSets.main.output
+	from configurations.quatlibVanilla.collect { zipTree it }
+	
+	archiveBaseName = "ModderNameLib-1.21.1-neoforge"
+	destinationDirectory = tasks.jar.destinationDirectory
+}
+tasks.named("jar") { dependsOn quatlibFatJar }
 
 makeMod2("testmod")
 makeMod2("testmod2")
