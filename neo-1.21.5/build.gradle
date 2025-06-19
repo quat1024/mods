@@ -1,0 +1,15 @@
+plugins {
+	id "mod-setup-neoforge"
+}
+
+neoForge {
+	version "21.5.77" // https://projects.neoforged.net/neoforged/neoforge
+}
+
+modSetup.go {
+	ver = "1.21.5"
+	
+	mods {
+		testmod
+	}
+}

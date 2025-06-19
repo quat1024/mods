@@ -42,7 +42,7 @@ def modAnyVersionAnyThinJar = tasks.register("modAnyVersionAnyThinJar", Jar) {
 	destinationDirectory = tasks.jar.destinationDirectory
 }
 tasks.named("jar") { dependsOn modAnyVersionAnyThinJar }
-//publish under modAnyVersionAnyElements resolvable configuration
+//publish under modAnyVersionAnyElements consumable configuration
 project.artifacts.add(configurations.consumable("modAnyVersionAnyElements").get().name, modAnyVersionAnyThinJar)
 
 def setupMc2(String ver) {
@@ -79,7 +79,7 @@ def setupMc2(String ver) {
 		destinationDirectory = tasks.jar.destinationDirectory
 	}
 	tasks.named("jar") { dependsOn thinJar }
-	//publish under modAnyVersion(version)Elements resolvable configuration
+	//publish under modAnyVersion(version)Elements consumable configuration
 	project.artifacts.add(configurations.consumable("${modVersion(null, ver)}Elements").get().name, thinJar)
 }
 
@@ -107,7 +107,7 @@ def setupMod2(String mod, String... mcVersions) {
 		destinationDirectory = tasks.jar.destinationDirectory
 	}
 	tasks.named("jar") { dependsOn anyVersionJar }
-	//publish under mod(Mod)VersionAnyElements resolvable configuration
+	//publish under mod(Mod)VersionAnyElements consumable configuration
 	project.artifacts.add(configurations.consumable("${modVersion(mod, null)}Elements").get().name, anyVersionJar)
 	
 	//for each minecraft version
@@ -143,7 +143,7 @@ def setupMod2(String mod, String... mcVersions) {
 			destinationDirectory = tasks.jar.destinationDirectory
 		}
 		tasks.named("jar") { dependsOn thisVersionJar }
-		//publish under mod(Mod)VersionAnyElements resolvable configuration
+		//publish under mod(Mod)VersionAnyElements consumable configuration
 		project.artifacts.add(configurations.consumable("${modVersion(mod, mcVersion)}Elements").get().name, thisVersionJar)
 		
 		//a "Run config", not a full minecraft launcher but at least it's on the classpath
@@ -164,6 +164,7 @@ def setupMod2(String mod, String... mcVersions) {
 
 setupMc2("1.20.1")
 setupMc2("1.21.1")
+setupMc2("1.21.5")
 
-setupMod2("testmod", "1.20.1", "1.21.1")
+setupMod2("testmod", "1.20.1", "1.21.1", "1.21.5")
 setupMod2("testmod2", "1.20.1", "1.21.1")

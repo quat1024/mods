@@ -1,0 +1,41 @@
+plugins {
+	id "java-gradle-plugin"
+}
+
+repositories {
+	maven {
+		url = "https://repo.sleeping.town"
+		content {
+			includeGroup "agency.highlysuspect"
+			includeGroup "agency.highlysuspect.minivan" //this is a certified plugins dsl moment
+		}
+	}
+	gradlePluginPortal()
+	maven {url = "https://maven.fabricmc.net/"}
+	maven {url = "https://repo.spongepowered.org/repository/maven-public/"}
+}
+
+dependencies {
+	// https://maven.fabricmc.net/fabric-loom/fabric-loom.gradle.plugin/
+	implementation "fabric-loom:fabric-loom.gradle.plugin:1.10.5"
+	
+	// https://projects.neoforged.net/neoforged/ModDevGradle
+	implementation "net.neoforged.moddev:net.neoforged.moddev.gradle.plugin:2.0.95"
+}
+
+gradlePlugin {
+	plugins {
+		"mod-setup" {
+			id = "mod-setup"
+			implementationClass = "agency.highlysuspect.modsetup.ModSetupPlugin"
+		}
+		"mod-setup-fabric" {
+			id = "mod-setup-fabric"
+			implementationClass = "agency.highlysuspect.modsetup.FabricSetupPlugin"
+		}
+		"mod-setup-neoforge" {
+			id = "mod-setup-neoforge"
+			implementationClass = "agency.highlysuspect.modsetup.NeoforgeSetupPlugin"
+		}
+	}
+}

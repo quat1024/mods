@@ -1,133 +1,16 @@
 plugins {
-	id "java"
-	id "net.neoforged.moddev" version "2.0.95" // https://projects.neoforged.net/neoforged/ModDevGradle
-}
-
-evaluationDependsOn(":vanilla") //reaching across sourceSets
-
-static def modVersion(String mod, String version) {
-	//null, null -> "modAnyVersionAny"
-	//abcd, null -> "modAbcdVersionAny"
-	//null, 1.23 -> "modAnyVersion1_23"
-	//abcd, 1.23 -> "modAbcdVersion1_23"
-	return "mod${mod == null ? "Any" : mod.capitalize()}Version${version == null ? "Any" : version.replace('.', '_')}"
-}
-
-def vanillaDep(String mod, String version) {
-	return dependencies.project(path: ":vanilla", configuration: "${modVersion(mod, version)}Elements")
-}
-
-//CONFIGURATION TOUR
-// "quatlibVanilla" contains :vanilla modAnyVersionAny and modAnyVersion1_21_1
-// "implementation" contains that plus a copy of Neoforge, as well as the quatlib stuff shared across neoforge 1.21.1 mods
-// each mod, e.g. 'testmod', gets a "testmodSplat" source-set containing :vanilla modTestmodVersionAny and modTestmodVersion1_21_1
-//
-// to assemble the artifacts, you splat together quatlibVanilla + the main source-set and produce quatlib for neoforge 1.21.1
-// then splat together modSplat + the mod's source-set to create the mod
-
-configurations {
-	quatlibVanilla
-	implementation.extendsFrom quatlibVanilla
-}
-
-dependencies {
-	quatlibVanilla vanillaDep(null, null)
-	quatlibVanilla vanillaDep(null, "1.21.1")
+	id "mod-setup-neoforge"
 }
 
 neoForge {
 	version "21.5.75" // https://projects.neoforged.net/neoforged/neoforge
-	
-	runs {
-		client {
-			client()
-		}
-	}
 }
 
-def makeMod2(String mod) {
-	println "makeMod2 mod ${mod}"
-	String ver = "1.21.1"
-	String loader = "neoforge"
+modSetup.go {
+	ver = "1.21.1"
 	
-	SourceSet set = sourceSets.create(mod)
-	
-	//inherit from main sourceset (which contains neoforge and code shared across neo 1.21 mods)
-	set.compileClasspath += sourceSets.main.compileClasspath
-	set.runtimeClasspath += sourceSets.main.runtimeClasspath
-	
-	//inherit from the relevant :vanilla projects
-	//first, the ones broadly applicable to all mods, which end up in quatlib
-	Configuration quatlibVanilla = configurations.quatlibVanilla
-	
-	//then, the mod-specific stuff which is safe to splat into the jar
-	Configuration modSplat = configurations.create("${mod}Splat") {
-		withDependencies {
-			add vanillaDep(mod, null)
-			add vanillaDep(mod, ver)
-		}
-	}
-	
-	//build the mod's compile classpath (roughly speaking)
-	configurations.named(set.implementationConfigurationName) {
-		it.withDependencies {
-			add project.dependencies.create(sourceSets.main.output) //quatlib for neoforge 1.21.1
-			add project.dependencies.create(quatlibVanilla) //quatlib for everything
-			add project.dependencies.create(modSplat) //code for this mod
-		}
-	}
-	
-//	//thinjar
-//	def thinJar = tasks.register("${modVersion(mod, ver)}Loader${loader.capitalize()}ThinJar", Jar) {
-//		from set.output //code specifically for this version of this mod on neoforge
-//
-//		archiveBaseName = "${mod}-${ver}-${loader}-thin"
-//		destinationDirectory = tasks.jar.destinationDirectory
-//	}
-//	tasks.named("jar") { dependsOn thinJar }
-	
-	//"dep jar", not a full-fatjar, expects the vanilla stuff to be provided as a dep
-	def depJar = tasks.register("${modVersion(mod, ver)}Loader${loader.capitalize()}DepJar", Jar) {
-		from set.output //code specifically for this version of this mod on neoforge
-		from modSplat.collect { zipTree it } //code for this mod in :vanilla
-		
-		archiveBaseName = "${mod}-${ver}-${loader}"
-		destinationDirectory = tasks.jar.destinationDirectory
-	}
-	tasks.named("jar") { dependsOn depJar }
-	
-	//neoforge run
-	neoForge {
-		mods {
-			"${mod}" {
-				sourceSet set // <- code specifically for this mod, this version, this modloader
-				sourceSet project(":vanilla").sourceSets[modVersion(mod, ver)]
-				sourceSet project(":vanilla").sourceSets[modVersion(mod, null)]
-			}
-		}
-	}
-}
-
-//all code that gets shared across multiple mods
-neoForge {
 	mods {
-		quatlib {
-			sourceSet sourceSets.main
-			sourceSet project(":vanilla").sourceSets[modVersion(null, "1.21.1")]
-			sourceSet project(":vanilla").sourceSets[modVersion(null, null)]
-		}
+		testmod
+		testmod2
 	}
 }
-
-//produce the quatlib jar itself!
-def quatlibFatJar = tasks.register("quatlibFatJar", Jar) {
-	from sourceSets.main.output
-	from configurations.quatlibVanilla.collect { zipTree it }
-	
-	archiveBaseName = "ModderNameLib-1.21.1-neoforge"
-	destinationDirectory = tasks.jar.destinationDirectory
-}
-tasks.named("jar") { dependsOn quatlibFatJar }
-
-makeMod2("testmod")
-makeMod2("testmod2")
