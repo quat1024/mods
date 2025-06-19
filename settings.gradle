@@ -21,7 +21,6 @@ plugins {
 rootProject.name = "mods"
 
 include(
-	"all",
 	"vanilla",
 	"neo-1.21.1"
 )
