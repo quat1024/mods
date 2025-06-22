@@ -91,7 +91,7 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 				client.client(); //client client
 				client.setIdeConfigGenerated(true);
 				
-				//also disable the default remapJar task
+				//also disable the default remapJar task since `jar` was disabled
 				tasks.named("remapJar", it -> it.setEnabled(false));
 			}
 			
@@ -110,7 +110,8 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 			//add dependencies
 			Util.withDeps(project, quatlibVanilla,
 				Util.vanillaDep(project, null, null),
-				Util.vanillaDep(project, null, ver)
+				Util.vanillaDep(project, null, ver),
+				Util.broadlyApplicableDeps(project)
 			);
 			if(loom != null) {
 				//on fabric, also dep on :floader-only and include it in quatlibVanilla the same way
@@ -184,12 +185,17 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 				Configuration modSplat = project.getConfigurations().create(mod + "Splat");
 				Util.withDeps(project, modSplat,
 					Util.vanillaDep(project, mod, null),
-					Util.vanillaDep(project, mod, ver));
+					Util.vanillaDep(project, mod, ver)
+				);
 				loaderModOptions.splat = modSplat;
 				
 				//plug this thing in... hmm
 				Util.withImplementation(project, set,
-					main.getOutput(), quatlibVanilla, modSplat);
+					main.getOutput(),
+					quatlibVanilla,
+					modSplat,
+					Util.broadlyApplicableDeps(project)
+				);
 //				dependencies.add(set.getImplementationConfigurationName(), main.getOutput());
 //				dependencies.add(set.getImplementationConfigurationName(), dependencies.create(quatlibVanilla));
 //				dependencies.add(set.getImplementationConfigurationName(), dependencies.create(modSplat));

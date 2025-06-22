@@ -85,6 +85,12 @@ public class Util {
 		}
 	}
 	
+	public static List<Object> broadlyApplicableDeps(Project project) {
+		return List.of(
+			"org.jetbrains:annotations:16.0.2"
+		);
+	}
+	
 	public static Map<String, Object> broadlyApplicableProps(Project project) {
 		return Map.of(
 			"version", project.getVersion().toString(),

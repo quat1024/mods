@@ -106,6 +106,7 @@ public class VanillaSetupPlugin implements Plugin<Project> {
 			SourceSet modAnyVersionAny = sourceSets.create("modAnyVersionAny");
 			
 			Util.configureProcessResources(project, modAnyVersionAny, Util.broadlyApplicableProps(project));
+			Util.withImplementation(project, modAnyVersionAny, Util.broadlyApplicableDeps(project));
 			
 			//the modAnyVersionAny thinjar
 			TaskProvider<Jar> modAnyVersionAnyThinJar = jarMeUpBoys(null, null, modAnyVersionAny);
@@ -145,7 +146,7 @@ public class VanillaSetupPlugin implements Plugin<Project> {
 					"com.mojang:logging:1.1.1",
 					//for fun
 					"org.spongepowered:mixin:0.8.5",
-					"org.jetbrains:annotations:16.0.2"
+					Util.broadlyApplicableDeps(project)
 				);
 				
 				//thinjar
@@ -166,7 +167,11 @@ public class VanillaSetupPlugin implements Plugin<Project> {
 				
 				//compile against modAnyVersionAny
 				Util.extendSourceSetFrom(modThisVersionAny, modAnyVersionAny);
-				Util.withImplementation(project, modThisVersionAny, modAnyVersionAny.getOutput());
+				Util.withImplementation(project,
+					modThisVersionAny,
+					modAnyVersionAny.getOutput(),
+					Util.broadlyApplicableDeps(project)
+				);
 				
 				//thinjar
 				TaskProvider<Jar> modThisVersionAnyThinJar = jarMeUpBoys(mod, null, modThisVersionAny);
@@ -184,6 +189,7 @@ public class VanillaSetupPlugin implements Plugin<Project> {
 					
 					//compile against modAnyVersionAny, modThisVersionAny, and modAnyVersionThis
 					SourceSet modAnyVersionThis = sourceSets.getByName(Util.modVersion(null, version)); //was just created above
+					Util.withImplementation(project, modAnyVersionThis, Util.broadlyApplicableDeps(project));
 					Util.extendSourceSetFrom(modThisVersionThis,
 						modAnyVersionAny, modThisVersionAny, modAnyVersionThis);
 					Util.withImplementation(project, modThisVersionThis,
