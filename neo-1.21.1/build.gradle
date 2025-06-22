@@ -10,7 +10,7 @@ modSetup.go {
 	ver = "1.21.1"
 	
 	mods {
-		testmod
+		testmod1
 		testmod2
 	}
 }

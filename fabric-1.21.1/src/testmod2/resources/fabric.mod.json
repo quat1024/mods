@@ -1,18 +1,17 @@
 {
 	"schemaVersion": 1,
-	"id": "testmod2",
+	"id": "${modid}",
 	"version": "${version}",
-	"name": "Testmod2",
-	"description": "Test mod 2",
+	"name": "${name}",
+	"description": "${name} for ${loader} ${minecraft_version}",
 	"authors": [
-		"quaternary"
+		"${author}"
 	],
 	"contact": {
-		"homepage": "https://highlysuspect.agency/",
-		"sources": "https://github.com/quat1024/mods/"
+		"homepage": "${homepage}",
+		"sources": "${sources}"
 	},
-	"license": "LGPL-3.0-or-later",
-	"icon": "rebindnarratoricon.png",
+	"license": "${license}",
 	"entrypoints": {
 	},
 	"mixins": [

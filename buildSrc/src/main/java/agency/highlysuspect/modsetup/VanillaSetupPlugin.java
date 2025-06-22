@@ -22,6 +22,7 @@ import org.gradle.jvm.tasks.Jar;
 import org.jetbrains.annotations.Nullable;
 
 import java.nio.file.Path;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -104,6 +105,8 @@ public class VanillaSetupPlugin implements Plugin<Project> {
 			//every project in the ecosystem
 			SourceSet modAnyVersionAny = sourceSets.create("modAnyVersionAny");
 			
+			Util.configureProcessResources(project, modAnyVersionAny, Util.broadlyApplicableProps(project));
+			
 			//the modAnyVersionAny thinjar
 			TaskProvider<Jar> modAnyVersionAnyThinJar = jarMeUpBoys(null, null, modAnyVersionAny);
 			
@@ -117,6 +120,10 @@ public class VanillaSetupPlugin implements Plugin<Project> {
 				
 				//make a source-set for this version of minecraft
 				SourceSet modAnyVersionThis = sourceSets.create(Util.modVersion(null, version));
+				Util.configureProcessResources(project, modAnyVersionThis,
+					Util.broadlyApplicableProps(project),
+					Map.of("minecraft_version", version)
+				);
 				
 				//things which should go in this source-set: the modAnyVersionAny source set
 				Util.extendSourceSetFrom(modAnyVersionThis, modAnyVersionAny);
@@ -152,6 +159,10 @@ public class VanillaSetupPlugin implements Plugin<Project> {
 				
 				//source set for all minecraft versions of this mod
 				SourceSet modThisVersionAny = sourceSets.create(Util.modVersion(mod, null));
+				Util.configureProcessResources(project, modThisVersionAny,
+					Util.broadlyApplicableProps(project),
+					modSettings.vars
+				);
 				
 				//compile against modAnyVersionAny
 				Util.extendSourceSetFrom(modThisVersionAny, modAnyVersionAny);
@@ -165,6 +176,11 @@ public class VanillaSetupPlugin implements Plugin<Project> {
 					project.getLogger().lifecycle("...for {}", version);
 					//source set for *this* minecraft version of *this* mod
 					SourceSet modThisVersionThis = sourceSets.create(Util.modVersion(mod, version));
+					Util.configureProcessResources(project, modThisVersionThis,
+						Util.broadlyApplicableProps(project),
+						Map.of("minecraft_version", version),
+						modSettings.vars
+					);
 					
 					//compile against modAnyVersionAny, modThisVersionAny, and modAnyVersionThis
 					SourceSet modAnyVersionThis = sourceSets.getByName(Util.modVersion(null, version)); //was just created above

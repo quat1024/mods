@@ -1,15 +1,14 @@
 modLoader = "javafml"
 loaderVersion = "[1,)"
-license = "LGPL-3.0-or-later"
-issueTrackerURL = "https://github.com/quat1024/RebindNarrator/issues"
-logoFile = "rebindnarratoricon.png"
+license = "${license}"
+issueTrackerURL = "${issues}"
 
 [[mods]]
-modId = "testmod2"
-version = "0"
-displayName = "Test Mod 2"
-description = "welcome to test mod 2"
-authors = "quaternary"
+modId = "${modid}"
+version = "${version}"
+displayName = "${name}"
+description = "${name} for ${loader} ${minecraft_version}"
+authors = "${author}"
 credits = "Your mom"
 
 #[[mixins]]

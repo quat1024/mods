@@ -21,6 +21,7 @@ import org.gradle.jvm.tasks.Jar;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.util.Map;
 
 public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 	@Override
@@ -72,6 +73,9 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 			ConfigurationContainer configurations = project.getConfigurations();
 			TaskContainer tasks = project.getTasks();
 			
+			//we don't use the default jar task
+			tasks.named("jar", it -> it.setEnabled(false));
+			
 			//is loom or neoforge installed?
 			@Nullable LoomGradleExtensionAPI loom = project.getExtensions().findByType(LoomGradleExtensionAPI.class);
 			@Nullable NeoForgeExtension neoforge = project.getExtensions().findByType(NeoForgeExtension.class);
@@ -86,6 +90,9 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 				RunConfigSettings client = loom.getRuns().maybeCreate("client");
 				client.client(); //client client
 				client.setIdeConfigGenerated(true);
+				
+				//also disable the default remapJar task
+				tasks.named("remapJar", it -> it.setEnabled(false));
 			}
 			
 			//neoforge: a basic run configuration
@@ -101,8 +108,21 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 			configurations.getByName("implementation", it -> it.extendsFrom(quatlibVanilla));
 			
 			//add dependencies
-			dependencies.add(quatlibVanilla.getName(), Util.vanillaDep(project, null, null));
-			dependencies.add(quatlibVanilla.getName(), Util.vanillaDep(project, null, ver));
+			Util.withDeps(project, quatlibVanilla,
+				Util.vanillaDep(project, null, null),
+				Util.vanillaDep(project, null, ver)
+			);
+			
+			//process resources
+			Util.configureProcessResources(project, main,
+				Util.broadlyApplicableProps(project),
+				Map.of(
+					"modid", "modder_name_lib",
+					"name", "ModderNameLib",
+					"loader", loader,
+					"minecraft_version", ver
+				)
+			);
 			
 			//produce quatlib jar
 			quatlibFatJar = project.getTasks().register("quatlibFatJar", Jar.class, it -> {
@@ -146,6 +166,11 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 				//make a source-set for it
 				SourceSet set = sourceSets.create(mod);
 				loaderModOptions.set = set;
+				Util.configureProcessResources(project, set,
+					Util.broadlyApplicableProps(project),
+					Map.of("minecraft_version", ver, "loader", loader),
+					loaderModOptions.vars
+				);
 				
 				//inherit from main source-set (containing minecraft, the modloader, and code shared across all mods using the loader)
 				Util.extendSourceSetFrom(set, main);

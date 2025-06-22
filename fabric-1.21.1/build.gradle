@@ -11,7 +11,9 @@ modSetup.go {
 	ver = "1.21.1"
 	
 	mods {
-		testmod
+		testmod1 {
+			vars.name = "I am a banana"
+		}
 		testmod2
 	}
 }
