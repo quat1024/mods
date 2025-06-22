@@ -1,0 +1,15 @@
+modLoader = "javafml"
+loaderVersion = "[1,)"
+license = "${license}"
+issueTrackerURL = "${issues}"
+logoFile = "crowmap_icon.png"
+
+[[mods]]
+modId = "${modid}"
+version = "${version}"
+displayName = "${name}"
+description = "Maps update anywhere in your inventory."
+authors = "${author}"
+
+[[mixins]]
+config = "crowmap.mixins.json"

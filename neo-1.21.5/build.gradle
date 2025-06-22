@@ -10,9 +10,9 @@ modSetup.go {
 	ver = "1.21.5"
 	
 	mods {
-		//testmod1
 		rebind_narrator {
 			vars.name = "Rebind Narrator"
 		}
+		crowmap
 	}
 }

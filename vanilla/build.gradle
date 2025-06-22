@@ -7,5 +7,8 @@ vanillaSetup.go {
 		rebind_narrator {
 			versions += ["1.21.1", "1.21.5"]
 		}
+		crowmap {
+			versions += ["1.21.5"]
+		}
 	}
 }

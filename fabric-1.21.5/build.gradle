@@ -14,5 +14,6 @@ modSetup.go {
 		rebind_narrator {
 			vars.name = "Rebind Narrator"
 		}
+		crowmap
 	}
 }

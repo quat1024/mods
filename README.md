@@ -37,7 +37,7 @@ also "quatlib" is renamed and published as "ModderNameLib" as a #funny and #iron
 
 ## status
 
-~~contains no actual content mods lol~~ Contains the world's most complicated implementation of "rebind narrator" for 1.21.1 and 1.21.5. Doesn't really use the code-sharing system yet, this mod is very small.
+~~contains no actual content mods lol~~ Contains the world's most complicated implementation of "rebind narrator" for 1.21.1 and 1.21.5 and crowmap. Doesn't really use the code-sharing system yet, this mod is very small.
 
 Neoforge doesn't jarjar `quatlib` atm. It should. They have a weird jarjar system that is less convenient to use outside the established channels, might have to write my own task for it
 

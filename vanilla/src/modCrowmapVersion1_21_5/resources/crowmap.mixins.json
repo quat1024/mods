@@ -1,0 +1,14 @@
+{
+	"required": true,
+	"package": "agency.highlysuspect.crowmap.ver.mixin",
+	"compatibilityLevel": "JAVA_21",
+	"mixins": [
+		"MapItemMixin"
+	],
+	"client": [
+		"client.ItemStackHoverTextMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}
