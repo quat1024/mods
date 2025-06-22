@@ -37,7 +37,7 @@ also "quatlib" is renamed and published as "ModderNameLib" as a #funny and #iron
 
 ## status
 
-~~contains no actual content mods lol~~ Contains the world's most complicated implementation of "rebind narrator" for 1.21.5, and a few test mods which will be deleted in time
+~~contains no actual content mods lol~~ Contains the world's most complicated implementation of "rebind narrator" for 1.21.1 and 1.21.5. Doesn't really use the code-sharing system yet, this mod is very small.
 
 Neoforge doesn't jarjar `quatlib` atm. It should. They have a weird jarjar system that is less convenient to use outside the established channels, might have to write my own task for it
 
@@ -45,6 +45,6 @@ Currently source-sets like `:neo-1.21.5 testmod1` *can* see source-sets like `:v
 
 no datagen or anything. should be a "simple" crosscutting concern
 
-I would like a "no quatlib" option i can flick on per-mod. Rebind narrator on neoforge is small enough to not need quatlib.
+I would like a "no quatlib" option i can flick on per-mod. Rebind narrator is small enough to not need quatlib, especially on neoforge (on fabric i might want a config file to toggle on and off the AMECS integration, or to fiddle with modifier stuff, since i don't think that is available through the vanilla gui)
 
 Todo: needs ForgeGradle support for 1.20.1 and maybe below.
