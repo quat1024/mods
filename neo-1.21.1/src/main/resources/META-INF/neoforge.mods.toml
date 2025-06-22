@@ -9,7 +9,6 @@ version = "${version}"
 displayName = "${name}"
 description = "${name} for ${loader} ${minecraft_version}"
 authors = "${author}"
-credits = "Your mom"
 
 #[[mixins]]
 #config = "rebind_narrator.mixins.json"

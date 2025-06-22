@@ -2,7 +2,7 @@ modLoader = "javafml"
 loaderVersion = "[1,)"
 license = "${license}"
 issueTrackerURL = "${issues}"
-logoFile = "crowmap_icon.png"
+logoFile = "${modid}_icon.png"
 
 [[mods]]
 modId = "${modid}"

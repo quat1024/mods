@@ -1,0 +1,7 @@
+import java.time.*
+
+LocalDateTime now = LocalDateTime.ofInstant(Instant.now(), ZoneId.of("-05:00")) // Imagine living in Oh*o?
+String ver = "${now.year % 100}.${now.monthValue}.${now.dayOfMonth}"
+allprojects {
+	it.version = ver
+}

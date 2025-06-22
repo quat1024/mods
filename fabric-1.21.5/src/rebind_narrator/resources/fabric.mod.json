@@ -13,7 +13,7 @@
 		"sources": "${sources}"
 	},
 	"license": "${license}",
-	"icon": "rebindnarratoricon.png",
+	"icon": "${modid}_icon.png",
 	"environment": "client",
 	"entrypoints": {
 		"client": [
