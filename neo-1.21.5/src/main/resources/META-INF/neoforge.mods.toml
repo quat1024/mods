@@ -1,0 +1,12 @@
+modLoader = "javafml"
+loaderVersion = "[1,)"
+license = "${license}"
+issueTrackerURL = "${issues}"
+
+[[mods]]
+modId = "${modid}"
+version = "${version}"
+displayName = "${name}"
+description = "${name} for ${loader} ${minecraft_version}"
+authors = "${author}"
+credits = "Your mom"

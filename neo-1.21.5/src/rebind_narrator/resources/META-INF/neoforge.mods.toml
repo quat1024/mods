@@ -1,0 +1,16 @@
+modLoader = "javafml"
+loaderVersion = "[1,)"
+license = "${license}"
+issueTrackerURL = "${issues}"
+logoFile = "rebindnarratoricon.png"
+
+[[mods]]
+modId = "${modid}"
+version = "${version}"
+displayName = "${name}"
+description = "Adds a keybind to options for the narrator."
+authors = "${author}"
+credits = "Your mom"
+
+[[mixins]]
+config = "rebind_narrator.mixins.json"

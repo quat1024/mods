@@ -1,0 +1,31 @@
+{
+	"schemaVersion": 1,
+	"id": "${modid}",
+	"version": "${version}",
+	"name": "${name}",
+	"description": "Adds a keybind to options for the narrator.",
+	"authors": [
+		"${author}"
+	],
+	"contact": {
+		"homepage": "${homepage}",
+		"issues": "${issues}",
+		"sources": "${sources}"
+	},
+	"license": "${license}",
+	"icon": "rebindnarratoricon.png",
+	"environment": "client",
+	"entrypoints": {
+		"client": [
+			"agency.highlysuspect.rebindnarrator.fab.FabricInit"
+		]
+	},
+	"mixins": [
+		"rebind_narrator.mixins.json"
+	],
+	"depends": {
+		"fabricloader": "*",
+		"fabric-api": "*",
+		"minecraft": ">=${minecraft_version}"
+	}
+}
