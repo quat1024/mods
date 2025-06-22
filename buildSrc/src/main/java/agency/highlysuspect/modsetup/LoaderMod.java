@@ -19,8 +19,8 @@ public class LoaderMod implements Named {
 	}
 	
 	public final String modid;
-	//TODO: mod friendly name, mod version, mod desciption and so on. for substituting into fmj and mods.toml
 	public Map<String, Object> vars = new HashMap<>();
+	public boolean quatlib = true;
 	
 	//"out params"
 	public SourceSet set;

@@ -165,13 +165,14 @@ public class VanillaSetupPlugin implements Plugin<Project> {
 					modSettings.vars
 				);
 				
-				//compile against modAnyVersionAny
-				Util.extendSourceSetFrom(modThisVersionAny, modAnyVersionAny);
-				Util.withImplementation(project,
-					modThisVersionAny,
-					modAnyVersionAny.getOutput(),
-					Util.broadlyApplicableDeps(project)
-				);
+				//compile against the common stuff
+				Util.withImplementation(project, modThisVersionAny, Util.broadlyApplicableDeps(project));
+				
+				//if quatlib is enabled: compile against modAnyVersionAny
+				if(modSettings.quatlib) {
+					Util.extendSourceSetFrom(modThisVersionAny, modAnyVersionAny);
+					Util.withImplementation(project, modThisVersionAny, modAnyVersionAny.getOutput());
+				}
 				
 				//thinjar
 				TaskProvider<Jar> modThisVersionAnyThinJar = jarMeUpBoys(mod, null, modThisVersionAny);
@@ -187,13 +188,19 @@ public class VanillaSetupPlugin implements Plugin<Project> {
 						modSettings.vars
 					);
 					
-					//compile against modAnyVersionAny, modThisVersionAny, and modAnyVersionThis
-					SourceSet modAnyVersionThis = sourceSets.getByName(Util.modVersion(null, version)); //was just created above
-					Util.withImplementation(project, modAnyVersionThis, Util.broadlyApplicableDeps(project));
-					Util.extendSourceSetFrom(modThisVersionThis,
-						modAnyVersionAny, modThisVersionAny, modAnyVersionThis);
+					//compile against modThisVersionAny and also the common stuff
+					Util.extendSourceSetFrom(modThisVersionThis, modThisVersionAny);
 					Util.withImplementation(project, modThisVersionThis,
-						modAnyVersionAny.getOutput(), modThisVersionAny.getOutput(), modAnyVersionThis.getOutput());
+						modThisVersionAny.getOutput(),
+						Util.broadlyApplicableDeps(project)
+					);
+					
+					//if quatlib is enabled: compile against modAnyVersionAny and modAnyVersionThis too
+					if(modSettings.quatlib) {
+						SourceSet modAnyVersionThis = sourceSets.getByName(Util.modVersion(null, version)); //was just created above
+						Util.extendSourceSetFrom(modThisVersionThis, modAnyVersionAny, modAnyVersionThis);
+						Util.withImplementation(project, modThisVersionThis, modAnyVersionAny.getOutput(), modAnyVersionThis.getOutput());
+					}
 					
 					//thinjar
 					TaskProvider<Jar> modThisVersionThisThinJar = jarMeUpBoys(mod, version, modThisVersionThis);

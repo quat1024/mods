@@ -21,6 +21,7 @@ public class VanillaMod implements Named {
 	String modid;
 	Set<String> versions = new LinkedHashSet<>();
 	Map<String, Object> vars = new HashMap<>();
+	boolean quatlib = true;
 	
 	@Nullable String simpleRunMainClass;
 	

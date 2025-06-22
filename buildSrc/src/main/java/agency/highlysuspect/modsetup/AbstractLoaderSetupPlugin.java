@@ -103,22 +103,24 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 				});
 			}
 			
-			//add configurations
-			Configuration quatlibVanilla = configurations.create("quatlibVanilla");
-			configurations.getByName("implementation", it -> it.extendsFrom(quatlibVanilla));
+			//a source-set for quatlib (code shared across all mods on this loader)
+			SourceSet quatlib = sourceSets.create("quatlib");
 			
-			//add dependencies
-			Util.withDeps(project, quatlibVanilla,
+			//it should see minecraft (which the mc ecosystem plugin has put in `main`)
+			Util.extendSourceSetFrom(quatlib, main);
+			
+			//it should see the applicable-to-all-mods code from :vanilla
+			Util.withImplementation(project, quatlib,
 				Util.vanillaDep(project, null, null),
 				Util.vanillaDep(project, null, ver)
 			);
+			//and on fabric it should also see :floader-only
 			if(loom != null) {
-				//on fabric, also dep on :floader-only and include it in quatlibVanilla the same way
-				Util.withDeps(project, quatlibVanilla, Util.floaderOnlyDep(project));
+				Util.withImplementation(project, quatlib, Util.floaderOnlyDep(project));
 			}
 			
 			//process resources
-			Util.configureProcessResources(project, main,
+			Util.configureProcessResources(project, quatlib,
 				Util.broadlyApplicableProps(project),
 				Map.of(
 					"modid", "modder_name_lib",
@@ -130,11 +132,7 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 			
 			//produce quatlib jar
 			quatlibFatJar = project.getTasks().register("quatlibFatJar", Jar.class, it -> {
-				it.from(main.getOutput());
-				//from configurations.quatlibVanilla.collect { zipTree it }
-				for(File f : quatlibVanilla) {
-					it.from(project.zipTree(f));
-				}
+				it.from(quatlib.getOutput());
 				
 				it.getArchiveBaseName().set("ModderNameLib-" + ver + "-" + loader);
 				if(loom != null) { //needs remapping
@@ -147,7 +145,7 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 			//neoforge: put quatlib on a run config
 			if(neoforge != null) {
 				neoforge.getMods().create("quatlib", it -> {
-					it.sourceSet(main);
+					it.sourceSet(quatlib);
 					it.sourceSet(Util.vanillaSourceSet(project, null, null));
 					it.sourceSet(Util.vanillaSourceSet(project, null, ver));
 				});
@@ -180,6 +178,11 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 				//inherit from main source-set (containing minecraft, the modloader, and code shared across all mods using the loader)
 				Util.extendSourceSetFrom(set, main);
 				
+				//if quatlib is used, inherit from that too
+				if(loaderModOptions.quatlib) {
+					Util.extendSourceSetFrom(set, quatlib);
+				}
+				
 				//inherit from relevant :vanilla projects
 				Configuration modSplat = project.getConfigurations().create(mod + "Splat");
 				Util.withDeps(project, modSplat,
@@ -190,11 +193,13 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 				
 				//plug this thing in... hmm
 				Util.withImplementation(project, set,
-					main.getOutput(),
-					quatlibVanilla,
+					quatlib.getOutput(),
 					modSplat,
 					Util.broadlyApplicableDeps(project)
 				);
+				if(loaderModOptions.quatlib) {
+					Util.withImplementation(project, set, quatlib.getOutput());
+				}
 //				dependencies.add(set.getImplementationConfigurationName(), main.getOutput());
 //				dependencies.add(set.getImplementationConfigurationName(), dependencies.create(quatlibVanilla));
 //				dependencies.add(set.getImplementationConfigurationName(), dependencies.create(modSplat));
@@ -215,7 +220,7 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 				}
 				
 				//a "dep jar". all mod-specific code is splatted into it, but
-				//all non-mod-specific code is expected to be supplied via dependency
+				//all non-mod-specific code is expected to be supplied via quatlib dependency
 				TaskProvider<Jar> depJar = tasks.register(Util.modVersionLoader(mod, ver, loader) + "DepJar", Jar.class, it -> {
 					it.from(set.getOutput());
 					for(File splat : modSplat) it.from(project.zipTree(splat));
@@ -246,13 +251,15 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 						it.getArchiveBaseName().set(mod + "-" + ver + "-" + loader);
 						it.getInputFile().set(depJar.flatMap(AbstractArchiveTask::getArchiveFile));
 						
-						//put quatlib-fat-dev on the remap classpath so tiny-remapper can see into it
-						it.getClasspath().from(quatlibFatJar.get().getArchiveFile());
-						
-						//for some reason you can JiJ stuff from RemapJarTask?
-						//not sure what that has to do with remapping but ok :thumbs_up: sure
-						it.getNestedJars().from(quatlibFatJarNamedLoom.get().getArchiveFile());
-						it.getAddNestedDependencies().set(true);
+						if(loaderModOptions.quatlib) {
+							//put quatlib-fat-dev on the remap classpath so tiny-remapper can see into it
+							it.getClasspath().from(quatlibFatJar.get().getArchiveFile());
+							
+							//for some reason you can JiJ stuff from RemapJarTask?
+							//not sure what that has to do with remapping but ok :thumbs_up: sure
+							it.getNestedJars().from(quatlibFatJarNamedLoom.get().getArchiveFile());
+							it.getAddNestedDependencies().set(true);
+						}
 					});
 					tasks.named("jar", it -> it.dependsOn(depJarNamed));
 				}

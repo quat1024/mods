@@ -13,6 +13,7 @@ modSetup.go {
 	mods {
 		rebind_narrator {
 			vars.name = "Rebind Narrator"
+			quatlib = false
 		}
 		crowmap
 	}
