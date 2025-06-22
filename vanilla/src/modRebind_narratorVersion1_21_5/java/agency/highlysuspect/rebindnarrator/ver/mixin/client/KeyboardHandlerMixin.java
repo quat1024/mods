@@ -1,7 +1,9 @@
 package agency.highlysuspect.rebindnarrator.ver.mixin.client;
 
+import agency.highlysuspect.rebindnarrator.any.RebindNarrator;
 import agency.highlysuspect.rebindnarrator.any.RebindNarratorImpl;
 import net.minecraft.client.KeyboardHandler;
+import net.minecraft.client.gui.screens.Screen;
 import org.lwjgl.glfw.GLFW;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -15,19 +17,25 @@ public class KeyboardHandlerMixin {
 	//window, key, scancode, action, mods -> original method parameters, from GLFWKeyCallbackI.
 	@ModifyConstant(method = "keyPress", constant = @Constant(intValue = GLFW.GLFW_KEY_B))
 	private int rebindnarrator$keyPress$modifyConst(int keyB, long windowHandle, int key, int scancode, int action, int mods) {
+		RebindNarrator IMPL = RebindNarratorImpl.IMPL;
+		if(IMPL == null) return keyB;
+		
 		//This constant (which is normally 66, the B key) is compared with the method's argument "key".
 		//If they are the same, narrator cycling code is invoked.
 		//To prevent narrator code from running, I must return anything other than "key".
 		int notKey = key + 1;
 		
 		if(key == GLFW.GLFW_KEY_UNKNOWN) return notKey;
-		else return RebindNarratorImpl.IMPL.isCorrectKey(key) ? key : notKey;
+		else return IMPL.isCorrectKey(key) ? key : notKey;
 	}
 	
 	//N.B. There are two instances of hasControlDown. One seems to only guard an empty `if` block (decompiler?)
 	//relating to the screenshot key. The other is for narrator-key purposes.
 	@Redirect(method = "keyPress", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/Screen;hasControlDown()Z"))
 	private boolean rebindnarrator$keyPress$redirHasControlDown() {
-		return RebindNarratorImpl.IMPL.correctModifiersPressed();
+		RebindNarrator IMPL = RebindNarratorImpl.IMPL;
+		if(IMPL == null) return Screen.hasControlDown(); //TODO this seems like a job for mixinextras instead of this...
+		
+		return IMPL.correctModifiersPressed();
 	}
 }
