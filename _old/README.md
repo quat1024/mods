@@ -1,0 +1,1 @@
+These are the Groovy gradle files I used while testing the viability of the system. I have since moved everything to a Java-based `buildSrc` plugin, but maybe these files are still useful to some

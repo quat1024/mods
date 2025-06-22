@@ -21,14 +21,13 @@ dependencies {
 	
 	// https://projects.neoforged.net/neoforged/ModDevGradle
 	implementation "net.neoforged.moddev:net.neoforged.moddev.gradle.plugin:2.0.95"
+	
+	// https://github.com/CrackedPolishedBlackstoneBricksMC/minivan/releases
+	implementation "agency.highlysuspect.minivan:agency.highlysuspect.minivan.gradle.plugin:0.5"
 }
 
 gradlePlugin {
 	plugins {
-		"mod-setup" {
-			id = "mod-setup"
-			implementationClass = "agency.highlysuspect.modsetup.ModSetupPlugin"
-		}
 		"mod-setup-fabric" {
 			id = "mod-setup-fabric"
 			implementationClass = "agency.highlysuspect.modsetup.FabricSetupPlugin"
@@ -36,6 +35,10 @@ gradlePlugin {
 		"mod-setup-neoforge" {
 			id = "mod-setup-neoforge"
 			implementationClass = "agency.highlysuspect.modsetup.NeoforgeSetupPlugin"
+		}
+		"vanilla-setup" {
+			id = "vanilla-setup"
+			implementationClass = "agency.highlysuspect.modsetup.VanillaSetupPlugin"
 		}
 	}
 }

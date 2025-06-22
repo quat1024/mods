@@ -1,0 +1,170 @@
+plugins {
+	id "java"
+	id "agency.highlysuspect.minivan"
+	id "maven-publish"
+}
+
+repositories {
+	maven {
+		url = "https://repo.spongepowered.org/repository/maven-public/"
+		content {
+			includeGroup "org.spongepowered"
+		}
+	}
+}
+
+//not using the "main" source set
+tasks.named("jar") {
+	enabled = false
+}
+
+static def modVersion(String mod, String version) {
+	//null, null -> "modAnyVersionAny"
+	//abcd, null -> "modAbcdVersionAny"
+	//null, 1.23 -> "modAnyVersion1_23"
+	//abcd, 1.23 -> "modAbcdVersion1_23"
+	return "mod${mod == null ? "Any" : mod.capitalize()}Version${version == null ? "Any" : version.replace('.', '_')}"
+}
+
+def getSourceSet(String mod, String version) {
+	return project.sourceSets.maybeCreate(modVersion(mod, version))
+}
+
+//modAnyVersionAny, containing code shared across literally every project
+sourceSets {
+	modAnyVersionAny
+}
+
+//its thin jar
+def modAnyVersionAnyThinJar = tasks.register("modAnyVersionAnyThinJar", Jar) {
+	from sourceSets.modAnyVersionAny.output
+	archiveClassifier = "any-any-thin"
+	destinationDirectory = tasks.jar.destinationDirectory
+}
+tasks.named("jar") { dependsOn modAnyVersionAnyThinJar }
+//publish under modAnyVersionAnyElements consumable configuration
+project.artifacts.add(configurations.consumable("modAnyVersionAnyElements").get().name, modAnyVersionAnyThinJar)
+
+def setupMc2(String ver) {
+	println "setupMc2 ${ver}"
+	
+	//make a new source set for this version of minecraft
+	def set = getSourceSet(null, ver)
+	
+	//things which should go on it: minecraft
+	def mc = minivan.minecraftBuilder().version(ver).build().getMinecraft()
+	//and the modAnyVersionAny source set
+	def mAvA = sourceSets.modAnyVersionAny
+	set.compileClasspath += mAvA.compileClasspath
+	set.runtimeClasspath += mAvA.runtimeClasspath
+	
+	//set up the compilation classpath
+	configurations.named(set.implementationConfigurationName) {
+		it.withDependencies {
+			add project.dependencies.create(project.files(mc.minecraft))
+			addAll mc.dependencies.collect { project.dependencies.create it }
+			
+			add project.dependencies.create("com.mojang:logging:1.1.1") //TODO, why isn't this one showing up? minivan bug?
+			add project.dependencies.create("org.spongepowered:mixin:0.8.5") //not vanilla but might as well
+			add project.dependencies.create("org.jetbrains:annotations:16.0.2") //ditto
+			
+			add project.dependencies.create(mAvA.output)
+		}
+	}
+	
+	//thin jar
+	def thinJar = tasks.register(set.getTaskName("", "ThinJar"), Jar) {
+		from set.output
+		archiveClassifier = "any-${ver}-thin"
+		destinationDirectory = tasks.jar.destinationDirectory
+	}
+	tasks.named("jar") { dependsOn thinJar }
+	//publish under modAnyVersion(version)Elements consumable configuration
+	project.artifacts.add(configurations.consumable("${modVersion(null, ver)}Elements").get().name, thinJar)
+}
+
+def setupMod2(String mod, String... mcVersions) {
+	println "setupMod2 ${mod} for ${Arrays.toString(mcVersions)}"
+	
+	//source set for all minecraft versions of this mod (abbr "mod this, version any")
+	def mTvA = getSourceSet(mod, null)
+	
+	//compile against modAnyVersionAny
+	def mAvA = getSourceSet(null, null)
+	mTvA.compileClasspath += mAvA.compileClasspath
+	mTvA.runtimeClasspath += mAvA.runtimeClasspath
+	
+	configurations.named(mTvA.implementationConfigurationName) {
+		withDependencies {
+			add project.dependencies.create(mAvA.output)
+		}
+	}
+	
+	//thin jar
+	def anyVersionJar = tasks.register(mTvA.getTaskName("", "ThinJar"), Jar) {
+		from mTvA.output
+		archiveClassifier = "${mod}-any-thin"
+		destinationDirectory = tasks.jar.destinationDirectory
+	}
+	tasks.named("jar") { dependsOn anyVersionJar }
+	//publish under mod(Mod)VersionAnyElements consumable configuration
+	project.artifacts.add(configurations.consumable("${modVersion(mod, null)}Elements").get().name, anyVersionJar)
+	
+	//for each minecraft version
+	for(String mcVersion : mcVersions) {
+		//source set for this minecraft version of this mod
+		def mTvT = getSourceSet(mod, mcVersion)
+		
+		//compile against modAnyVersionAny
+		mTvT.compileClasspath += mAvA.compileClasspath
+		mTvT.runtimeClasspath += mAvA.runtimeClasspath
+		
+		//compile against mod(Mod)VersionAny
+		mTvT.compileClasspath += mTvA.compileClasspath
+		mTvT.runtimeClasspath += mTvA.runtimeClasspath
+		
+		//compile against modAnyVersion(Version)
+		def mAvT = getSourceSet(null, mcVersion)
+		mTvT.compileClasspath += mAvT.compileClasspath
+		mTvT.runtimeClasspath += mAvT.runtimeClasspath
+		
+		configurations.named(mTvT.implementationConfigurationName) {
+			withDependencies {
+				add project.dependencies.create(mAvA.output)
+				add project.dependencies.create(mTvA.output)
+				add project.dependencies.create(mAvT.output)
+			}
+		}
+		
+		//thin jar
+		def thisVersionJar = tasks.register(mTvT.getTaskName("", "ThinJar"), Jar) {
+			from mTvT.output
+			archiveClassifier = "${mod}-${mcVersion}-thin"
+			destinationDirectory = tasks.jar.destinationDirectory
+		}
+		tasks.named("jar") { dependsOn thisVersionJar }
+		//publish under mod(Mod)VersionAnyElements consumable configuration
+		project.artifacts.add(configurations.consumable("${modVersion(mod, mcVersion)}Elements").get().name, thisVersionJar)
+		
+		//a "Run config", not a full minecraft launcher but at least it's on the classpath
+		//name like "simpleRunModTestmodVersion1_21_1"
+		tasks.register(mTvT.getTaskName("simpleRun", ""), JavaExec) {
+			group("simpleRun")
+
+//			mainClass = "agency.highlysuspect.mods.test.Hi" //TODO
+			classpath = mTvT.runtimeClasspath
+			
+			// ./run/testmod/1.20.1/
+			workingDir = project.layout.projectDirectory.asFile.toPath()
+				.resolve("run").resolve(mod).resolve(mcVersion).toFile()
+			doFirst { workingDir.mkdirs() }
+		}
+	}
+}
+
+setupMc2("1.20.1")
+setupMc2("1.21.1")
+setupMc2("1.21.5")
+
+setupMod2("testmod", "1.20.1", "1.21.1", "1.21.5")
+setupMod2("testmod2", "1.20.1", "1.21.1")

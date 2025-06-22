@@ -2,13 +2,13 @@ modLoader = "javafml"
 loaderVersion = "[1,)"
 license = "LGPL-3.0-or-later"
 issueTrackerURL = "https://github.com/quat1024/RebindNarrator/issues"
-logoFile = "rebindnarratoricon.png"
+#logoFile = "rebindnarratoricon.png"
 
 [[mods]]
-modId = "quatlib"
+modId = "modder_name_lib"
 version = "0"
-displayName = "quatlib"
-description = "Probably should not be published!"
+displayName = "ModderNameLib"
+description = "ModderNameLib"
 authors = "quaternary"
 credits = "Your mom"
 

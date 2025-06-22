@@ -6,8 +6,8 @@ import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.jvm.tasks.Jar;
 
-public class Mod implements Named {
-	public Mod(String modid) {
+public class LoaderMod implements Named {
+	public LoaderMod(String modid) {
 		this.modid = modid;
 	}
 	

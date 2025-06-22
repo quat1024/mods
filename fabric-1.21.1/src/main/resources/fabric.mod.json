@@ -1,9 +1,9 @@
 {
 	"schemaVersion": 1,
-	"id": "quatlib",
+	"id": "modder_name_lib",
 	"version": "${version}",
-	"name": "quatlib",
-	"description": "quatlib for fabric 1.21",
+	"name": "ModderNameLib",
+	"description": "ModderNameLib for fabric 1.21",
 	"authors": [
 		"quaternary"
 	],
