@@ -13,6 +13,7 @@ repositories {
 
 dependencies {
 	implementation "net.fabricmc:fabric-loader:${project.floaderVersion}"
+	implementation project(path: ":vanilla", configuration: "modAnyVersionAnyElements")
 }
 
 configurations {
