@@ -47,4 +47,6 @@ no datagen or anything. should be a "simple" crosscutting concern
 
 I would like a "no quatlib" option i can flick on per-mod. Rebind narrator is small enough to not need quatlib, especially on neoforge (on fabric i might want a config file to toggle on and off the AMECS integration, or to fiddle with modifier stuff, since i don't think that is available through the vanilla gui)
 
+Todo: I need my jetbrains annotations >:(
+
 Todo: needs ForgeGradle support for 1.20.1 and maybe below.
