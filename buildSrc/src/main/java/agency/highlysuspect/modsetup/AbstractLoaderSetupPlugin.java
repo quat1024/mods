@@ -110,8 +110,7 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 			//add dependencies
 			Util.withDeps(project, quatlibVanilla,
 				Util.vanillaDep(project, null, null),
-				Util.vanillaDep(project, null, ver),
-				Util.broadlyApplicableDeps(project)
+				Util.vanillaDep(project, null, ver)
 			);
 			if(loom != null) {
 				//on fabric, also dep on :floader-only and include it in quatlibVanilla the same way
