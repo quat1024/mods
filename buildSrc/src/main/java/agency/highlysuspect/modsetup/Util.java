@@ -39,6 +39,13 @@ public class Util {
 		));
 	}
 	
+	public static Dependency floaderOnlyDep(Project project) {
+		return project.getDependencies().project(Map.of(
+			"path", ":floader-only",
+			"configuration", "floaderOnlyElements"
+		));
+	}
+	
 	//reference to a source set from :vanilla (somewhat brittle, relies on evaluationDependsOn)
 	//only used by neoforge because of its janky run config system
 	public static SourceSet vanillaSourceSet(Project project, String mod, String version) {

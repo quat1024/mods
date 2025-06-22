@@ -24,6 +24,7 @@ rootProject.name = "mods"
 
 include(
 	"vanilla",
+	"floader-only",
 	
 	"neo-1.21.5",
 	

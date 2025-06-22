@@ -112,6 +112,10 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 				Util.vanillaDep(project, null, null),
 				Util.vanillaDep(project, null, ver)
 			);
+			if(loom != null) {
+				//on fabric, also dep on :floader-only and include it in quatlibVanilla the same way
+				Util.withDeps(project, quatlibVanilla, Util.floaderOnlyDep(project));
+			}
 			
 			//process resources
 			Util.configureProcessResources(project, main,
@@ -166,6 +170,7 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 				//make a source-set for it
 				SourceSet set = sourceSets.create(mod);
 				loaderModOptions.set = set;
+				
 				Util.configureProcessResources(project, set,
 					Util.broadlyApplicableProps(project),
 					Map.of("minecraft_version", ver, "loader", loader),
