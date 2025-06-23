@@ -1,13 +1,21 @@
 package agency.highlysuspect.quatlib.any.config.sn;
 
+import org.jetbrains.annotations.Nullable;
+
 public class SnWriter implements SnVisitor<RuntimeException> {
 	public SnWriter() {
+		concrete = null;
+	}
 	
+	public SnWriter(@Nullable ConcreteInfo concrete) {
+		this.concrete = concrete;
 	}
 	
 	public String toString() {
 		return out.toString();
 	}
+	
+	@Nullable ConcreteInfo concrete;
 	
 	StringBuilder out = new StringBuilder();
 	int indent = 0;
@@ -42,14 +50,32 @@ public class SnWriter implements SnVisitor<RuntimeException> {
 	}
 	
 	private void indentedAppend(String s) {
-		if(linebreak) for(int i = 0; i < indent; i++) out.append('\t');
+		if(linebreak) out.append("\t".repeat(indent));
 		out.append(s);
 		linebreak = false;
+	}
+	
+	private void comment(Sn<?> node) {
+		if(concrete == null) return;
+		for(String s : concrete.getComment(node)) {
+			if(!s.trim().isEmpty()) {
+				indentedAppend("% ");
+				out.append(s);
+				newline();
+			}
+		}
 	}
 	
 	private void newline() {
 		linebreak = true;
 		out.append('\n');
+	}
+	
+	private void unBlankline() {
+		if(out.length() < 3) return;
+		int last = out.length() - 1;
+		int prev = out.length() - 2;
+		if(out.charAt(last) == '\n' && out.charAt(prev) == '\n') out.deleteCharAt(last);
 	}
 	
 	@Override
@@ -67,15 +93,17 @@ public class SnWriter implements SnVisitor<RuntimeException> {
 	@Override
 	public void closeMap(SnMap map) {
 		indent--;
-		//newline();
+		unBlankline();
 		indentedAppend("}");
 	}
 	
 	@Override
 	public void mapItem(String k, Sn<?> item) {
+		comment(item);
 		indentedAppend(escapeAndQuoteIfNeeded(k));
 		out.append(" = ");
 		item.accept(this);
+		newline();
 		newline();
 	}
 	
@@ -89,12 +117,13 @@ public class SnWriter implements SnVisitor<RuntimeException> {
 	@Override
 	public void closeList(SnList list) {
 		indent--;
-		//newline();
+		newline();
 		indentedAppend("]");
 	}
 	
 	@Override
 	public void listItem(int i, Sn<?> item) {
+		comment(item);
 		item.accept(this);
 		newline();
 	}

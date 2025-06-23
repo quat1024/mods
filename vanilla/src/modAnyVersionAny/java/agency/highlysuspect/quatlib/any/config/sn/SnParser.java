@@ -1,13 +1,7 @@
-package agency.highlysuspect.quatlib.floader.config;
+package agency.highlysuspect.quatlib.any.config.sn;
 
-import agency.highlysuspect.quatlib.any.config.sn.FlatteningSnVisitor;
-import agency.highlysuspect.quatlib.any.config.sn.Sn;
-import agency.highlysuspect.quatlib.any.config.sn.SnMap;
-import agency.highlysuspect.quatlib.any.config.sn.SnStr;
-import agency.highlysuspect.quatlib.any.config.sn.SnWriter;
-
-public class HalfDecentConfigParser2 {
-	public HalfDecentConfigParser2(String s) {
+public class SnParser {
+	public SnParser(String s) {
 		this.s = s;
 		this.cursor = new Cursor();
 	}
@@ -51,7 +45,7 @@ public class HalfDecentConfigParser2 {
 		}
 	}
 	
-	private SnMap parseMap() {
+	public SnMap parseMap() {
 		assert cursor.peek() == '{';
 		int blockStartLine = cursor.startLine;
 		cursor.right();
@@ -238,7 +232,7 @@ public class HalfDecentConfigParser2 {
 			
 			""";
 		
-		SnMap map = new HalfDecentConfigParser2(testFile).parseTopLevel();
+		SnMap map = new SnParser(testFile).parseTopLevel();
 		
 		new FlatteningSnVisitor((k, v) -> System.out.println(k + "\n\t->" + v)).visit(map);
 		

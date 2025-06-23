@@ -1,13 +1,18 @@
 package agency.highlysuspect.quatlib.floader.config;
 
 import agency.highlysuspect.quatlib.any.config.ConfigException;
+import agency.highlysuspect.quatlib.any.config.ConfigFrobnicator;
 import agency.highlysuspect.quatlib.any.config.ConfigOpt;
 import agency.highlysuspect.quatlib.any.config.ConfigSection;
 import agency.highlysuspect.quatlib.any.config.ConfigState;
 import agency.highlysuspect.quatlib.any.config.ConfigVisitor;
 import agency.highlysuspect.quatlib.any.config.SectOrOpt;
+import agency.highlysuspect.quatlib.any.config.sn.ConcreteInfo;
 import agency.highlysuspect.quatlib.any.config.sn.Sn;
 import agency.highlysuspect.quatlib.any.config.sn.SnMap;
+import agency.highlysuspect.quatlib.any.config.sn.SnParser;
+import agency.highlysuspect.quatlib.any.config.sn.SnView;
+import agency.highlysuspect.quatlib.any.config.sn.SnWriter;
 import agency.highlysuspect.quatlib.any.util.SnocList;
 
 import java.util.ArrayList;
@@ -16,31 +21,29 @@ import java.util.List;
 import java.util.Map;
 
 public class HalfDecentConfigFormat {
-	public SnMap toSn(ConfigSection schema, ConfigState state) {
+	public SnMap toSn(ConfigSection schema, ConfigState state, ConcreteInfo concrete) {
 		SnMap target = new SnMap();
-		toSnImpl(schema, state, true, target);
+		toSnImpl(schema, state, target, concrete);
 		return target;
 	}
 	
-	private void toSnImpl(SectOrOpt item, ConfigState state, boolean root, SnMap target) {
-		//flatten the root
-		if(root && item instanceof ConfigSection section) {
-			for(SectOrOpt child : section.getChildren()) {
-				toSnImpl(child, state, false, target);
-			}
-			return;
-		}
-		
+	private void toSnImpl(SectOrOpt item, ConfigState state, SnMap target, ConcreteInfo concrete) {
 		if(item instanceof ConfigSection section) {
 			SnMap subMap = new SnMap();
 			for(SectOrOpt child : section.getChildren()) {
-				toSnImpl(child, state, false, subMap);
+				toSnImpl(child, state, subMap, concrete);
 			}
 			target.put(section.getName(), subMap);
+			
+			//the subcategory's comment goes on its map
+			concrete.assignComment(subMap, item.getComment());
 		}
 		
 		if(item instanceof ConfigOpt<?> opt) {
-			target.put(opt.getName(), getSn(opt, state));
+			Sn<?> sn = getSn(opt, state);
+			target.put(opt.getName(), sn);
+			//and the config option's comment goes here
+			concrete.assignComment(sn, opt.getComment());
 		}
 	}
 	
@@ -129,22 +132,30 @@ public class HalfDecentConfigFormat {
 		schema.subsection("mammals", "Yuck stinky mammals").add(rabbits, bunnies);
 		schema.subsection("reptiles", "Wooo lets go", "I love lizards").add(lizards, dragons);
 		
-		//format it to a config file
-		String written = new HalfDecentConfigFormat().write(schema, ConfigState.Default.INSTANCE);
+		//parse to an Sn
+		ConcreteInfo ci = new ConcreteInfo();
+		SnMap intermediateRepresentation = new HalfDecentConfigFormat().toSn(schema, ConfigState.Default.INSTANCE, ci);
 		
-		String modified = written.replace("dragons: 5", "dragons: 999");
+		//write it out
+		SnWriter writer = new SnWriter(ci);
+		intermediateRepresentation.accept(writer);
+		String written = writer.toString();
+		
+		String modified = written.replace("dragons = 5", "dragons = 999");
 		System.out.println(modified);
 		
-		//parse it back, first into a bag of strings
-		Map<SnocList<String>, String> parsed = new HalfDecentConfigFormat().parseToStrings(modified);
-		//then figure out which string goes to which option
-		//yes this api is bad, I need to figure out where to put this code
-		//Map<ConfigOpt<?>, String> assigned = new ConfigFrobnicator().assignStrings(schema, parsed);
-		//and finally parse them into real java objects and run validations, ditto for the code organization
-		//ConfigState validated = new ConfigFrobnicator().parseAndValidate(schema, assigned);
+		//parse it back, first into an Sn
+		SnMap parsed = new SnParser(modified).parseMap();
+		SnView view = new SnView.Impl(parsed);
+		
+		//figure out which string goes to which option
+		Map<ConfigOpt<?>, SnView> assigned = new ConfigFrobnicator().assignSn(schema, view);
+		
+		//finally parse into real java objects
+		ConfigState validated = new ConfigFrobnicator().parseAndValidate(assigned);
 		
 		//reading the config is pretty simple and uses the ConfigOpt objects for well-typedness
-//		System.out.println("There are " + validated.get(dragons) + " dragons");
+		System.out.println("There are " + validated.get(dragons) + " dragons");
 //
 //
 //		String written2 = new HalfDecentConfigFormat().write(schema, validated);

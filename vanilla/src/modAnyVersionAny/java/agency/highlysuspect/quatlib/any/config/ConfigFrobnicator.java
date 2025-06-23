@@ -9,23 +9,13 @@ import java.util.Map;
 //I have no idea what to call this shit
 //TODO put this code somewhere sensible
 public class ConfigFrobnicator {
-	
 	public Map<ConfigOpt<?>, SnView> assignSn(ConfigSection schema, SnView view) throws SnException {
 		Map<ConfigOpt<?>, SnView> result = new HashMap<>();
-		assignSnImpl(schema, view, result, true);
+		assignSnImpl(schema, view, result);
 		return result;
 	}
 	
-	private void assignSnImpl(SectOrOpt item, SnView view, Map<ConfigOpt<?>, SnView> result, boolean root) throws SnException {
-		//unwrap the first layer of config schema
-		//this is so the whole file doesn't need to be wrapped in "mymod = { ... }"
-		if(root && item instanceof ConfigSection rootSection) {
-			for(SectOrOpt child : rootSection.getChildren()) {
-				assignSnImpl(child, view, result, false);
-			}
-			return;
-		}
-		
+	private void assignSnImpl(SectOrOpt item, SnView view, Map<ConfigOpt<?>, SnView> result) throws SnException {
 		//if we're looking at a config section
 		if(item instanceof ConfigSection section) {
 			//then we should also be looking at an sn map
@@ -34,12 +24,13 @@ public class ConfigFrobnicator {
 			//each child in the schema should have a corresponding child in the sn
 			for(SectOrOpt child : section.getChildren()) {
 				SnView childSn = map.get(child.getName());
-				assignSnImpl(child, childSn, result, false);
+				assignSnImpl(child, childSn, result);
 			}
 		}
 		
 		//otherwise we're looking at a config option
 		if(item instanceof ConfigOpt<?> opt) {
+			System.out.println("assigning option " + opt.getName() + " to sn " + view.path());
 			result.put(opt, view);
 		}
 	}
