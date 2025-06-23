@@ -4,6 +4,10 @@ Yet another ModderNameConfigFormat. Planning to use this on Fabric until they de
 
 This time i'm moving on up from crummyconfig!
 
+## Initial sketch
+
+<details><summary>click to expand the initial sketch</summary>
+
 ## Northstar
 
 ```
@@ -125,3 +129,110 @@ This has been implemented in `HalfDecentConfigParser`. Yay.
 This is separate from the Half Decent Config textual format but I'm also thinking about a nice API I can use
 
 Actually I went and moved this to the bottom of ["Towards a good config system"](https://notes.highlysuspect.agency/config.html) (section "Programmer API styles")
+
+</details>
+
+## better way
+
+Shortcomings of the second parser:
+
+* `#` character for comments clashes with `#minecraft:foo` used to denote tags in the game
+  * Changed to `%`
+* `:` character to split keys from values clashes with `minecraft:stone` used to split `ResourceLocation`s
+  * Not actually ambiguous parse due to the raw-string rules: `foo:bar:baz` parses as `"foo": "bar:baz"` unambiguously
+  * Still, it's confusing for users especially if there is not enough whitespace, so changed to `=`
+* Multiline strings are too easy to make on accident if you omit the closing quote, and cause the rest of the file to parse like a string
+  * Forbid literal-newlines from appearing in strings.
+  * Literal newlines can be escaped with a backslash (line continuation character)
+* It can't parse toplevel keyvalues
+  * Fixed with revised parser that munches the entire file
+
+Also, I was wrong in "Towards a good config system", and we actually do need arrays! Arrays can't be represented with multiline strings because the config formatter can't see into them, and because multiline strings are now even more annoying than they used to be, requiring line-continuation characters.
+
+If I'm going to add arrays-as-first-class-values I might as well add objects-as-first-class-values, and then remove the distinction between "config categories" and "objects".
+
+After lots of fruitful discussion with arty i've landed on the following format & internal representation. The format is temporarily (lol) called `SN` for "string notation".
+
+## Revised northstar
+
+```
+% This is my cool config file
+
+% Yuck stinky mammals
+mammals = {
+	% How many rabbits?
+	% Must be at least 0.
+	% Default: 5
+	rabbits = 5
+}
+
+% Wooo lets go
+% I love lizards
+reptiles = {
+	% How many lizards?
+	% Must be at least 0.
+	% Default: 5
+	lizards = 5
+
+	% How many dragons?
+	% Must be at least 0.
+	% Default: 5
+	dragons = 999
+}
+
+% These are a few of my favorite things
+favorites = [
+	apple
+	banana
+	gator
+]
+```
+
+## Details
+
+Still loosely-sketching things in, everything is sort of ad-hoc
+
+### Internal representation
+
+`Sn` is JSON except everything except strings and collections has been removed. An `Sn` can be one of three things:
+
+* `String`
+* `List<Sn>`
+* `Map<String, Sn>`
+
+### Parsing
+
+#### Whitespace
+
+`Character.isWhitespace` denotes whitespace. This includes newlines and such
+
+#### Comments
+
+`%` starts a comment. The comment continues to the end of the line.
+
+#### Kv
+
+* Skip whitespace and comments
+* Parse a **key**
+* Skip whitespace and comments
+* Eat an equal sign (?)
+* Skip whitespace and comments
+* Parse a **value**
+
+The (?) is because of an error-recovery mechanism I'm thinking about? If the next character is not `=`, report a warning but parse the value anyway?
+
+#### Key
+
+If the next character is `"`, parse a quoted string
+
+Otherwise, parse a bare string in the following way:
+
+* advance the cursor until `{`, `[`, a newline, a line-comment start (`%`), or a kv-split (`=`); whichever comes first
+* trim the whitespace from the bit that was advanced over
+* this is the key
+
+#### Value
+
+Based off the next character:
+
+``

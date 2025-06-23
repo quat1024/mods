@@ -1,11 +1,13 @@
 package agency.highlysuspect.quatlib.floader.config;
 
 import agency.highlysuspect.quatlib.any.config.ConfigException;
-import agency.highlysuspect.quatlib.any.config.ConfigFrobnicator;
 import agency.highlysuspect.quatlib.any.config.ConfigOpt;
 import agency.highlysuspect.quatlib.any.config.ConfigSection;
 import agency.highlysuspect.quatlib.any.config.ConfigState;
 import agency.highlysuspect.quatlib.any.config.ConfigVisitor;
+import agency.highlysuspect.quatlib.any.config.SectOrOpt;
+import agency.highlysuspect.quatlib.any.config.sn.Sn;
+import agency.highlysuspect.quatlib.any.config.sn.SnMap;
 import agency.highlysuspect.quatlib.any.util.SnocList;
 
 import java.util.ArrayList;
@@ -14,6 +16,40 @@ import java.util.List;
 import java.util.Map;
 
 public class HalfDecentConfigFormat {
+	public SnMap toSn(ConfigSection schema, ConfigState state) {
+		SnMap target = new SnMap();
+		toSnImpl(schema, state, true, target);
+		return target;
+	}
+	
+	private void toSnImpl(SectOrOpt item, ConfigState state, boolean root, SnMap target) {
+		//flatten the root
+		if(root && item instanceof ConfigSection section) {
+			for(SectOrOpt child : section.getChildren()) {
+				toSnImpl(child, state, false, target);
+			}
+			return;
+		}
+		
+		if(item instanceof ConfigSection section) {
+			SnMap subMap = new SnMap();
+			for(SectOrOpt child : section.getChildren()) {
+				toSnImpl(child, state, false, subMap);
+			}
+			target.put(section.getName(), subMap);
+		}
+		
+		if(item instanceof ConfigOpt<?> opt) {
+			target.put(opt.getName(), getSn(opt, state));
+		}
+	}
+	
+	//to name the generic
+	private static <T> Sn<?> getSn(ConfigOpt<T> opt, ConfigState state) {
+		T value = state.get(opt);
+		return opt.write(value);
+	}
+	
 	public String write(ConfigSection root, ConfigState state) {
 		List<String> out = new ArrayList<>();
 		
@@ -57,7 +93,8 @@ public class HalfDecentConfigFormat {
 				writeComment(opt.getComment());
 				
 				T defaultValue = opt.getDefaultValue();
-				String writtenDefaultValue = opt.write(defaultValue);
+//				String writtenDefaultValue = opt.write(defaultValue);
+				String writtenDefaultValue = "wafasdasd";
 				if(writtenDefaultValue.isEmpty()) writtenDefaultValue = "<empty>";
 				write("# Default: " + writtenDefaultValue);
 				
@@ -102,19 +139,19 @@ public class HalfDecentConfigFormat {
 		Map<SnocList<String>, String> parsed = new HalfDecentConfigFormat().parseToStrings(modified);
 		//then figure out which string goes to which option
 		//yes this api is bad, I need to figure out where to put this code
-		Map<ConfigOpt<?>, String> assigned = new ConfigFrobnicator().assignStrings(schema, parsed);
+		//Map<ConfigOpt<?>, String> assigned = new ConfigFrobnicator().assignStrings(schema, parsed);
 		//and finally parse them into real java objects and run validations, ditto for the code organization
-		ConfigState validated = new ConfigFrobnicator().parseAndValidate(schema, assigned);
+		//ConfigState validated = new ConfigFrobnicator().parseAndValidate(schema, assigned);
 		
 		//reading the config is pretty simple and uses the ConfigOpt objects for well-typedness
-		System.out.println("There are " + validated.get(dragons) + " dragons");
-		
-		
-		String written2 = new HalfDecentConfigFormat().write(schema, validated);
-		if(modified.equals(written2)) {
-			System.out.println("THEYRE THE SAME");
-		} else {
-			System.out.println("THEYRE DIFFERENT?????");
-		}
+//		System.out.println("There are " + validated.get(dragons) + " dragons");
+//
+//
+//		String written2 = new HalfDecentConfigFormat().write(schema, validated);
+//		if(modified.equals(written2)) {
+//			System.out.println("THEYRE THE SAME");
+//		} else {
+//			System.out.println("THEYRE DIFFERENT?????");
+//		}
 	}
 }

@@ -4,6 +4,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 public class ConfigSection implements SectOrOpt {
@@ -43,6 +44,10 @@ public class ConfigSection implements SectOrOpt {
 	
 	public @Nullable ConfigOpt<?> getOptByName(String name) {
 		return getByName(name) instanceof ConfigOpt<?> opt ? opt : null;
+	}
+	
+	public Collection<SectOrOpt> getChildren() {
+		return children;
 	}
 	
 	//conveniences
