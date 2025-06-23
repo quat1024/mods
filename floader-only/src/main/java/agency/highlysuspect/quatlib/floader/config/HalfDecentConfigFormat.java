@@ -9,7 +9,6 @@ import agency.highlysuspect.quatlib.any.config.ConfigVisitor;
 import agency.highlysuspect.quatlib.any.util.SnocList;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +25,10 @@ public class HalfDecentConfigFormat {
 				for(String line : lines) out.add(indent + line);
 			}
 			
+			private void writeComment(List<String> comment) {
+				for(String commentLine : comment) write("# " + commentLine);
+			}
+			
 			private void blank() {
 				out.add("");
 			}
@@ -34,9 +37,7 @@ public class HalfDecentConfigFormat {
 			public void openSection(ConfigSection section) {
 				depth++;
 				
-				for(String commentLine : section.getComment()) {
-					write("# " + commentLine);
-				}
+				writeComment(section.getComment());
 				write(section.getName() + " {");
 			}
 			
@@ -53,7 +54,7 @@ public class HalfDecentConfigFormat {
 			@Override
 			public <T> void visitOpt(ConfigOpt<T> opt) {
 				depth++;
-				for(String commentLine : opt.getComment()) write("# " + commentLine);
+				writeComment(opt.getComment());
 				
 				T defaultValue = opt.getDefaultValue();
 				String writtenDefaultValue = opt.write(defaultValue);
@@ -72,58 +73,10 @@ public class HalfDecentConfigFormat {
 		return String.join("\n", out);
 	}
 	
-	
 	public Map<SnocList<String>, String> parseToStrings(String configFile) {
 		Map<SnocList<String>, String> result = new LinkedHashMap<>();
-		Lineserator iter = new Lineserator(configFile.lines().iterator());
-		parseToStringsImpl(iter, SnocList.empty(), result);
+		new HalfDecentConfigParser(configFile).parseItem(SnocList.empty(), result);
 		return result;
-	}
-	
-	private void parseToStringsImpl(Lineserator iter, SnocList<String> fullName, Map<SnocList<String>, String> result) {
-		while(iter.hasNext()) {
-			String line = iter.next().trim();
-			if(line.isEmpty() || line.startsWith("#")) continue;
-			
-			String[] split = line.split(":", 2);
-			if(split.length == 2) {
-				//if it has a colon, it's a value
-				String key = split[0].trim();
-				String value = split[1].trim();
-				result.put(fullName.snoc(key), value);
-			} else if(line.startsWith("}")) {
-				//closing a section
-				return;
-			} else if(line.endsWith("{")) {
-				//opening a section: recur into the section
-				String sectionName = line.substring(0, line.length() - 1).trim();
-				parseToStringsImpl(iter, fullName.snoc(sectionName), result);
-			}
-		}
-	}
-	
-	protected static class Lineserator implements Iterator<String> {
-		public Lineserator(Iterator<String> delegate) {
-			this.delegate = delegate;
-		}
-		
-		private final Iterator<String> delegate;
-		int lineNo = 0;
-		
-		@Override
-		public boolean hasNext() {
-			return delegate.hasNext();
-		}
-		
-		@Override
-		public String next() {
-			lineNo++;
-			return delegate.next();
-		}
-		
-		public int getLineNo() {
-			return lineNo;
-		}
 	}
 	
 	public static void main(String... args) throws ConfigException {
