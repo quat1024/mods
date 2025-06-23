@@ -1,6 +1,6 @@
 # Half Decent Config
 
-Yet another ModderNameConfigFormat. Planning to use on Fabric until they develop a config api (ha, ha).
+Yet another ModderNameConfigFormat. Planning to use this on Fabric until they develop a config api (ha, ha).
 
 This time i'm moving on up from crummyconfig!
 
@@ -117,3 +117,11 @@ to parse an "item" (either a section or an option, where you're not sure which o
   * otherwise we have a problem, a key without a corresponding value or section.
     * report a *warning*, drop the key on the floor, and continue to the next thing?
     * (only if it does not cause a mess, or situations where one typo causes a lot of the config file to reset)
+
+This has been implemented in `HalfDecentConfigParser`. Yay.
+
+# dev api
+
+This is separate from the Half Decent Config textual format but I'm also thinking about a nice API I can use
+
+Actually I went and moved this to the bottom of ["Towards a good config system"](https://notes.highlysuspect.agency/config.html) (section "Programmer API styles")

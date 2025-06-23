@@ -1,5 +1,6 @@
 package agency.highlysuspect.quatlib.any.config;
 
+import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -37,10 +38,10 @@ public interface ConfigState {
 	
 	class Mapped implements ConfigState {
 		public Mapped(Map<ConfigOpt<?>, ?> opts) {
-			this.opts = opts;
+			this.opts = new IdentityHashMap<>(opts);
 		}
 		
-		private final Map<ConfigOpt<?>, ?> opts;
+		private final IdentityHashMap<ConfigOpt<?>, ?> opts;
 		
 		@SuppressWarnings("unchecked")
 		@Override
