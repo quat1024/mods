@@ -18,11 +18,15 @@ public class ConfigFrobnicator {
 	private void assignSnImpl(SectOrOpt item, SnView view, Map<ConfigOpt<?>, SnView> result) throws SnException {
 		//if we're looking at a config section
 		if(item instanceof ConfigSection section) {
+//			System.out.println("assignSnImpl, looking at config section: " + section.getName() + ". current view: " + view);
+			
 			//then we should also be looking at an sn map
-			SnView.MapView map = view.asMap(); //TODO: throws, should warn instead
+			SnView.MapView map = view.asMap(); //TODO: throws, should warn and skip it instead
+//			System.out.println("got a map with keys " + map.keySet());
 			
 			//each child in the schema should have a corresponding child in the sn
 			for(SectOrOpt child : section.getChildren()) {
+				//TODO: throws if it doesn't exist in the sn, should warn and skip it instead
 				SnView childSn = map.get(child.getName());
 				assignSnImpl(child, childSn, result);
 			}
@@ -30,7 +34,7 @@ public class ConfigFrobnicator {
 		
 		//otherwise we're looking at a config option
 		if(item instanceof ConfigOpt<?> opt) {
-			System.out.println("assigning option " + opt.getName() + " to sn " + view.path());
+//			System.out.println("assigning option " + opt.getName() + " to sn " + view.path());
 			result.put(opt, view);
 		}
 	}
@@ -45,7 +49,9 @@ public class ConfigFrobnicator {
 		return new ConfigState.Mapped(map);
 	}
 	
+	//just need to name the generic
 	private <T> T parseAndValidateImpl(ConfigOpt<T> opt, SnView view) throws ConfigException {
+		//TODO: catch exceptions and add them to a warnings list, then ignore the failing option
 		T parsed = opt.parse(view);
 		T corrected = opt.correct(parsed);
 		opt.validate(corrected);

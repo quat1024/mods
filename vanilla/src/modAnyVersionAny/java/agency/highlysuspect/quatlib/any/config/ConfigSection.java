@@ -60,12 +60,4 @@ public class ConfigSection implements SectOrOpt {
 		add(subsection);
 		return subsection;
 	}
-	
-	//visitor
-	@Override
-	public <E extends Throwable> void accept(ConfigVisitor<E> visitor) throws E {
-		visitor.openSection(this);
-		for(SectOrOpt child : children) child.accept(visitor);
-		visitor.closeSection(this);
-	}
 }

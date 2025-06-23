@@ -1,7 +1,9 @@
 package agency.highlysuspect.quatlib.any.config.sn;
 
 import agency.highlysuspect.quatlib.any.util.SnocList;
+import org.jetbrains.annotations.NotNull;
 
+import java.util.Objects;
 import java.util.Set;
 
 public interface SnView {
@@ -18,31 +20,31 @@ public interface SnView {
 	
 	interface ListView extends SnView {
 		int size();
-		SnView get(int i);
+		SnView get(int i) throws SnException;
 	}
 	
 	interface MapView extends SnView {
 		int size();
 		Set<String> keySet();
 		boolean containsKey(String key);
-		SnView get(String key);
+		SnView get(String key) throws SnException;
 	}
 	
 	class Impl implements SnView, ListView, MapView {
-		public Impl(Sn<?> sn, SnocList<String> path) {
-			this.sn = sn;
-			this.path = path;
+		public Impl(@NotNull Sn<?> sn, @NotNull SnocList<String> path) {
+			this.sn = Objects.requireNonNull(sn);
+			this.path = Objects.requireNonNull(path);
 		}
 		
 		public Impl(Sn<?> sn) {
 			this(sn, SnocList.empty());
 		}
 		
-		private final Sn<?> sn;
-		private final SnocList<String> path;
+		private final @NotNull Sn<?> sn;
+		private final @NotNull SnocList<String> path;
 		
 		@Override
-		public SnocList<String> path() {
+		public @NotNull SnocList<String> path() {
 			return path;
 		}
 		
@@ -64,7 +66,7 @@ public interface SnView {
 		
 		@Override
 		public String asString() throws SnException {
-			if(sn instanceof SnStr prim) return prim.toString();
+			if(sn instanceof SnStr(String value)) return value;
 			else throw SnException.expected(SnStr.class, sn, path);
 		}
 		
@@ -92,9 +94,10 @@ public interface SnView {
 		}
 		
 		@Override
-		public SnView get(int i) {
+		public SnView get(int i) throws SnException {
 			if(!(sn instanceof SnList arr)) throw impossible();
-			return new Impl(arr.get(i), path.snoc(String.valueOf(i)));
+			if(i < 0 || i >= arr.size()) throw new SnException("Index " + i + " out of bounds for range " + arr.size() + " at ", path);
+			return new Impl(arr.get(i), path.snoc("[" + i + "]"));
 		}
 		
 		@Override
@@ -110,9 +113,16 @@ public interface SnView {
 		}
 		
 		@Override
-		public SnView get(String key) {
+		public SnView get(String key) throws SnException {
 			if(!(sn instanceof SnMap map)) throw impossible();
-			return new Impl(map.get(key), path.snoc(key));
+			Sn<?> child = map.get(key);
+			if(child == null) throw new SnException("No such key '" + key + "' at ", path);
+			return new Impl(child, path.snoc(key));
+		}
+		
+		@Override
+		public String toString() {
+			return "SnView, path '" + path() + "' (looking at " + sn.getClass().getSimpleName() + ")";
 		}
 	}
 }

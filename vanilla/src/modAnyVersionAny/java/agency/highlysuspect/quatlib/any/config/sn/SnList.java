@@ -19,13 +19,4 @@ public final class SnList extends ArrayList<Sn<?>> implements Sn<SnList> {
 		for(Sn<?> elem : this) children2.add(elem.copy());
 		return new SnList(children2);
 	}
-	
-	@Override
-	public <E extends Throwable> void accept(SnVisitor<E> visitor) throws E {
-		visitor.openList(this);
-		for(int i = 0; i < size(); i++) {
-			visitor.listItem(i, get(i));
-		}
-		visitor.closeList(this);
-	}
 }

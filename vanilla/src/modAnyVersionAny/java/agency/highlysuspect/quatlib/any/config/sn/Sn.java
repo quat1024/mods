@@ -7,8 +7,6 @@ package agency.highlysuspect.quatlib.any.config.sn;
 public sealed interface Sn<S extends Sn<S>> permits SnStr, SnList, SnMap {
 	S copy();
 	
-	<E extends Throwable> void accept(SnVisitor<E> visitor) throws E;
-	
 	static SnStr str(String s) {
 		return SnStr.of(s);
 	}

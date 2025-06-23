@@ -1,39 +1,94 @@
 package agency.highlysuspect.quatlib.any.config.sn;
 
-import org.jetbrains.annotations.Nullable;
+import agency.highlysuspect.quatlib.any.util.IndentStringBuilder;
 
-public class SnWriter implements SnVisitor<RuntimeException> {
-	public SnWriter() {
-		concrete = null;
-	}
-	
-	public SnWriter(@Nullable ConcreteInfo concrete) {
-		this.concrete = concrete;
-	}
-	
-	public String toString() {
+public class SnWriter {
+	public String write(Sn<?> sn) {
+		IndentStringBuilder out = new IndentStringBuilder();
+		accept(sn, out);
 		return out.toString();
 	}
 	
-	@Nullable ConcreteInfo concrete;
+	public String writeTopLevel(SnMap map) {
+		IndentStringBuilder out = new IndentStringBuilder();
+		acceptMapContents(map, out);
+		return out.toString();
+	}
 	
-	StringBuilder out = new StringBuilder();
-	int indent = 0;
-	boolean linebreak = true;
+	protected void comment(Sn<?> sn, IndentStringBuilder out) {
+		//no-op, see subclass
+	}
 	
-	private boolean requireQuoting(int c) {
+	public void accept(Sn<?> sn, IndentStringBuilder out) {
+		switch(sn) {
+			case SnList snList -> acceptList(snList, out);
+			case SnMap snMap -> acceptMap(snMap, out);
+			case SnStr snStr -> acceptStrValue(snStr, out);
+		}
+	}
+	
+	public void acceptList(SnList list, IndentStringBuilder out) {
+		//opening bracket
+		out.append("[").newline().increaseIndent();
+		
+		//list contents
+		for(Sn<?> child : list) {
+			comment(child, out);
+			accept(child, out);
+			out.newline();
+		}
+		
+		//rm last newline
+		out.backspace();
+		
+		//closing bracket
+		out.decreaseIndent().newline().append("]");
+	}
+	
+	public void acceptMap(SnMap map, IndentStringBuilder out) {
+		//opening curly
+		out.append("{").newline().increaseIndent();
+		
+		//map contents
+		acceptMapContents(map, out);
+		
+		//rm last blank line
+		out.backspace().backspace();
+		
+		//closing curly
+		out.decreaseIndent().newline().append("}");
+	}
+	
+	public void acceptMapContents(SnMap map, IndentStringBuilder out) {
+		//map contents
+		map.forEach((key, value) -> {
+			comment(value, out);
+			out.append(escapeAndQuoteIfNeeded(key));
+			out.append(" = ");
+			accept(value, out);
+			out.newline().newline(); //blank line
+		});
+	}
+	
+	public void acceptStrValue(SnStr str, IndentStringBuilder out) {
+		out.append(escapeAndQuoteIfNeeded(str.value()));
+	}
+	
+	/// quoting rules ///
+	
+	private static boolean requireQuoting(int c) {
 		return c == '\n' || c == '\t' || c == '\\' || c == '"' || c == '=' || c == '{' || c == '}' || c == '[' || c == ']';
 	}
 	
-	private boolean requireEscaping(int c) {
+	private static boolean requireEscaping(int c) {
 		return c == '\n' || c == '\t' || c == '\\' || c == '"';
 	}
 	
-	private boolean needsQuotes(String s) {
-		return s.chars().anyMatch(this::requireQuoting);
+	private static boolean needsQuotes(String s) {
+		return s.trim().length() != s.length() || s.chars().anyMatch(SnWriter::requireQuoting);
 	}
 	
-	private String escapeAndQuote(String s) {
+	private static String escapeAndQuote(String s) {
 		StringBuilder escaped = new StringBuilder("\"");
 		s.chars().forEach(c -> {
 			if(requireEscaping(c)) escaped.append("\\");
@@ -44,87 +99,26 @@ public class SnWriter implements SnVisitor<RuntimeException> {
 		return escaped.append("\"").toString();
 	}
 	
-	private String escapeAndQuoteIfNeeded(String s) {
+	private static String escapeAndQuoteIfNeeded(String s) {
 		if(needsQuotes(s)) return escapeAndQuote(s);
 		else return s;
 	}
 	
-	private void indentedAppend(String s) {
-		if(linebreak) out.append("\t".repeat(indent));
-		out.append(s);
-		linebreak = false;
-	}
+	/// commented?
 	
-	private void comment(Sn<?> node) {
-		if(concrete == null) return;
-		for(String s : concrete.getComment(node)) {
-			if(!s.trim().isEmpty()) {
-				indentedAppend("% ");
-				out.append(s);
-				newline();
+	public static class Commented extends SnWriter {
+		public Commented(ConcreteInfo concrete) {
+			this.concrete = concrete;
+		}
+		
+		protected final ConcreteInfo concrete;
+		
+		@Override
+		protected void comment(Sn<?> sn, IndentStringBuilder out) {
+			for(String comment : concrete.getComment(sn)) {
+				out.append("% " + comment);
+				out.newline();
 			}
 		}
-	}
-	
-	private void newline() {
-		linebreak = true;
-		out.append('\n');
-	}
-	
-	private void unBlankline() {
-		if(out.length() < 3) return;
-		int last = out.length() - 1;
-		int prev = out.length() - 2;
-		if(out.charAt(last) == '\n' && out.charAt(prev) == '\n') out.deleteCharAt(last);
-	}
-	
-	@Override
-	public void visitString(String s) {
-		indentedAppend(escapeAndQuoteIfNeeded(s));
-	}
-	
-	@Override
-	public void openMap(SnMap map) {
-		out.append("{");
-		newline();
-		indent++;
-	}
-	
-	@Override
-	public void closeMap(SnMap map) {
-		indent--;
-		unBlankline();
-		indentedAppend("}");
-	}
-	
-	@Override
-	public void mapItem(String k, Sn<?> item) {
-		comment(item);
-		indentedAppend(escapeAndQuoteIfNeeded(k));
-		out.append(" = ");
-		item.accept(this);
-		newline();
-		newline();
-	}
-	
-	@Override
-	public void openList(SnList list) {
-		out.append("[");
-		indent++;
-		newline();
-	}
-	
-	@Override
-	public void closeList(SnList list) {
-		indent--;
-		newline();
-		indentedAppend("]");
-	}
-	
-	@Override
-	public void listItem(int i, Sn<?> item) {
-		comment(item);
-		item.accept(this);
-		newline();
 	}
 }

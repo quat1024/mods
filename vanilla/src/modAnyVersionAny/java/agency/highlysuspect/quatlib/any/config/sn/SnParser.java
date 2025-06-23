@@ -45,7 +45,7 @@ public class SnParser {
 		}
 	}
 	
-	public SnMap parseMap() {
+	private SnMap parseMap() {
 		assert cursor.peek() == '{';
 		int blockStartLine = cursor.startLine;
 		cursor.right();
@@ -210,7 +210,7 @@ public class SnParser {
 		
 		@Override
 		public String toString() {
-			return "cursor[" + start + "," + end + "] (lines " + startLine + "-" + endLine + ")";
+			return "cursor[" + start + "," + end + "] (lines " + startLine + "-" + endLine + "), selecting '" + s.substring(start, end) + "'";
 		}
 	}
 	
@@ -220,28 +220,21 @@ public class SnParser {
 		key1 = value1
 		key2
 				=
-            value2
-    key3 {
-      subkey1 = subval1 % end-of-line comment
-      subkey2 = subval2
-    }
-    key4 = {
-      subkey3 = "subval3"
-      subkey4 = "subval4 addasd"
-    }
-			
-			""";
+												value2
+				key3 {
+						subkey1 = subval1 % end-of-line comment
+						subkey2 = subval2
+				}
+				key4 = {
+						subkey3 = "subval3"
+						subkey4 = "subval4 addasd"
+				}
+		\t
+		\t""";
 		
 		SnMap map = new SnParser(testFile).parseTopLevel();
-		
-		new FlatteningSnVisitor((k, v) -> System.out.println(k + "\n\t->" + v)).visit(map);
-		
-		SnWriter writer = new SnWriter();
-		writer.visit(map);
-		System.out.println(writer.toString());
-		
-		writer = new SnWriter();
-		writer.visit(new SnStr("ajdadasd\n\nadsad"));
-		System.out.println(writer.toString());
+		new FlatteningSnWriter().accept(map, (k, v) -> System.out.println(k + "\n\t->" + v));
+		System.out.println(new SnWriter().write(map));
+		System.out.println(new SnWriter().write(new SnStr("lajdkjas\n\nlasdklasd")));
 	}
 }

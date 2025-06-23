@@ -5,7 +5,6 @@ import agency.highlysuspect.quatlib.any.config.ConfigFrobnicator;
 import agency.highlysuspect.quatlib.any.config.ConfigOpt;
 import agency.highlysuspect.quatlib.any.config.ConfigSection;
 import agency.highlysuspect.quatlib.any.config.ConfigState;
-import agency.highlysuspect.quatlib.any.config.ConfigVisitor;
 import agency.highlysuspect.quatlib.any.config.SectOrOpt;
 import agency.highlysuspect.quatlib.any.config.sn.ConcreteInfo;
 import agency.highlysuspect.quatlib.any.config.sn.Sn;
@@ -13,17 +12,18 @@ import agency.highlysuspect.quatlib.any.config.sn.SnMap;
 import agency.highlysuspect.quatlib.any.config.sn.SnParser;
 import agency.highlysuspect.quatlib.any.config.sn.SnView;
 import agency.highlysuspect.quatlib.any.config.sn.SnWriter;
-import agency.highlysuspect.quatlib.any.util.SnocList;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 public class HalfDecentConfigFormat {
 	public SnMap toSn(ConfigSection schema, ConfigState state, ConcreteInfo concrete) {
 		SnMap target = new SnMap();
-		toSnImpl(schema, state, target, concrete);
+		concrete.assignComment(target, schema.getComment()); //root comment goes on the root
+		
+		for(SectOrOpt child : schema.getChildren()) {
+			toSnImpl(child, state, target, concrete);
+		}
+		
 		return target;
 	}
 	
@@ -53,102 +53,34 @@ public class HalfDecentConfigFormat {
 		return opt.write(value);
 	}
 	
-	public String write(ConfigSection root, ConfigState state) {
-		List<String> out = new ArrayList<>();
-		
-		root.accept(new ConfigVisitor<>() {
-			int depth = -1;
-			
-			private void write(String... lines) {
-				String indent = "\t".repeat(Math.max(0, depth));
-				for(String line : lines) out.add(indent + line);
-			}
-			
-			private void writeComment(List<String> comment) {
-				for(String commentLine : comment) write("# " + commentLine);
-			}
-			
-			private void blank() {
-				out.add("");
-			}
-			
-			@Override
-			public void openSection(ConfigSection section) {
-				depth++;
-				
-				writeComment(section.getComment());
-				write(section.getName() + " {");
-			}
-			
-			@Override
-			public void closeSection(ConfigSection section) {
-				//tidy up blank lines
-				if(!out.isEmpty() && out.getLast().isEmpty()) out.removeLast();
-				
-				write("}");
-				blank();
-				depth--;
-			}
-			
-			@Override
-			public <T> void visitOpt(ConfigOpt<T> opt) {
-				depth++;
-				writeComment(opt.getComment());
-				
-				T defaultValue = opt.getDefaultValue();
-//				String writtenDefaultValue = opt.write(defaultValue);
-				String writtenDefaultValue = "wafasdasd";
-				if(writtenDefaultValue.isEmpty()) writtenDefaultValue = "<empty>";
-				write("# Default: " + writtenDefaultValue);
-				
-				//TODO: escape shit like newlines
-				T currentValue = state.get(opt);
-				write(opt.getName() + ": " + opt.write(currentValue));
-				
-				blank();
-				depth--;
-			}
-		});
-		
-		return String.join("\n", out);
-	}
-	
-	public Map<SnocList<String>, String> parseToStrings(String configFile) {
-		Map<SnocList<String>, String> result = new LinkedHashMap<>();
-		new HalfDecentConfigParser(configFile).parseItem(SnocList.empty(), result);
-		return result;
-	}
-	
 	public static void main(String... args) throws ConfigException {
-		
 		//define configopts somewhere, these can be globals or whatever
 		ConfigOpt<Integer> rabbits = new ConfigOpt.IntOpt("rabbits", 5, "How many rabbits?").setMin(0);
 		ConfigOpt<Integer> bunnies = new ConfigOpt.IntOpt("bunnies", 5, "How many bunnies?").setMin(0);
 		ConfigOpt<Integer> lizards = new ConfigOpt.IntOpt("lizards", 5, "How many lizards?").setMin(0);
 		ConfigOpt<Integer> dragons = new ConfigOpt.IntOpt("dragons", 5, "How many dragons?").setMin(0);
+		ConfigOpt<String> dragonEssay = new ConfigOpt.StringOpt("Dragon Essay Question", "Pretty good", "How do you feel about dragons?");
 		
 		//shape them into a schema with sections
 		ConfigSection schema = new ConfigSection("coolmod", "This is my cool config file");
 		schema.subsection("mammals", "Yuck stinky mammals").add(rabbits, bunnies);
-		schema.subsection("reptiles", "Wooo lets go", "I love lizards").add(lizards, dragons);
+		schema.subsection("reptiles", "Wooo lets go", "I love lizards").add(lizards, dragons, dragonEssay);
 		
 		//parse to an Sn
 		ConcreteInfo ci = new ConcreteInfo();
 		SnMap intermediateRepresentation = new HalfDecentConfigFormat().toSn(schema, ConfigState.Default.INSTANCE, ci);
 		
 		//write it out
-		SnWriter writer = new SnWriter(ci);
-		intermediateRepresentation.accept(writer);
-		String written = writer.toString();
+		String written = new SnWriter.Commented(ci).writeTopLevel(intermediateRepresentation);
 		
 		String modified = written.replace("dragons = 5", "dragons = 999");
 		System.out.println(modified);
 		
-		//parse it back, first into an Sn
-		SnMap parsed = new SnParser(modified).parseMap();
+		//parse it back, first into an Sn (json if it only had strings)
+		SnMap parsed = new SnParser(modified).parseTopLevel();
 		SnView view = new SnView.Impl(parsed);
 		
-		//figure out which string goes to which option
+		//figure out which bit of Sn goes to which option
 		Map<ConfigOpt<?>, SnView> assigned = new ConfigFrobnicator().assignSn(schema, view);
 		
 		//finally parse into real java objects
@@ -156,13 +88,5 @@ public class HalfDecentConfigFormat {
 		
 		//reading the config is pretty simple and uses the ConfigOpt objects for well-typedness
 		System.out.println("There are " + validated.get(dragons) + " dragons");
-//
-//
-//		String written2 = new HalfDecentConfigFormat().write(schema, validated);
-//		if(modified.equals(written2)) {
-//			System.out.println("THEYRE THE SAME");
-//		} else {
-//			System.out.println("THEYRE DIFFERENT?????");
-//		}
 	}
 }

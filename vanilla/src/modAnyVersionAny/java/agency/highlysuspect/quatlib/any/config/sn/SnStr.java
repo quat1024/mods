@@ -9,11 +9,6 @@ public record SnStr(@NotNull String value) implements Sn<SnStr> {
 	
 	@Override
 	public SnStr copy() {
-		return this; //immutable
-	}
-	
-	@Override
-	public <E extends Throwable> void accept(SnVisitor<E> visitor) throws E {
-		visitor.visitString(value);
+		return SnStr.of(value);
 	}
 }

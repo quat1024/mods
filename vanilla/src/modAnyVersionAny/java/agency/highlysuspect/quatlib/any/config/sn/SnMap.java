@@ -16,13 +16,4 @@ public final class SnMap extends LinkedHashMap<String, Sn<?>> implements Sn<SnMa
 		forEach((key, val) -> children2.put(key, val.copy()));
 		return new SnMap(children2);
 	}
-	
-	@Override
-	public <E extends Throwable> void accept(SnVisitor<E> visitor) throws E {
-		visitor.openMap(this);
-		for(Map.Entry<String, Sn<?>> entry : entrySet()) {
-			visitor.mapItem(entry.getKey(), entry.getValue());
-		}
-		visitor.closeMap(this);
-	}
 }

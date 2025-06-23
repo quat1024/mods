@@ -82,11 +82,6 @@ public abstract class ConfigOpt<T> implements SectOrOpt {
 		return defaultValue;
 	}
 	
-	@Override
-	public <E extends Throwable> void accept(ConfigVisitor<E> visitor) throws E {
-		visitor.visitOpt(this);
-	}
-	
 	public static class StringOpt extends ConfigOpt<String> {
 		public StringOpt(String name, String defaultValue, String... comment) {
 			super(name, defaultValue, comment);
