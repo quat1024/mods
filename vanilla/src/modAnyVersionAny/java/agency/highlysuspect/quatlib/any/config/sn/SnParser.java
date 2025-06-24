@@ -13,6 +13,10 @@ public class SnParser {
 	private static final char KV_SPLIT = '=';
 	private static final char LINE_COMMENT_CHAR = '%';
 	
+	private static final String BARE_KEY_ENDERS = "{[\r\n" + LINE_COMMENT_CHAR + KV_SPLIT;
+	private static final String BARE_VALUE_ENDERS_WITHIN_MAP = "}\r\n" + LINE_COMMENT_CHAR;
+	private static final String BARE_VALUE_ENDERS_WITHIN_LIST = ",]\r\n" + LINE_COMMENT_CHAR;
+	
 	public SnMap parseTopLevel() {
 		//keep parsing items until we run out the file, put em in a big map
 		SnMap top = new SnMap();
@@ -44,14 +48,17 @@ public class SnParser {
 			next = cursor.peek();
 			//System.out.println("parsed key " + key + " cursor is at " + cursor + " next char is " + (char) next);
 			if(next == '\r' || next == '\n') map.put(key, Sn.str(""));
-			else map.put(key, parseValue());
+			else map.put(key, parseValue(BARE_VALUE_ENDERS_WITHIN_MAP));
 		} else if(next == '{') {
 			//a map with the initial equal-sign omitted
 			map.put(key, parseMap());
+		} else if(next == '[') {
+			//a list with the initial equal-sign omitted
+			map.put(key, parseList());
 		} else if(next == EOF) {
 			throw new IllegalStateException("unexpected end of file after parsing key '" + key + "'");
 		} else {
-			throw new IllegalStateException("unexpected character " + (char) next + " after parsing key '" + key + "'");
+			throw new IllegalStateException("unexpected character '" + (char) next + "' after parsing key '" + key + "'");
 		}
 	}
 	
@@ -67,8 +74,9 @@ public class SnParser {
 			int next = cursor.peek();
 			
 			if(next == EOF) {
-				//TODO: make this a warning and return the map anyway?
-				throw new IllegalStateException("unclosed block starting on line " + blockStartLine);
+				//TODO: report the warning
+				//throw new IllegalStateException("unclosed block starting on line " + blockStartLine);
+				return map;
 			} else if(next == '}') {
 				//done parsing this map
 				cursor.right();
@@ -80,19 +88,46 @@ public class SnParser {
 		}
 	}
 	
-	private Sn<?> parseValue() {
+	private SnList parseList() {
+		assert cursor.peek() == '[';
+		cursor.right();
+		
+		SnList list = new SnList();
+		
+		while(true) {
+			cursor.skipWhitespaceAndComments();
+			int next = cursor.peek();
+			if(next == EOF) {
+				//TODO: report a warning
+				return list;
+			} else if(next == ']') {
+				//done parsing this list
+				cursor.right();
+				return list;
+			} else {
+				//parse an item
+				list.add(parseValue(BARE_VALUE_ENDERS_WITHIN_LIST));
+				
+				//if there is a comma, skip it (n.b. list trailing comma is allowed)
+				cursor.skipWhitespaceAndComments();
+				next = cursor.peek();
+				if(next == ',') cursor.right();
+			}
+		}
+	}
+	
+	private Sn<?> parseValue(String enders) {
 		int next = cursor.peek();
 		if(next == EOF) throw new IllegalStateException("unexpected end of file while parsing value");
 		if(next == '"') return Sn.str(parseQuotedString());
 		if(next == '{') return parseMap();
-		//todo, arrays
-		return Sn.str(parseBareValue());
+		if(next == '[') return parseList();
+		return Sn.str(parseBareValue(enders));
 	}
 	
 	//parse a bare string until the end of the line, a structure closer, or an end-of-line comment
-	private static final String BARE_VALUE_ENDERS = "}]\r\n" + LINE_COMMENT_CHAR;
-	private String parseBareValue() {
-		cursor.selectUntil(BARE_VALUE_ENDERS);
+	private String parseBareValue(String enders) {
+		cursor.selectUntil(enders);
 		return cursor.cut().trim();
 	}
 	
@@ -102,7 +137,6 @@ public class SnParser {
 	
 	//parse a bare string until the end of the line, an equal sign (which would start a kv),
 	//an end-of-line comment, or an structure opener
-	private static final String BARE_KEY_ENDERS = ("{[\r\n" + LINE_COMMENT_CHAR) + KV_SPLIT;
 	private String parseBareKey() {
 		cursor.selectUntil(BARE_KEY_ENDERS);
 		return cursor.cut().trim();
@@ -261,6 +295,18 @@ public class SnParser {
 						subkey5 =
 						subkey6 = askjdasd
 				}
+		
+		letter [
+			Maybe "these unquoted string rules" are too lenient?
+			This file format is a little bit of a disaster, don't you think.
+			Haha, anyway, just catching up.
+			{
+			  signed = Your friend, quat.
+			  date = Jun 24 2025
+			  enclosed = [heart sticker, postcard, an opening bracket [
+			              and curly brace {, smashed M&M candy]
+			}
+		]
 		\t
 		\t""";
 		
