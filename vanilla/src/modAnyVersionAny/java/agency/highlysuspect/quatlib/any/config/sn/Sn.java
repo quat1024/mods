@@ -7,6 +7,10 @@ package agency.highlysuspect.quatlib.any.config.sn;
 public sealed interface Sn<S extends Sn<S>> permits SnStr, SnList, SnMap {
 	S copy();
 	
+	default SnView view() {
+		return new SnView.Impl(this);
+	}
+	
 	static SnStr str(String s) {
 		return SnStr.of(s);
 	}

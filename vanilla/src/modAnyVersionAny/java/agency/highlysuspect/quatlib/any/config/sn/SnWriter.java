@@ -15,10 +15,6 @@ public class SnWriter {
 		return out.toString();
 	}
 	
-	protected void comment(Sn<?> sn, IndentStringBuilder out) {
-		//no-op, see subclass
-	}
-	
 	public void accept(Sn<?> sn, IndentStringBuilder out) {
 		switch(sn) {
 			case SnList snList -> acceptList(snList, out);
@@ -33,7 +29,6 @@ public class SnWriter {
 		
 		//list contents
 		for(Sn<?> child : list) {
-			comment(child, out);
 			accept(child, out);
 			out.newline();
 		}
@@ -62,7 +57,6 @@ public class SnWriter {
 	public void acceptMapContents(SnMap map, IndentStringBuilder out) {
 		//map contents
 		map.forEach((key, value) -> {
-			comment(value, out);
 			out.append(escapeAndQuoteIfNeeded(key));
 			out.append(" = ");
 			accept(value, out);
@@ -76,19 +70,19 @@ public class SnWriter {
 	
 	/// quoting rules ///
 	
-	private static boolean requireQuoting(int c) {
+	protected static boolean requireQuoting(int c) {
 		return c == '\n' || c == '\t' || c == '\\' || c == '"' || c == '=' || c == '{' || c == '}' || c == '[' || c == ']';
 	}
 	
-	private static boolean requireEscaping(int c) {
+	protected static boolean requireEscaping(int c) {
 		return c == '\n' || c == '\t' || c == '\\' || c == '"';
 	}
 	
-	private static boolean needsQuotes(String s) {
+	protected static boolean needsQuotes(String s) {
 		return s.trim().length() != s.length() || s.chars().anyMatch(SnWriter::requireQuoting);
 	}
 	
-	private static String escapeAndQuote(String s) {
+	protected static String escapeAndQuote(String s) {
 		StringBuilder escaped = new StringBuilder("\"");
 		s.chars().forEach(c -> {
 			if(requireEscaping(c)) escaped.append("\\");
@@ -99,26 +93,8 @@ public class SnWriter {
 		return escaped.append("\"").toString();
 	}
 	
-	private static String escapeAndQuoteIfNeeded(String s) {
+	protected static String escapeAndQuoteIfNeeded(String s) {
 		if(needsQuotes(s)) return escapeAndQuote(s);
 		else return s;
-	}
-	
-	/// commented?
-	
-	public static class Commented extends SnWriter {
-		public Commented(ConcreteInfo concrete) {
-			this.concrete = concrete;
-		}
-		
-		protected final ConcreteInfo concrete;
-		
-		@Override
-		protected void comment(Sn<?> sn, IndentStringBuilder out) {
-			for(String comment : concrete.getComment(sn)) {
-				out.append("% " + comment);
-				out.newline();
-			}
-		}
 	}
 }
