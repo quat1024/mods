@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-public class Report extends RuntimeException {
+public class Report extends Exception {
 	public Report(String message, Throwable cause) {
 		super(cause);
 		this.messageStack.add(message);
@@ -66,8 +66,8 @@ public class Report extends RuntimeException {
 		}
 		
 		@Override
-		public ModifiableReport addNoteSection(String... note) {
-			sections.add(new Section("Note", note));
+		public ModifiableReport addSection(String category, String... body) {
+			sections.add(new Section(category, body));
 			return handle;
 		}
 	};
@@ -117,6 +117,10 @@ public class Report extends RuntimeException {
 	
 	public interface ModifiableReport {
 		ModifiableReport addMessage(String message);
-		ModifiableReport addNoteSection(String... note);
+		ModifiableReport addSection(String category, String... body);
+		
+		default ModifiableReport addNoteSection(String... note) {
+			return addSection("Note", note);
+		}
 	}
 }

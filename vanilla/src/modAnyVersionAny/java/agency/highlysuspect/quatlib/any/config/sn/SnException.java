@@ -1,12 +1,12 @@
 package agency.highlysuspect.quatlib.any.config.sn;
 
-import agency.highlysuspect.quatlib.any.config.ConfigException;
+import agency.highlysuspect.quatlib.any.config.failure.Report;
 import agency.highlysuspect.quatlib.any.util.SnocList;
 
-public class SnException extends ConfigException {
-	//TODO: temp
+//TODO: this could probably be removed and folded into the Report mechanism now
+public class SnException extends Report {
 	public SnException(String message, SnocList<String> path) {
-		super(message + "'" + path.toString() + "'");
+		super(message + "'" + path + "'");
 	}
 	
 	public static SnException expected(Class<? extends Sn<?>> expected, Sn<?> got, SnocList<String> path) {

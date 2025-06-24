@@ -1,5 +1,6 @@
 package agency.highlysuspect.quatlib.any.config;
 
+import agency.highlysuspect.quatlib.any.config.failure.Report;
 import agency.highlysuspect.quatlib.any.config.sn.Sn;
 import agency.highlysuspect.quatlib.any.config.sn.SnView;
 import agency.highlysuspect.quatlib.any.util.QuatUtil;
@@ -30,7 +31,7 @@ public abstract class ConfigOpt<T> implements SectOrOpt {
 	
 	//serialization and deserialization
 	public abstract Sn<?> write(T thing);
-	public abstract T parse(SnView sn) throws ConfigException;
+	public abstract T parse(SnView sn) throws Report;
 	
 	//correction
 	public T correct(T thing) {
@@ -54,7 +55,7 @@ public abstract class ConfigOpt<T> implements SectOrOpt {
 	}
 	
 	//validation
-	public void validate(T thing) throws ConfigException {
+	public void validate(T thing) throws Report {
 		for(Validator<T> validator : validators)
 			validator.validate(thing);
 	}
@@ -65,7 +66,7 @@ public abstract class ConfigOpt<T> implements SectOrOpt {
 	}
 	
 	public interface Validator<T> {
-		void validate(T thing) throws ConfigException;
+		void validate(T thing) throws Report;
 	}
 	
 	@Override
@@ -93,7 +94,7 @@ public abstract class ConfigOpt<T> implements SectOrOpt {
 		}
 		
 		@Override
-		public String parse(SnView sn) throws ConfigException {
+		public String parse(SnView sn) throws Report {
 			return sn.asString();
 		}
 	}
@@ -109,12 +110,12 @@ public abstract class ConfigOpt<T> implements SectOrOpt {
 		}
 		
 		@Override
-		public Boolean parse(SnView sn) throws ConfigException {
+		public Boolean parse(SnView sn) throws Report {
 			String s = sn.asString().toLowerCase(Locale.ROOT).trim();
 			return switch(s) {
 				case "true" -> true;
 				case "false" -> false;
-				case null, default -> throw new ConfigException.OptionParseException("Expected 'true' or 'false', but got " + s, this);
+				case null, default -> throw new Report("Expected 'true' or 'false', but got " + s);
 			};
 		}
 	}
@@ -143,16 +144,16 @@ public abstract class ConfigOpt<T> implements SectOrOpt {
 		}
 		
 		@Override
-		public void validate(Integer thing) throws ConfigException {
+		public void validate(Integer thing) throws Report {
 			super.validate(thing);
 			
 			if(min != Integer.MIN_VALUE && thing < min) {
-				if(min == 0) throw new ConfigException.ValidationException("Value " + thing + " cannot be negative", this);
-				else throw new ConfigException.ValidationException("Value " + thing + " cannot be below " + min, this);
+				if(min == 0) throw new Report("Value " + thing + " cannot be negative");
+				else throw new Report("Value " + thing + " cannot be below " + min);
 			}
 			
 			if(max != Integer.MAX_VALUE && thing > max) {
-				throw new ConfigException.ValidationException("Value " + thing + " cannot be above " + max, this);
+				throw new Report("Value " + thing + " cannot be above " + max);
 			}
 		}
 		
@@ -162,12 +163,13 @@ public abstract class ConfigOpt<T> implements SectOrOpt {
 		}
 		
 		@Override
-		public Integer parse(SnView sn) throws ConfigException {
+		public Integer parse(SnView sn) throws Report {
 			String s = sn.asString();
+			
 			try {
 				return Integer.parseInt(s.trim());
-			} catch (NumberFormatException e) {
-				throw new ConfigException.OptionParseException("Expected an integer, but got " + s, this, e);
+			} catch (Throwable e) {
+				throw new Report("Could not parse '" + s + "' as an integer", e);
 			}
 		}
 		

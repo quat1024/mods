@@ -1,5 +1,6 @@
 package agency.highlysuspect.quatlib.any.config;
 
+import agency.highlysuspect.quatlib.any.config.failure.Report;
 import agency.highlysuspect.quatlib.any.config.sn.SnException;
 import agency.highlysuspect.quatlib.any.config.sn.SnView;
 
@@ -39,7 +40,7 @@ public class ConfigFrobnicator {
 		}
 	}
 	
-	public ConfigState.Mapped parseAndValidate(Map<ConfigOpt<?>, SnView> assigned) throws ConfigException {
+	public ConfigState.Mapped parseAndValidate(Map<ConfigOpt<?>, SnView> assigned) throws Report {
 		Map<ConfigOpt<?>, Object> map = new HashMap<>();
 		
 		for(Map.Entry<ConfigOpt<?>, SnView> e : assigned.entrySet()) {
@@ -50,11 +51,15 @@ public class ConfigFrobnicator {
 	}
 	
 	//just need to name the generic
-	private <T> T parseAndValidateImpl(ConfigOpt<T> opt, SnView view) throws ConfigException {
+	private <T> T parseAndValidateImpl(ConfigOpt<T> opt, SnView view) throws Report {
 		//TODO: catch exceptions and add them to a warnings list, then ignore the failing option
-		T parsed = opt.parse(view);
-		T corrected = opt.correct(parsed);
-		opt.validate(corrected);
-		return corrected;
+		try {
+			T parsed = opt.parse(view);
+			T corrected = opt.correct(parsed);
+			opt.validate(corrected);
+			return corrected;
+		} catch (Throwable e) {
+			throw Report.modify(e, it -> it.addMessage("Problem while parsing option '" + view.path() + "'"));
+		}
 	}
 }

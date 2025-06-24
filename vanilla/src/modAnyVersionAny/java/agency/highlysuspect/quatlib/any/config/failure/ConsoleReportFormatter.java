@@ -37,11 +37,10 @@ public class ConsoleReportFormatter implements ReportFormatter {
 		if(messageStack.isEmpty()) {
 			out.println("Error:");
 		} else {
-			out.println("Error: " + messageStack.get(0));
-			for(int i = 0; i < messageStack.size(); i++) {
-				out.print("  ");
-				out.print(i + 1);
-				out.print(": ");
+			//out.println("Error: " + messageStack.getLast());
+			out.println("Error:");
+			for(int i = messageStack.size() - 1; i >= 0; i--) {
+				out.print(" - ");
 				out.println(messageStack.get(i));
 			}
 		}
@@ -70,5 +69,9 @@ public class ConsoleReportFormatter implements ReportFormatter {
 			out.println("Suppressed exception " + i + ":");
 			suppressed.printStackTrace(out);
 		}
+		
+		//TODO temp ? lol?
+		out.println();
+		report.printStackTrace(out);
 	}
 }

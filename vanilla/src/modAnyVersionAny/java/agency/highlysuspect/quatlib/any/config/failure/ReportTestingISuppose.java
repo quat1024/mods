@@ -1,11 +1,11 @@
 package agency.highlysuspect.quatlib.any.config.failure;
 
 public class ReportTestingISuppose {
-	public void frobnicate() {
+	public void frobnicate() throws Report {
 		throw new Report("Failed to frobnicate", new AhShitIFuckedUpRealBadException());
 	}
 	
-	public void configureDoohicky(String filename) {
+	public void configureDoohicky(String filename) throws Report  {
 		try {
 			frobnicate();
 		} catch (Throwable e) {
@@ -16,7 +16,7 @@ public class ReportTestingISuppose {
 		}
 	}
 	
-	public void reticulateSplines(String filename, int spline) {
+	public void reticulateSplines(String filename, int spline) throws Report  {
 		try {
 			configureDoohicky(filename);
 		} catch (Throwable e) {
