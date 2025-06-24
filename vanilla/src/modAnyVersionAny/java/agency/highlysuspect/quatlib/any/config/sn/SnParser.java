@@ -31,12 +31,22 @@ public class SnParser {
 		cursor.skipWhitespaceAndComments();
 		int next = cursor.peek();
 		if(next == KV_SPLIT) {
-			//key = value
+			//key = value.
 			cursor.right();
-			cursor.skipWhitespaceAndComments();
-			map.put(key, parseValue());
+			
+			//if `=` is the last thing on the line, it denotes an empty string.
+			//anything else has to go on the same line as the equals. this is
+			//kind of an awkward exception, but it exists so this
+			//    foo =
+			//    bar = baz
+			//definitely parses as 'foo = ""' and 'bar = baz'
+			cursor.skipSameLineWhitespaceAndComments();
+			next = cursor.peek();
+			//System.out.println("parsed key " + key + " cursor is at " + cursor + " next char is " + (char) next);
+			if(next == '\r' || next == '\n') map.put(key, Sn.str(""));
+			else map.put(key, parseValue());
 		} else if(next == '{') {
-			//a map with the initial equal-sign omitted?
+			//a map with the initial equal-sign omitted
 			map.put(key, parseMap());
 		} else if(next == EOF) {
 			throw new IllegalStateException("unexpected end of file after parsing key '" + key + "'");
@@ -80,7 +90,7 @@ public class SnParser {
 	}
 	
 	//parse a bare string until the end of the line, a structure closer, or an end-of-line comment
-	private static final String BARE_VALUE_ENDERS = "}\r\n" + LINE_COMMENT_CHAR;
+	private static final String BARE_VALUE_ENDERS = "}]\r\n" + LINE_COMMENT_CHAR;
 	private String parseBareValue() {
 		cursor.selectUntil(BARE_VALUE_ENDERS);
 		return cursor.cut().trim();
@@ -92,7 +102,7 @@ public class SnParser {
 	
 	//parse a bare string until the end of the line, an equal sign (which would start a kv),
 	//an end-of-line comment, or an structure opener
-	private static final String BARE_KEY_ENDERS = ("{\r\n" + LINE_COMMENT_CHAR) + KV_SPLIT;
+	private static final String BARE_KEY_ENDERS = ("{[\r\n" + LINE_COMMENT_CHAR) + KV_SPLIT;
 	private String parseBareKey() {
 		cursor.selectUntil(BARE_KEY_ENDERS);
 		return cursor.cut().trim();
@@ -165,6 +175,15 @@ public class SnParser {
 			return selection;
 		}
 		
+		void skipSameLineWhitespaceAndComments() {
+			selectSameLineWhitespace();
+			delete();
+			if(peek() == LINE_COMMENT_CHAR) {
+				selectUntil("\r\n");
+				delete();
+			}
+		}
+		
 		void skipWhitespaceAndComments() {
 			while(true) {
 				//skip over whitespace
@@ -186,6 +205,18 @@ public class SnParser {
 			while(true) {
 				int next = peek();
 				if(next == EOF) break;
+				if(Character.isWhitespace(next)) {
+					right();
+					continue;
+				}
+				break;
+			}
+		}
+		
+		void selectSameLineWhitespace() {
+			while(true) {
+				int next = peek();
+				if(next == EOF || next == '\r' || next == '\n') break;
 				if(Character.isWhitespace(next)) {
 					right();
 					continue;
@@ -219,8 +250,7 @@ public class SnParser {
 		% cool comemnt i've decide on
 		key1 = value1
 		key2
-				=
-												value2
+				= "value2"
 				key3 {
 						subkey1 = subval1 % end-of-line comment
 						subkey2 = subval2
@@ -228,12 +258,14 @@ public class SnParser {
 				key4 = {
 						subkey3 = "subval3"
 						subkey4 = "subval4 addasd"
+						subkey5 =
+						subkey6 = askjdasd
 				}
 		\t
 		\t""";
 		
 		SnMap map = new SnParser(testFile).parseTopLevel();
-		new FlatteningSnWriter().accept(map, (k, v) -> System.out.println(k + "\n\t->" + v));
+		new FlatteningSnWriter().accept(map, (k, v) -> System.out.println(k + "\n\t-> '" + v + "'"));
 		System.out.println(new SnWriter().write(map));
 		System.out.println(new SnWriter().write(new SnStr("lajdkjas\n\nlasdklasd")));
 	}

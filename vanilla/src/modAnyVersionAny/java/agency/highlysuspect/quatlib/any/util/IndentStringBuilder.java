@@ -48,6 +48,7 @@ public class IndentStringBuilder {
 		return this;
 	}
 	
+	//TODO: does this fuckup 'indentAllowed'...
 	public IndentStringBuilder backspace() {
 		out.deleteCharAt(out.length() - 1);
 		return this;

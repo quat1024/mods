@@ -43,11 +43,11 @@ public class SnWriter {
 			out.append(escapeAndQuoteIfNeeded(key));
 			out.append(" = ");
 			accept(value, out);
-			out.newline().newline(); //blank line
+			out.newline(); //newline
 		});
 		
-		//rm last blank line
-		out.backspace().backspace();
+		//rm last newline
+		out.backspace();
 		
 		//closing curly
 		out.decreaseIndent().newline().append("}");

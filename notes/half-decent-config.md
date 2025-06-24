@@ -188,51 +188,151 @@ favorites = [
 ]
 ```
 
+## Examples of prior art & my criticisms
+
+I think these are great config formats! I just have weird tastes and specific goals (like "whitespace in raw strings")
+
+Here are some reasons my goals are different from other configuration languages:
+
+* My audience is videogame players who are not necessarily software developers.
+* It's common for Minecraft mods to manage their own config file. Generally mods parse their config file and then immediately write it back into place, replacing all the comments with developer-supplied ones and redoing the formatting, etc. So features like functions and backreferences will not be used, because the program is in charge of writing the file, not a person.
+* I am a "syntax typing" hater. Config files don't need to support numbers and booleans specially. Unquote ALL the strings!!!
+* I think unquoted strings should allow whitespace, up until the next delimiter. The TOML files NightConfig writes [make me sad](https://github.com/VazkiiMods/Musketeer/blob/b5d9a76977e4a6cde04b894130db1cefeb6e59f3/config/quark-common.toml#L107-L142).
+
+Some config formats.
+
+* [KDL](https://kdl.dev/)
+  * `+` Easy to read
+  * `+` Multiline strings with nice syntax. good feature!
+  * `+` Slightly whitespace-sensitive, but in a way that makes sense
+  * `+` Comments
+  * `-` Syntax typing
+	* `-` No whitespace in unquoted strings
+  * `-` Arrays are fake
+
+KDL has an interesting "node arguments" paradigm where if you write `a b c { ... }`, "b" and "c" become *arguments* to "a". This is cool and would allow for config files like this:
+
+```kdl
+module1 enabled {
+  option value
+}
+
+module2 disabled {
+  option2 value
+}
+```
+
+But this feature precludes whitespace in raw strings, which I care about more for my purposes.
+
+* [scfg](https://git.sr.ht/~emersion/scfg)
+  * `+` It's like "KDL if it only had strings", therefore there is no syntax typing, yay
+  * `-` No multiline strings?
+  * `-` Arrays are still fake
+
+What i mean by "arrays are fake" is that the primary unit in these configuration languages is some kind of multimap from *string* keys to a richer type, so the only place you can put the richer type is in "value position". If you want an array of strings, you can leverage the map structure, use the keys of the map like an array.
+
+```
+my-array {
+  value1
+  value2
+  value3
+}
+```
+
+But if you want arrays-of-more-complicated-things, you need a workaround like ["directives with meaningless names"](https://github.com/kdl-org/kdl/blob/main/JSON-IN-KDL.md). It doesn't speak to me.
+
+For my purposes (minecraft config file, aimed at non-technical users to edit): I *mostly* need maps, but when I want an array I *do* want an array. I think "encoding arrays as directives" is an example of "*fewer* things in the system actually making it *more* complicated".
+
+* [HOCON](https://github.com/lightbend/config/blob/master/HOCON.md)
+  * `+` Its goals. It's nice to see this outlined in a document:
+    > HOCON is significantly harder to specify and to parse than JSON. Think of it as moving the work from the person maintaining the config file to the computer program
+  * `+` Comments
+  * `+` Real arrays
+  * `+` Comes from the Java ecosystem :sparkles: haha
+  * `+` *Interesting thing I will explain*
+  * `-` No whitespace in unquoted strings
+  * `-` Syntax typing with strange parsing rules (`truefoo` tokenizes as boolean `true` followed by `"foo"`), which is kind of taped around with "value concatenation"
+  * `-` Feature creep (includes, selfreferences, an expression langauge, environment variables, etc etc)
+
+quaternioncats pointed out that it seems optimized for creating structured configs via string-templating; you can leverage the value-concatenation to paste arrays together without worrying too much about delimiters and commas. Interesting goal, but not one I particlularly care about.
+
+Includes and selfreferences are fun for people configuring real software. For silly little minecraft mods they are not needed.
+
+The interesting thing: The colon separating a key from a value is optional if the value is an array or object, i.e. `foo {` means `"foo": {` I like this and I actually ran into the same corner of the design space designing my format, but didn't know whether to make the colon required or optional. So I guess it can be optional if HOCON does it... 
+
+* [HashiCorp Configuration Language](https://github.com/hashicorp/hcl/blob/main/hclsyntax/spec.md)
+  * `+` Comments 
+  * `+` Real arrays
+  * `-` Syntax typing
+  * `-` Expression language ? Functions????? Chill bro
+
+Also seems optimized for the "expert developer tending to their file" rather than average user `^^`. I can't find too much information about this format because the documentation is dwarfed in size by details of their expression language.
+
 ## Details
 
 Still loosely-sketching things in, everything is sort of ad-hoc
 
 ### Internal representation
 
-`Sn` is JSON except everything except strings and collections has been removed. An `Sn` can be one of three things:
+A "half decent config format" file describes an instance of the `Sn` data structure. `Sn` is JSON, except everything except strings and collections has been removed. An `Sn` can be one of three things:
 
 * `String`
 * `List<Sn>`
 * `Map<String, Sn>`
 
-### Parsing
+It stands for "string notation".
 
-#### Whitespace
+### Whitespace
 
 `Character.isWhitespace` denotes whitespace. This includes newlines and such
 
-#### Comments
+### Comments
 
 `%` starts a comment. The comment continues to the end of the line.
 
-#### Kv
+### Kv
 
 * Skip whitespace and comments
 * Parse a **key**
 * Skip whitespace and comments
-* Eat an equal sign (?)
-* Skip whitespace and comments
-* Parse a **value**
+* Look at the next character:
+  * if it's an equal sign:
+    * skip it,
+    * skip *whitespace but not newlines*,
+    * if the next character is a newline, the value is `""`,
+    * otherwise parse a value
+  * if it's an `[`, parse an array
+  * if it's an `{`, parse a map
+	* anything else is an error
+	
+`[` and `{` have special handling to implement the "equal signs are optional before arrays and objects" rule.
 
-The (?) is because of an error-recovery mechanism I'm thinking about? If the next character is not `=`, report a warning but parse the value anyway?
+The weird whitespace shit about equal signs is an attempt to make this
 
-#### Key
+```
+{
+	foo =
+	bar = baz
+}
+```
 
-If the next character is `"`, parse a quoted string
+parse as `foo = ""`.
 
-Otherwise, parse a bare string in the following way:
+### Key
 
-* advance the cursor until `{`, `[`, a newline, a line-comment start (`%`), or a kv-split (`=`); whichever comes first
+If the next character is `"`, parse a quoted string, otherwise parse a bare string in the following way:
+
+* advance the cursor until seeing a kv-split (`=`), a line-comment start (`%`), the start of an array or object (`{[`), or a newline, whichever comes first
 * trim the whitespace from the bit that was advanced over
 * this is the key
 
-#### Value
+### Value
 
 Based off the next character:
 
-``
+* `{`, parse an object
+* `[`, parse an array
+* `"`, parse a quoted string
+* anything else, parse a bare string
+
+This time the bare string extends to `%]}` or the end of the line. `%` for a line-comment, `]}` since they may close the structure this keyvalue is embedded in.
