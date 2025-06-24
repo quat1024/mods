@@ -16,24 +16,11 @@ public class IndentStringBuilder {
 	private int level = 0;
 	private boolean indentAllowed = true;
 	
-	//don't put newlines in this string
+	//if you put newlines in this string it might make the indentation go
+	//a little pear-shaped, especially if it ends with a newline. so dont do that
 	public IndentStringBuilder append(String s) {
 		appendIndent();
 		out.append(s);
-		return this;
-	}
-	
-	public IndentStringBuilder appendAll(String... strings) {
-		appendIndent();
-		for(String s : strings) out.append(s);
-		return this;
-	}
-	
-	public IndentStringBuilder appendOnePerLine(String... strings) {
-		for(String s : strings) {
-			append(s);
-			newline();
-		}
 		return this;
 	}
 	

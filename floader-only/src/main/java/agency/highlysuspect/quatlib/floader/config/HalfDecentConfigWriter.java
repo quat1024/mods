@@ -22,7 +22,7 @@ public class HalfDecentConfigWriter extends SnWriter {
 	
 	protected void comment(SectOrOpt item, IndentStringBuilder out) {
 		for(String comment : item.getComment()) {
-			out.append("% " + comment);
+			if(!comment.isEmpty()) out.append("% " + comment);
 			out.newline();
 		}
 	}

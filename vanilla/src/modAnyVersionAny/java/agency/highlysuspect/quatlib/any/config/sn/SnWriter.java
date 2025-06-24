@@ -9,17 +9,11 @@ public class SnWriter {
 		return out.toString();
 	}
 	
-	public String writeTopLevel(SnMap map) {
-		IndentStringBuilder out = new IndentStringBuilder();
-		acceptMapContents(map, out);
-		return out.toString();
-	}
-	
 	public void accept(Sn<?> sn, IndentStringBuilder out) {
 		switch(sn) {
 			case SnList snList -> acceptList(snList, out);
 			case SnMap snMap -> acceptMap(snMap, out);
-			case SnStr snStr -> acceptStrValue(snStr, out);
+			case SnStr snStr -> acceptStr(snStr, out);
 		}
 	}
 	
@@ -45,7 +39,12 @@ public class SnWriter {
 		out.append("{").newline().increaseIndent();
 		
 		//map contents
-		acceptMapContents(map, out);
+		map.forEach((key, value) -> {
+			out.append(escapeAndQuoteIfNeeded(key));
+			out.append(" = ");
+			accept(value, out);
+			out.newline().newline(); //blank line
+		});
 		
 		//rm last blank line
 		out.backspace().backspace();
@@ -54,17 +53,7 @@ public class SnWriter {
 		out.decreaseIndent().newline().append("}");
 	}
 	
-	public void acceptMapContents(SnMap map, IndentStringBuilder out) {
-		//map contents
-		map.forEach((key, value) -> {
-			out.append(escapeAndQuoteIfNeeded(key));
-			out.append(" = ");
-			accept(value, out);
-			out.newline().newline(); //blank line
-		});
-	}
-	
-	public void acceptStrValue(SnStr str, IndentStringBuilder out) {
+	public void acceptStr(SnStr str, IndentStringBuilder out) {
 		out.append(escapeAndQuoteIfNeeded(str.value()));
 	}
 	
