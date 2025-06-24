@@ -320,11 +320,7 @@ parse as `foo = ""`.
 
 ### Key
 
-If the next character is `"`, parse a quoted string, otherwise parse a bare string in the following way:
-
-* advance the cursor until seeing a kv-split (`=`), a line-comment start (`%`), the start of an array or object (`{[`), or a newline, whichever comes first
-* trim the whitespace from the bit that was advanced over
-* this is the key
+If the next character is `"`, parse a quoted string, otherwise parse a bare string
 
 ### Value
 
@@ -335,4 +331,9 @@ Based off the next character:
 * `"`, parse a quoted string
 * anything else, parse a bare string
 
-This time the bare string extends to `%]}` or the end of the line. `%` for a line-comment, `]}` since they may close the structure this keyvalue is embedded in.
+### Bare string
+
+* Collect characters until seeing one of `[]{},%=` or a newline
+* Trim the whitespace and return the result
+
+I used to have contextual bare strings (like, `[]` would not end a barestring used in a *map*, not a list) but this is Too Ridiculous and allows for patterns which are honestly difficult to understand even as a programmer

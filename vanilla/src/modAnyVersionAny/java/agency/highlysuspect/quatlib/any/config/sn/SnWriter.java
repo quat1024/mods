@@ -60,7 +60,7 @@ public class SnWriter {
 	/// quoting rules ///
 	
 	protected static boolean requireQuoting(int c) {
-		return c == '\n' || c == '\t' || c == '\\' || c == '"' || c == '=' || c == '{' || c == '}' || c == '[' || c == ']';
+		return c == '\n' || c == '\t' || c == '\\' || c == '"' || c == '=' || c == '{' || c == '}' || c == '[' || c == ']' || c == ',';
 	}
 	
 	protected static boolean requireEscaping(int c) {
@@ -68,7 +68,7 @@ public class SnWriter {
 	}
 	
 	protected static boolean needsQuotes(String s) {
-		return s.trim().length() != s.length() || s.chars().anyMatch(SnWriter::requireQuoting);
+		return s.isEmpty() || s.trim().length() != s.length() || s.chars().anyMatch(SnWriter::requireQuoting);
 	}
 	
 	protected static String escapeAndQuote(String s) {

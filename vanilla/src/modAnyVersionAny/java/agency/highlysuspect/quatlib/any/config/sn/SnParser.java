@@ -13,9 +13,12 @@ public class SnParser {
 	private static final char KV_SPLIT = '=';
 	private static final char LINE_COMMENT_CHAR = '%';
 	
-	private static final String BARE_KEY_ENDERS = "{[\r\n" + LINE_COMMENT_CHAR + KV_SPLIT;
-	private static final String BARE_VALUE_ENDERS_WITHIN_MAP = "}\r\n" + LINE_COMMENT_CHAR;
-	private static final String BARE_VALUE_ENDERS_WITHIN_LIST = ",]\r\n" + LINE_COMMENT_CHAR;
+	private static final String BARE_STRING_ENDERS = "{}[],\r\n" + KV_SPLIT + LINE_COMMENT_CHAR;
+	
+	//rip context-sensitive barestring parsing, too ridiculous for this world
+//	private static final String BARE_KEY_ENDERS = "{[\r\n" + LINE_COMMENT_CHAR + KV_SPLIT;
+//	private static final String BARE_VALUE_ENDERS_WITHIN_MAP = "}\r\n" + LINE_COMMENT_CHAR;
+//	private static final String BARE_VALUE_ENDERS_WITHIN_LIST = ",]\r\n" + LINE_COMMENT_CHAR;
 	
 	public SnMap parseTopLevel() {
 		//keep parsing items until we run out the file, put em in a big map
@@ -48,7 +51,7 @@ public class SnParser {
 			next = cursor.peek();
 			//System.out.println("parsed key " + key + " cursor is at " + cursor + " next char is " + (char) next);
 			if(next == '\r' || next == '\n') map.put(key, Sn.str(""));
-			else map.put(key, parseValue(BARE_VALUE_ENDERS_WITHIN_MAP));
+			else map.put(key, parseValue());
 		} else if(next == '{') {
 			//a map with the initial equal-sign omitted
 			map.put(key, parseMap());
@@ -77,6 +80,9 @@ public class SnParser {
 				//TODO: report the warning
 				//throw new IllegalStateException("unclosed block starting on line " + blockStartLine);
 				return map;
+			} else if(next == ',') {
+				//skip it but keep going
+				cursor.right();
 			} else if(next == '}') {
 				//done parsing this map
 				cursor.right();
@@ -100,46 +106,56 @@ public class SnParser {
 			if(next == EOF) {
 				//TODO: report a warning
 				return list;
+			} else if(next == ',') {
+				//skip it but go again
+				cursor.right();
 			} else if(next == ']') {
 				//done parsing this list
 				cursor.right();
 				return list;
 			} else {
 				//parse an item
-				list.add(parseValue(BARE_VALUE_ENDERS_WITHIN_LIST));
-				
-				//if there is a comma, skip it (n.b. list trailing comma is allowed)
-				cursor.skipWhitespaceAndComments();
-				next = cursor.peek();
-				if(next == ',') cursor.right();
+				list.add(parseValue());
 			}
 		}
 	}
 	
-	private Sn<?> parseValue(String enders) {
+	private String parseKey() {
+		return cursor.peek() == '"' ? parseQuotedString() : parseBareString();
+	}
+	
+	private Sn<?> parseValue() {
 		int next = cursor.peek();
 		if(next == EOF) throw new IllegalStateException("unexpected end of file while parsing value");
 		if(next == '"') return Sn.str(parseQuotedString());
 		if(next == '{') return parseMap();
 		if(next == '[') return parseList();
-		return Sn.str(parseBareValue(enders));
+		return Sn.str(parseBareString());
 	}
 	
-	//parse a bare string until the end of the line, a structure closer, or an end-of-line comment
-	private String parseBareValue(String enders) {
-		cursor.selectUntil(enders);
-		return cursor.cut().trim();
-	}
-	
-	private String parseKey() {
-		return cursor.peek() == '"' ? parseQuotedString() : parseBareKey();
-	}
-	
-	//parse a bare string until the end of the line, an equal sign (which would start a kv),
-	//an end-of-line comment, or an structure opener
-	private String parseBareKey() {
-		cursor.selectUntil(BARE_KEY_ENDERS);
-		return cursor.cut().trim();
+	private String parseBareString() {
+		cursor.selectUntil(BARE_STRING_ENDERS);
+		String bareStringWithWhitespace = cursor.cut();
+		
+		if(bareStringWithWhitespace.isEmpty()) {
+			//we can end up here if we get stuck on a barestring ender in an object or array.
+			//basically imagine this
+			//    key = hello, world
+			//where user meant to write "hello, world".
+			//we will parse 'key = hello', barestring stops on the comma; try to
+			//parse another key, fall into this barestring code, but we're still
+			//at the same character the last barestring ended on, no good.
+			//try to produce a more sensible error message in this case.
+			int next = cursor.peek();
+			if(next == EOF) {
+				//todo figure out why this can happen lol..
+				throw new IllegalStateException("unexpected end of file, at " + cursor);
+			} else {
+				throw new IllegalStateException("To use the character '" + (char) next + "' in a string, it must be quoted. At: " + cursor);
+			}
+		}
+		
+		return bareStringWithWhitespace.trim();
 	}
 	
 	private String parseQuotedString() {
@@ -280,6 +296,7 @@ public class SnParser {
 	}
 	
 	public static void main(String... args) {
+		
 		String testFile = """
 		% cool comemnt i've decide on
 		key1 = value1
@@ -301,18 +318,26 @@ public class SnParser {
 			This file format is a little bit of a disaster, don't you think.
 			Haha, anyway, just catching up.
 			{
-			  signed = Your friend, quat.
+			  signed = "Your friend, quat."
 			  date = Jun 24 2025
-			  enclosed = [heart sticker, postcard, an opening bracket [
-			              and curly brace {, smashed M&M candy]
+			  enclosed = [heart sticker, postcard, "an opening bracket ["
+			              "and curly brace {", smashed M&M candy]
 			}
 		]
+		
+		crytyping [
+		  how can i hold,,all,, these,,,, commas, ,, ,,, bro,,,,,
+		]
+		
+		hmm [
+		  outer[inner]outer[inner again, that's neat]outer
+		]
+		
+		coolmap { with = keys, on = one, line = ? }
 		\t
 		\t""";
-		
 		SnMap map = new SnParser(testFile).parseTopLevel();
 		new FlatteningSnWriter().accept(map, (k, v) -> System.out.println(k + "\n\t-> '" + v + "'"));
 		System.out.println(new SnWriter().write(map));
-		System.out.println(new SnWriter().write(new SnStr("lajdkjas\n\nlasdklasd")));
 	}
 }
