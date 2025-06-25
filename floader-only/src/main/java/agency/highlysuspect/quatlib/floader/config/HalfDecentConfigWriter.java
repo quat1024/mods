@@ -2,20 +2,20 @@ package agency.highlysuspect.quatlib.floader.config;
 
 import agency.highlysuspect.quatlib.any.config.ConfigOpt;
 import agency.highlysuspect.quatlib.any.config.ConfigSection;
-import agency.highlysuspect.quatlib.any.config.ConfigState;
+import agency.highlysuspect.quatlib.any.config.ReadableConfig;
 import agency.highlysuspect.quatlib.any.config.SectOrOpt;
 import agency.highlysuspect.quatlib.any.config.sn.Sn;
 import agency.highlysuspect.quatlib.any.config.sn.SnWriter;
 import agency.highlysuspect.quatlib.any.util.IndentStringBuilder;
 
 public class HalfDecentConfigWriter extends SnWriter {
-	public String writeTopLevel(ConfigSection section, ConfigState state) {
+	public String writeTopLevel(ConfigSection section, ReadableConfig state) {
 		IndentStringBuilder out = new IndentStringBuilder();
 		acceptRootSection(section, state, out);
 		return out.toString();
 	}
 	
-	public void accept(SectOrOpt item, ConfigState state, IndentStringBuilder out) {
+	public void accept(SectOrOpt item, ReadableConfig state, IndentStringBuilder out) {
 		if(item instanceof ConfigSection section) acceptSection(section, state, out);
 		else if(item instanceof ConfigOpt<?> opt) acceptOption(opt, state, out);
 	}
@@ -27,7 +27,7 @@ public class HalfDecentConfigWriter extends SnWriter {
 		}
 	}
 	
-	public void acceptRootSection(ConfigSection section, ConfigState state, IndentStringBuilder out) {
+	public void acceptRootSection(ConfigSection section, ReadableConfig state, IndentStringBuilder out) {
 		comment(section, out);
 		out.newline();
 		
@@ -39,7 +39,7 @@ public class HalfDecentConfigWriter extends SnWriter {
 		out.backspace();
 	}
 	
-	public void acceptSection(ConfigSection section, ConfigState state, IndentStringBuilder out) {
+	public void acceptSection(ConfigSection section, ReadableConfig state, IndentStringBuilder out) {
 		comment(section, out);
 		
 		out.append(escapeAndQuoteIfNeeded(section.getName()))
@@ -57,7 +57,7 @@ public class HalfDecentConfigWriter extends SnWriter {
 		out.decreaseIndent().newline().append("}");
 	}
 	
-	public <T> void acceptOption(ConfigOpt<T> opt, ConfigState state, IndentStringBuilder out) {
+	public <T> void acceptOption(ConfigOpt<T> opt, ReadableConfig state, IndentStringBuilder out) {
 		comment(opt, out);
 		
 		out.append(escapeAndQuoteIfNeeded(opt.getName())).append(" = ");

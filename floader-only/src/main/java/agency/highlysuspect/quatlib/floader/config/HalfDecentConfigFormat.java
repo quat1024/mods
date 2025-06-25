@@ -1,16 +1,15 @@
 package agency.highlysuspect.quatlib.floader.config;
 
-import agency.highlysuspect.quatlib.any.config.ConfigFrobnicator;
 import agency.highlysuspect.quatlib.any.config.ConfigOpt;
 import agency.highlysuspect.quatlib.any.config.ConfigSection;
-import agency.highlysuspect.quatlib.any.config.ConfigState;
+import agency.highlysuspect.quatlib.any.config.MatchedUnparsedConfig;
+import agency.highlysuspect.quatlib.any.config.ReadableConfig;
+import agency.highlysuspect.quatlib.any.config.ValidatedConfig;
 import agency.highlysuspect.quatlib.any.config.failure.ConsoleReportFormatter;
 import agency.highlysuspect.quatlib.any.config.failure.Report;
 import agency.highlysuspect.quatlib.any.config.sn.SnMap;
 import agency.highlysuspect.quatlib.any.config.sn.SnParser;
 import agency.highlysuspect.quatlib.any.config.sn.SnView;
-
-import java.util.Map;
 
 public class HalfDecentConfigFormat {
 	public static void main(String... args) {
@@ -35,7 +34,7 @@ public class HalfDecentConfigFormat {
 		schema.subsection("reptiles", "Wooo lets go", "I love lizards").add(lizards, dragons, dragonEssay);
 		
 		//write out the default config
-		String written = new HalfDecentConfigWriter().writeTopLevel(schema, ConfigState.Default.INSTANCE);
+		String written = new HalfDecentConfigWriter().writeTopLevel(schema, ReadableConfig.Default.INSTANCE);
 		
 		//simulate modifying the config...
 		String modified = written.replace("dragons = 5", "dragons = 999");
@@ -46,24 +45,24 @@ public class HalfDecentConfigFormat {
 		SnView view = parsed.view();
 		
 		//figure out which fragment of Sn goes to which option
-		Map<ConfigOpt<?>, SnView> assigned = new ConfigFrobnicator().assignSn(schema, view);
+		MatchedUnparsedConfig matched = new MatchedUnparsedConfig().match(schema, view);
 		
 		//finally parse into real java objects
-		ConfigState validated = new ConfigFrobnicator().parseAndValidate(assigned);
+		ValidatedConfig validated = new ValidatedConfig().parseAndValidate(matched);
 		
 		//reading the config is pretty simple and uses the ConfigOpt objects for well-typedness
 		System.out.println("There are " + validated.get(dragons) + " dragons");
-//			String modified2 = modified.replace("999", "{ \"oh\" = \"no\" }");
 
 //		//what if there's an error?
 		//TODO: the error report seems backwards to me (it starts with 'could not parse as integer')
 		// (i hastily flipped it around with the console formatter, hmm)
 		try {
 			String modified2 = modified.replace("999", "jsdhakhdjsad");
+//			String modified2 = modified.replace("999", "{ \"oh\" = \"no\" }");
 			System.out.println(modified2);
 			view = new SnParser(modified2).parseTopLevel().view();
-			assigned = new ConfigFrobnicator().assignSn(schema, view);
-			validated = new ConfigFrobnicator().parseAndValidate(assigned);
+			matched = new MatchedUnparsedConfig().match(schema, view);
+			validated = new ValidatedConfig().parseAndValidate(matched);
 		} catch (Throwable e) {
 			throw Report.modify(e, it -> it.addMessage("Problem loading MyCoolMod config file at config/my_cool_mod.txt"));
 		}
