@@ -1,11 +1,12 @@
 package agency.highlysuspect.quatlib.any.config;
 
+import agency.highlysuspect.quatlib.any.config.failure.Report;
 import agency.highlysuspect.quatlib.any.config.sn.SnView;
 
-import java.util.LinkedHashMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
 
-public class MatchedUnparsedConfig extends LinkedHashMap<ConfigOpt<?>, SnView> {
+public class MatchedUnparsedConfig extends IdentityHashMap<ConfigOpt<?>, SnView> {
 	public MatchedUnparsedConfig() {}
 	
 	public MatchedUnparsedConfig(Map<? extends ConfigOpt<?>, ? extends SnView> m) {
@@ -43,6 +44,32 @@ public class MatchedUnparsedConfig extends LinkedHashMap<ConfigOpt<?>, SnView> {
 		//otherwise we're looking at a config option
 		if(item instanceof ConfigOpt<?> opt) {
 			put(opt, view);
+		}
+	}
+	
+	public ValidatedConfig parseAndValidate() throws Report {
+		ValidatedConfig validOptions = new ValidatedConfig();
+		
+		for(Map.Entry<ConfigOpt<?>, SnView> e : entrySet()) {
+			ConfigOpt<?> opt = e.getKey();
+			SnView sn = e.getValue();
+			if(sn == null) continue;
+			
+			validOptions.put(opt, parseAndValidateImpl(opt, sn));
+		}
+		return validOptions;
+	}
+	
+	//just need to name the generic
+	private <T> T parseAndValidateImpl(ConfigOpt<T> opt, SnView view) throws Report {
+		//TODO: catch exceptions and add them to a warnings list, then ignore the failing option
+		try {
+			T parsed = opt.parse(view);
+			T corrected = opt.correct(parsed);
+			opt.validate(corrected);
+			return corrected;
+		} catch (Throwable e) {
+			throw Report.modify(e, it -> it.addMessage("Problem while parsing option '" + view.path() + "'"));
 		}
 	}
 }

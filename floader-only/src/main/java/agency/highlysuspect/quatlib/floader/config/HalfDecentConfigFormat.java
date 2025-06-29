@@ -48,10 +48,11 @@ public class HalfDecentConfigFormat {
 		MatchedUnparsedConfig matched = new MatchedUnparsedConfig().match(schema, view);
 		
 		//finally parse into real java objects
-		ValidatedConfig validated = new ValidatedConfig().parseAndValidate(matched);
+		ValidatedConfig validated = matched.parseAndValidate();
+		ReadableConfig config = new ReadableConfig.Mapped(validated.toMap());
 		
 		//reading the config is pretty simple and uses the ConfigOpt objects for well-typedness
-		System.out.println("There are " + validated.get(dragons) + " dragons");
+		System.out.println("There are " + config.get(dragons) + " dragons");
 
 //		//what if there's an error?
 		//TODO: the error report seems backwards to me (it starts with 'could not parse as integer')
@@ -62,9 +63,10 @@ public class HalfDecentConfigFormat {
 			System.out.println(modified2);
 			view = new SnParser(modified2).parseTopLevel().view();
 			matched = new MatchedUnparsedConfig().match(schema, view);
-			validated = new ValidatedConfig().parseAndValidate(matched);
+			validated = matched.parseAndValidate();
+			config = new ReadableConfig.Mapped(validated);
 		} catch (Throwable e) {
-			throw Report.modify(e, it -> it.addMessage("Problem loading MyCoolMod config file at config/my_cool_mod.txt"));
+			new ConsoleReportFormatter().report(Report.modify(e, it -> it.addMessage("Problem loading MyCoolMod config file at config/my_cool_mod.txt")));
 		}
 		
 		//you can browse this structure in a typesafe way without parsing it further than strings! kinda fun!

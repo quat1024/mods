@@ -4,8 +4,8 @@ import agency.highlysuspect.quatlib.any.config.ConfigOpt;
 import agency.highlysuspect.quatlib.any.config.ConfigSection;
 import agency.highlysuspect.quatlib.any.config.MatchedUnparsedConfig;
 import agency.highlysuspect.quatlib.any.config.ReadableConfig;
-import agency.highlysuspect.quatlib.any.config.ValidatedConfig;
 import agency.highlysuspect.quatlib.any.config.WritableConfig;
+import agency.highlysuspect.quatlib.any.config.failure.ConsoleReportFormatter;
 import agency.highlysuspect.quatlib.any.config.failure.Report;
 import agency.highlysuspect.quatlib.any.config.sn.Sn;
 import agency.highlysuspect.quatlib.any.config.sn.SnParser;
@@ -14,23 +14,28 @@ import agency.highlysuspect.quatlib.any.config.sn.SnView;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 
-public class AutoloadHalfDecentConfigFile implements ReadableConfig, WritableConfig, WritableConfig.Handle {
-	public AutoloadHalfDecentConfigFile(Path path, ConfigSection schema, Consumer<String> log) {
+public class AutoloadHalfDecentConfigFile implements ReadableConfig, WritableConfig {
+	public AutoloadHalfDecentConfigFile(Path path, ConfigSection schema, Consumer<String> log, ExecutorService background) {
 		this.path = path;
 		this.schema = schema;
 		this.log = log;
+		this.background = background;
 	}
 	
 	private final Path path;
 	private final ConfigSection schema;
 	private final Consumer<String> log;
+	private final ExecutorService background;
 	
-	private final Map<ConfigOpt<?>, Object> options = new IdentityHashMap<>();
+	private Map<ConfigOpt<?>, Object> options = new IdentityHashMap<>();
 	
+	//TODO actually implement the filewatcher lmao
 	//filewatcher debouncing
 	long filewatcherDebounce = 0;
 	protected static final int DEBOUNCE_MS = 300;
@@ -47,15 +52,37 @@ public class AutoloadHalfDecentConfigFile implements ReadableConfig, WritableCon
 	
 	@Override
 	public void modify(Consumer<Handle> modifier) {
-		modifier.accept(this);
+		//apply all of the changes, and then schedule a save (once!)
+		modifier.accept(writeHandle);
+		saveLater();
 	}
 	
-	@Override
-	public <T> Handle set(ConfigOpt<? super T> opt, T value) {
-		return this;
+	private final WritableConfig.Handle writeHandle = new Handle() {
+		@Override
+		public <T> Handle set(ConfigOpt<? super T> opt, T value) {
+			options.put(opt, value);
+			return writeHandle;
+		}
+	};
+	
+	public void saveNow() throws Report {
+		doSave(options);
 	}
 	
-	public void saveNow(Map<ConfigOpt<?>, Object> state) throws Report {
+	public void saveLater() {
+		//make a clone that's hopefully safe to pass between threads
+		Map<ConfigOpt<?>, Object> stateClone = new HashMap<>(options);
+		background.submit(() -> {
+			try {
+				doSave(stateClone);
+			} catch (Report e) {
+				//TODO, log the error *properly* to the logger
+				new ConsoleReportFormatter().report(Report.modify(e, it -> it.addMessage("Failed to save config to " + path)));
+			}
+		});
+	}
+	
+	private void doSave(Map<ConfigOpt<?>, Object> state) throws Report {
 		try {
 			String serializedConfig = new HalfDecentConfigWriter().writeTopLevel(schema, new ReadableConfig.Mapped(state));
 			
@@ -65,11 +92,10 @@ public class AutoloadHalfDecentConfigFile implements ReadableConfig, WritableCon
 			
 			Files.writeString(path, serializedConfig, StandardCharsets.UTF_8);
 		} catch (Throwable e) {
-			throw Report.modify(e, it -> it.addMessage("Failed to save config to " + path));
+			//TODO, log the error *properly* to the logger
+			new ConsoleReportFormatter().report(Report.modify(e, it -> it.addMessage("Failed to save config to " + path)));
 		}
 	}
-	
-	//TODO: saveLater (runs on an executor service, makes a copy of the state before submitting to it though)
 	
 	public void load() throws Report {
 		try {
@@ -78,9 +104,8 @@ public class AutoloadHalfDecentConfigFile implements ReadableConfig, WritableCon
 			Sn<?> parsed = new SnParser(snString).parseTopLevel();
 			SnView view = parsed.view();
 			MatchedUnparsedConfig matched = new MatchedUnparsedConfig().match(schema, view);
-			ValidatedConfig valid = new ValidatedConfig().parseAndValidate(matched);
 			
-			//TODO add some way to get the Map out of a ValidatedConfig or maybe even all configs
+			options = new IdentityHashMap<>(matched.parseAndValidate().toMap());
 			
 		} catch (Throwable e) {
 			throw Report.modify(e, it -> it.addMessage("Failed to load config from " + path));
