@@ -1,11 +1,17 @@
 package agency.highlysuspect.crowmap.ver.mixin.client;
 
+import agency.highlysuspect.crowmap.any.CrowmapBase;
+import agency.highlysuspect.crowmap.any.CrowmapBaseOpts;
+import agency.highlysuspect.quatlib.any.config.ReadableConfig;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.*;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.MapItem;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.TooltipDisplay;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
@@ -60,6 +66,8 @@ public class ItemStackHoverTextMixin {
 	public void appendHoverText(Item.TooltipContext tooltipContext, TooltipDisplay tooltipDisplay, @Nullable Player player, TooltipFlag tooltipFlag, Consumer<Component> tooltipComponents, CallbackInfo ci) {
 		if(!isMap()) return;
 		if(tooltipContext == null || tooltipContext == Item.TooltipContext.EMPTY) return;
+		ReadableConfig config = CrowmapBase.inst().config;
+		if(!config.get(CrowmapBaseOpts.SHOW_TOOLTIP)) return;
 		
 		boolean shifting = Screen.hasShiftDown();
 		
@@ -74,7 +82,8 @@ public class ItemStackHoverTextMixin {
 				//languages might not work if like, the mod was installed without fabric-api.
 				case -1 -> {
 					if(!Language.getInstance().has("crowmap.tooltip.hello")) {
-						tooltipState = -2;
+						//tooltipState = -2;
+						tooltipState = 0; //TODO - not working in dev, why
 						return;
 					} else {
 						tooltipState = 0;
@@ -101,8 +110,12 @@ public class ItemStackHoverTextMixin {
 						addInfo(tooltipComponents);
 						return;
 					} else {
-						tooltipState = 2;
-						byeMillis = System.currentTimeMillis();
+						if(config.get(CrowmapBaseOpts.TOOLTIP_SELF_DESTRUCT)) {
+							tooltipState = 2;
+							byeMillis = System.currentTimeMillis();
+						} else {
+							tooltipState = 0;
+						}
 						continue;
 					}
 				}

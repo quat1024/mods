@@ -1,4 +1,4 @@
-package agency.highlysuspect.quatlib.any.config.failure;
+package agency.highlysuspect.quatlib.any.failure;
 
 public class ReportTestingISuppose {
 	public void frobnicate() throws Report {

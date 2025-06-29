@@ -1,6 +1,6 @@
 package agency.highlysuspect.quatlib.any.config.sn;
 
-import agency.highlysuspect.quatlib.any.config.failure.Report;
+import agency.highlysuspect.quatlib.any.failure.Report;
 import agency.highlysuspect.quatlib.any.util.SnocList;
 
 //TODO: this could probably be removed and folded into the Report mechanism now

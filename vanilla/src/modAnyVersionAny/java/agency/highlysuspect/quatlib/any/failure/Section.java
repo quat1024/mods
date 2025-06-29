@@ -1,4 +1,4 @@
-package agency.highlysuspect.quatlib.any.config.failure;
+package agency.highlysuspect.quatlib.any.failure;
 
 import java.util.Arrays;
 import java.util.List;

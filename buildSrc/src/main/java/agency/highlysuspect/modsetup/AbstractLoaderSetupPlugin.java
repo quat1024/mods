@@ -12,12 +12,14 @@ import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ConfigurationContainer;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
+import org.gradle.api.file.DuplicatesStrategy;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.api.tasks.TaskContainer;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.bundling.AbstractArchiveTask;
 import org.gradle.jvm.tasks.Jar;
+import org.gradle.language.jvm.tasks.ProcessResources;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
@@ -219,6 +221,15 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 						it.classpath(set.getRuntimeClasspath()));
 				}
 				
+				//fold in the vanilla resources
+				//TODO: test this and make sure it works on neoforge too, built jars, etc
+				tasks.named(set.getProcessResourcesTaskName(), ProcessResources.class, it -> {
+					it.from(
+						Util.vanillaSourceSet(project, mod, null).getResources(),
+						Util.vanillaSourceSet(project, mod, ver).getResources()
+					);
+				});
+				
 				//a "dep jar". all mod-specific code is splatted into it, but
 				//all non-mod-specific code is expected to be supplied via quatlib dependency
 				TaskProvider<Jar> depJar = tasks.register(Util.modVersionLoader(mod, ver, loader) + "DepJar", Jar.class, it -> {
@@ -230,6 +241,9 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 						it.getArchiveClassifier().set("dev");
 						devlibs(it);
 					}
+					
+					//TODO: kludge, happens since resources from :vanilla are added into processResources...
+					it.setDuplicatesStrategy(DuplicatesStrategy.INCLUDE);
 				});
 				tasks.named("jar", it -> it.dependsOn(depJar));
 				loaderModOptions.depJar = depJar;

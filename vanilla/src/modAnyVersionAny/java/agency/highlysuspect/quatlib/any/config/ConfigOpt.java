@@ -1,6 +1,6 @@
 package agency.highlysuspect.quatlib.any.config;
 
-import agency.highlysuspect.quatlib.any.config.failure.Report;
+import agency.highlysuspect.quatlib.any.failure.Report;
 import agency.highlysuspect.quatlib.any.config.sn.Sn;
 import agency.highlysuspect.quatlib.any.config.sn.SnView;
 import agency.highlysuspect.quatlib.any.util.QuatUtil;

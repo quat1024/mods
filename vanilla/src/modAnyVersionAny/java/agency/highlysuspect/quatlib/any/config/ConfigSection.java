@@ -56,8 +56,11 @@ public class ConfigSection implements SectOrOpt {
 	}
 	
 	public ConfigSection subsection(String name, String... comment) {
-		ConfigSection subsection = new ConfigSection(name, comment);
-		add(subsection);
+		ConfigSection subsection = getSectionByName(name);
+		if(subsection == null) {
+			subsection = new ConfigSection(name, comment);
+			add(subsection);
+		}
 		return subsection;
 	}
 }

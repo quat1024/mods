@@ -1,5 +1,7 @@
 package agency.highlysuspect.crowmap.any;
 
+import agency.highlysuspect.quatlib.any.config.ConfigSection;
+import agency.highlysuspect.quatlib.any.config.WritableConfig;
 import org.jetbrains.annotations.Nullable;
 
 public abstract class CrowmapBase {
@@ -14,4 +16,19 @@ public abstract class CrowmapBase {
 	public static CrowmapBase inst() {
 		return INST;
 	}
+	
+	//init
+	public void init() {
+		configSchema = visitConfigSchema(new ConfigSection("crowmap", "Options for Crowmap."));
+		config = makeConfig(configSchema);
+	}
+	
+	//config
+	public ConfigSection configSchema;
+	public WritableConfig config;
+	public ConfigSection visitConfigSchema(ConfigSection root) {
+		return CrowmapBaseOpts.visit(root);
+	}
+	
+	public abstract WritableConfig makeConfig(ConfigSection schema);
 }

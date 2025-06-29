@@ -15,10 +15,16 @@
 	"license": "${license}",
 	"icon": "${modid}_icon.png",
 	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"agency.highlysuspect.crowmap.fab.CrowmapFabric"
+		]
+	},
 	"mixins": [
 		"crowmap.mixins.json"
 	],
 	"depends": {
-		"minecraft": ">=${minecraft_version}"
+		"minecraft": ">=${minecraft_version}",
+		"modder_name_lib": "*"
 	}
 }

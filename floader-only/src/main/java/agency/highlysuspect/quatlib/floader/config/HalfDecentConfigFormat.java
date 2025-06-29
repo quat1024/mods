@@ -2,11 +2,13 @@ package agency.highlysuspect.quatlib.floader.config;
 
 import agency.highlysuspect.quatlib.any.config.ConfigOpt;
 import agency.highlysuspect.quatlib.any.config.ConfigSection;
+import agency.highlysuspect.quatlib.any.config.DefaultConfig;
 import agency.highlysuspect.quatlib.any.config.MatchedUnparsedConfig;
+import agency.highlysuspect.quatlib.any.config.MutableMapConfig;
 import agency.highlysuspect.quatlib.any.config.ReadableConfig;
 import agency.highlysuspect.quatlib.any.config.ValidatedConfig;
-import agency.highlysuspect.quatlib.any.config.failure.ConsoleReportFormatter;
-import agency.highlysuspect.quatlib.any.config.failure.Report;
+import agency.highlysuspect.quatlib.any.failure.ConsoleReportFormatter;
+import agency.highlysuspect.quatlib.any.failure.Report;
 import agency.highlysuspect.quatlib.any.config.sn.SnMap;
 import agency.highlysuspect.quatlib.any.config.sn.SnParser;
 import agency.highlysuspect.quatlib.any.config.sn.SnView;
@@ -34,7 +36,7 @@ public class HalfDecentConfigFormat {
 		schema.subsection("reptiles", "Wooo lets go", "I love lizards").add(lizards, dragons, dragonEssay);
 		
 		//write out the default config
-		String written = new HalfDecentConfigWriter().writeTopLevel(schema, ReadableConfig.Default.INSTANCE);
+		String written = new HalfDecentConfigWriter().writeTopLevel(schema, DefaultConfig.INSTANCE);
 		
 		//simulate modifying the config...
 		String modified = written.replace("dragons = 5", "dragons = 999");
@@ -49,7 +51,7 @@ public class HalfDecentConfigFormat {
 		
 		//finally parse into real java objects
 		ValidatedConfig validated = matched.parseAndValidate();
-		ReadableConfig config = new ReadableConfig.Mapped(validated.toMap());
+		ReadableConfig config = new MutableMapConfig(validated.toMap());
 		
 		//reading the config is pretty simple and uses the ConfigOpt objects for well-typedness
 		System.out.println("There are " + config.get(dragons) + " dragons");
@@ -64,7 +66,7 @@ public class HalfDecentConfigFormat {
 			view = new SnParser(modified2).parseTopLevel().view();
 			matched = new MatchedUnparsedConfig().match(schema, view);
 			validated = matched.parseAndValidate();
-			config = new ReadableConfig.Mapped(validated);
+			config = new MutableMapConfig(validated);
 		} catch (Throwable e) {
 			new ConsoleReportFormatter().report(Report.modify(e, it -> it.addMessage("Problem loading MyCoolMod config file at config/my_cool_mod.txt")));
 		}
