@@ -7,15 +7,8 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 
 public class MatchedUnparsedConfig extends IdentityHashMap<ConfigOpt<?>, SnView> {
-	public MatchedUnparsedConfig() {}
-	
-	public MatchedUnparsedConfig(Map<? extends ConfigOpt<?>, ? extends SnView> m) {
-		super(m);
-	}
-	
-	public MatchedUnparsedConfig match(ConfigSection schema, SnView view) {
+	public MatchedUnparsedConfig(ConfigSection schema, SnView view) {
 		matchImpl(schema, view);
-		return this;
 	}
 	
 	private void matchImpl(SectOrOpt item, SnView view) {

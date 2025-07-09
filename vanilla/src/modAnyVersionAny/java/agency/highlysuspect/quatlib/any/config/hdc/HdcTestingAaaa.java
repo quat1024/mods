@@ -1,4 +1,4 @@
-package agency.highlysuspect.quatlib.floader.config;
+package agency.highlysuspect.quatlib.any.config.hdc;
 
 import agency.highlysuspect.quatlib.any.config.ConfigOpt;
 import agency.highlysuspect.quatlib.any.config.ConfigSection;
@@ -13,7 +13,7 @@ import agency.highlysuspect.quatlib.any.config.sn.SnMap;
 import agency.highlysuspect.quatlib.any.config.sn.SnParser;
 import agency.highlysuspect.quatlib.any.config.sn.SnView;
 
-public class HalfDecentConfigFormat {
+public class HdcTestingAaaa {
 	public static void main(String... args) {
 		try {
 			main2();
@@ -47,7 +47,7 @@ public class HalfDecentConfigFormat {
 		SnView view = parsed.view();
 		
 		//figure out which fragment of Sn goes to which option
-		MatchedUnparsedConfig matched = new MatchedUnparsedConfig().match(schema, view);
+		MatchedUnparsedConfig matched = new MatchedUnparsedConfig(schema, view);
 		
 		//finally parse into real java objects
 		ValidatedConfig validated = matched.parseAndValidate();
@@ -64,7 +64,7 @@ public class HalfDecentConfigFormat {
 //			String modified2 = modified.replace("999", "{ \"oh\" = \"no\" }");
 			System.out.println(modified2);
 			view = new SnParser(modified2).parseTopLevel().view();
-			matched = new MatchedUnparsedConfig().match(schema, view);
+			matched = new MatchedUnparsedConfig(schema, view);
 			validated = matched.parseAndValidate();
 			config = new MutableMapConfig(validated);
 		} catch (Throwable e) {

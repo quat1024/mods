@@ -1,4 +1,4 @@
-package agency.highlysuspect.quatlib.floader.config;
+package agency.highlysuspect.quatlib.any.config.hdc;
 
 import agency.highlysuspect.quatlib.any.config.ConfigOpt;
 import agency.highlysuspect.quatlib.any.config.ConfigSection;

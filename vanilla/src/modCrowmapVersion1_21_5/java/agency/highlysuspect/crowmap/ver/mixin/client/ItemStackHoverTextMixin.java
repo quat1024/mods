@@ -82,8 +82,7 @@ public class ItemStackHoverTextMixin {
 				//languages might not work if like, the mod was installed without fabric-api.
 				case -1 -> {
 					if(!Language.getInstance().has("crowmap.tooltip.hello")) {
-						//tooltipState = -2;
-						tooltipState = 0; //TODO - not working in dev, why
+						tooltipState = -2;
 						return;
 					} else {
 						tooltipState = 0;
@@ -105,6 +104,7 @@ public class ItemStackHoverTextMixin {
 				
 				//state 1: holding shift, looking at the message.
 				//displays the message and goes to state 2 when they release shift.
+				//(or state 0 if 'self destruct' is turned off.)
 				case 1 -> {
 					if(shifting) {
 						addInfo(tooltipComponents);
@@ -141,6 +141,13 @@ public class ItemStackHoverTextMixin {
 					if(shifting) {
 						addInfo(tooltipComponents);
 					}
+					
+					//re-show the tooltip if the self destruct option is turned back off.
+					if(!config.get(CrowmapBaseOpts.TOOLTIP_SELF_DESTRUCT)) {
+						tooltipState = 0;
+						continue;
+					}
+					
 					return;
 				}
 				

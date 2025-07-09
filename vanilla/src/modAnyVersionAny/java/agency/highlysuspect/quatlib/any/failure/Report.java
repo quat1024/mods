@@ -29,6 +29,10 @@ public class Report extends Exception {
 		}
 	}
 	
+	public static Report withMessage(Throwable t, String message) {
+		return Report.modify(t, it -> it.addMessage(message));
+	}
+	
 	//Throwables can have a null message, this is an attempt to pick something sensible if there is no message
 	//Somewhat defensive...
 	private static @NotNull String fallbackMessage(Throwable t) {
@@ -113,6 +117,14 @@ public class Report extends Exception {
 		Throwable t = this;
 		while(t instanceof Report) t = t.getCause();
 		return t;
+	}
+	
+	public void logToSystemError() {
+		new ConsoleReportFormatter(System.err).report(this);
+	}
+	
+	public void logTo(ReportFormatter formatter) {
+		formatter.report(this);
 	}
 	
 	public interface ModifiableReport {

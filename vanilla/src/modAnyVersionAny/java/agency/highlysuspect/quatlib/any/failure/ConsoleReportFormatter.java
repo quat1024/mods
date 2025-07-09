@@ -18,11 +18,11 @@ public class ConsoleReportFormatter implements ReportFormatter {
 		if(throwable instanceof Report report) {
 			try {
 				showReport(report);
-			} catch (Throwable dgaf) {
+			} catch (Throwable notGood) {
 				//Well shit that shouldn't happen
 				out.println();
 				out.println("An error occured when attempting to report an error!!!");
-				dgaf.printStackTrace(out);
+				notGood.printStackTrace(out);
 				
 				out.println();
 				out.println("Here is the error I was going to report:");
