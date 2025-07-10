@@ -3,7 +3,7 @@
 	"id": "${modid}",
 	"version": "${version}",
 	"name": "${name}",
-	"description": "Adds a keybind to options for the narrator.",
+	"description": "${description}",
 	"authors": [
 		"${author}"
 	],
@@ -17,11 +17,11 @@
 	"environment": "client",
 	"entrypoints": {
 		"client": [
-			"agency.highlysuspect.rebindnarrator.fab.FabricInit"
+			"agency.highlysuspect.rebindnarrator.craftful.fab.FabricInit"
 		]
 	},
 	"mixins": [
-		"rebind_narrator.mixins.json"
+		"${modid}.mixins.json"
 	],
 	"depends": {
 		"fabricloader": "*",

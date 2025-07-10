@@ -3,7 +3,7 @@
 	"id": "${modid}",
 	"version": "${version}",
 	"name": "${name}",
-	"description": "Maps update anywhere in your inventory.",
+	"description": "${description}",
 	"authors": [
 		"${author}"
 	],
@@ -17,11 +17,11 @@
 	"environment": "*",
 	"entrypoints": {
 		"main": [
-			"agency.highlysuspect.crowmap.fab.CrowmapFabric"
+			"agency.highlysuspect.crowmap.craftful.fab.CrowmapFabric"
 		]
 	},
 	"mixins": [
-		"crowmap.mixins.json"
+		"${modid}.mixins.json"
 	],
 	"depends": {
 		"minecraft": ">=${minecraft_version}",
