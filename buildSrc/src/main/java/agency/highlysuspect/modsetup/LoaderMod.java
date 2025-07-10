@@ -1,35 +1,30 @@
 package agency.highlysuspect.modsetup;
 
-import org.codehaus.groovy.runtime.StringGroovyMethods;
-import org.gradle.api.Named;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.jvm.tasks.Jar;
 
 import java.util.HashMap;
-import java.util.Map;
+import java.util.TreeSet;
 
-public class LoaderMod implements Named {
-	public LoaderMod(String modid) {
-		this.modid = modid;
+public class LoaderMod extends VanillaMod {
+	public LoaderMod(VanillaMod base) {
+		super(base.modid);
 		
-		vars.put("modid", modid);
-		vars.put("name", StringGroovyMethods.capitalize(modid));
+		versions = new TreeSet<>(base.versions);
+		vars = new HashMap<>(base.vars);
+		quatlib = base.quatlib;
+		simpleRunMainClass = base.simpleRunMainClass;
+		versionAgnosticSourceSet = base.versionAgnosticSourceSet;
+		perVersionSourceSets = new HashMap<>(base.perVersionSourceSets);
+		perVersionElements = new HashMap<>(base.perVersionElements);
+		versionAgnosticJar = base.versionAgnosticJar;
+		perVersionJars = new HashMap<>(base.perVersionJars);
 	}
 	
-	public final String modid;
-	public Map<String, Object> vars = new HashMap<>();
-	public boolean quatlib = true;
-	
 	//"out params"
-	public VanillaMod vanilla;
 	public SourceSet set;
 	public Configuration splat;
 	public TaskProvider<Jar> depJar;
-	
-	@Override
-	public String getName() {
-		return modid;
-	}
 }

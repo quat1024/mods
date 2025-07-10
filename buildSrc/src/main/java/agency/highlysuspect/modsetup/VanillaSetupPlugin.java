@@ -63,7 +63,7 @@ public class VanillaSetupPlugin implements Plugin<Project> {
 		public TaskProvider<Jar> modAnyVersionAnyThinJar;
 		public Map<String, TaskProvider<Jar>> modAgnosticJars = new HashMap<>();
 		
-		protected TaskProvider<Jar> jarMeUpBoys(@Nullable String mod, @Nullable String version, SourceSet set) {
+		protected TaskProvider<Jar> jarTask(@Nullable String mod, @Nullable String version, SourceSet set) {
 			TaskContainer tasks = project.getTasks();
 			
 			//make a thinjar task
@@ -106,6 +106,7 @@ public class VanillaSetupPlugin implements Plugin<Project> {
 			tasks.named("jar", Jar.class, it -> it.setEnabled(false));
 			
 			/// MINECRAFT ///
+			project.getLogger().lifecycle("setting up minecraft");
 			
 			//what minecraft versions are needed?
 			Set<String> versionsToMake = new TreeSet<>();
@@ -122,11 +123,13 @@ public class VanillaSetupPlugin implements Plugin<Project> {
 			}).collect(Collectors.toMap(Pair::getLeft, Pair::getRight));
 			
 			/// SOURCE SET SCAFFOLDING ///
+			project.getLogger().lifecycle("making source sets");
 			
 			//modAnyVersionAny contains code shared across everything in the ecosystem
 			modAnyVersionAny = makeSourceSetWithCommonDeps(Util.modVersion(null, null));
 			
 			for(String minecraftVersion : versionsToMake) {
+				project.getLogger().lifecycle("minecraft {}", minecraftVersion);
 				//modAnyVersion1_21_1 and such
 				SourceSet modAgnosticSourceSet = makeSourceSetWithCommonDeps(Util.modVersion(null, minecraftVersion));
 				modAgnosticSourceSets.put(minecraftVersion, modAgnosticSourceSet);
@@ -135,24 +138,27 @@ public class VanillaSetupPlugin implements Plugin<Project> {
 			}
 			
 			for(VanillaMod mod : mods) {
+				project.getLogger().lifecycle("mod {}", mod);
 				//modSomethingVersionAny and such
 				mod.versionAgnosticSourceSet = makeSourceSetWithCommonDeps(Util.modVersion(mod.modid, null));
 				//it can see modAnyVersionAny if quatlib is enabled
 				if(mod.quatlib)
 					extendSourceSet2(mod.versionAgnosticSourceSet, modAnyVersionAny);
 				
-				for(String modMinecraftVersion : mod.versions) {
+				for(String minecraftVersion : mod.versions) {
+					project.getLogger().lifecycle("...for {}", minecraftVersion);
 					//modSomethingVersion1_21_1 and such
-					SourceSet modAndVersionSpecificSourceSet = makeSourceSetWithCommonDeps(Util.modVersion(mod.modid, modMinecraftVersion));
-					mod.perVersionSourceSets.put(modMinecraftVersion, modAndVersionSpecificSourceSet);
+					SourceSet modAndVersionSpecificSourceSet = makeSourceSetWithCommonDeps(Util.modVersion(mod.modid, minecraftVersion));
+					mod.perVersionSourceSets.put(minecraftVersion, modAndVersionSpecificSourceSet);
 					//it can see the version-agnostic set always, and mod-agnostic sets if quatlib is enabled
 					extendSourceSet2(modAndVersionSpecificSourceSet, mod.versionAgnosticSourceSet);
 					if(mod.quatlib)
-						extendSourceSet2(modAndVersionSpecificSourceSet, modAnyVersionAny, modAgnosticSourceSets.get(modMinecraftVersion));
+						extendSourceSet2(modAndVersionSpecificSourceSet, modAnyVersionAny, modAgnosticSourceSets.get(minecraftVersion));
 				}
 			}
 			
 			/// DEPENDENCIES ///
+			project.getLogger().lifecycle("preparing deps");
 			
 			//put minecraft in all the mod-agnostic but version-specific sets
 			modAgnosticSourceSets.forEach((minecraftVersion, modAgnosticSourceSet) -> {
@@ -166,6 +172,7 @@ public class VanillaSetupPlugin implements Plugin<Project> {
 			});
 			
 			/// PROCESS RESOURCES ///
+			project.getLogger().lifecycle("configuring processResources");
 			
 			Map<String, Object> totallyCommonProps = Util.broadlyApplicableProps(project);
 			Map<String, Map<String, Object>> perVersionProps = new HashMap<>();
@@ -181,14 +188,15 @@ public class VanillaSetupPlugin implements Plugin<Project> {
 					configureProcessResources(perVersionSourceSet, totallyCommonProps, perVersionProps.get(minecraftVersion), mod.vars));
 			}
 			
-			/// CONSUMABLE CONFIGURATIONS ///
+			/// JARS AND CONSUMABLE CONFIGURATIONS ///
+			project.getLogger().lifecycle("preparing jars and consumable configurations");
 			
-			modAnyVersionAnyThinJar = jarMeUpBoys(null, null, modAnyVersionAny);
+			modAnyVersionAnyThinJar = jarTask(null, null, modAnyVersionAny);
 			modAnyVersionAnyElements = configurations.consumable("modAnyVersionAnyElements");
 			artifacts.add(modAnyVersionAnyElements.getName(), modAnyVersionAnyThinJar);
 			
 			modAgnosticSourceSets.forEach((minecraftVersion, modAgnosticSourceSet) -> {
-				TaskProvider<Jar> modAgnosticThinJar = jarMeUpBoys(null, minecraftVersion, modAgnosticSourceSet);
+				TaskProvider<Jar> modAgnosticThinJar = jarTask(null, minecraftVersion, modAgnosticSourceSet);
 				modAgnosticJars.put(minecraftVersion, modAgnosticThinJar);
 				
 				//fill out the mod-agnostic configuration
@@ -200,10 +208,10 @@ public class VanillaSetupPlugin implements Plugin<Project> {
 			
 			for(VanillaMod mod : mods) {
 				//thinjar
-				mod.versionAgnosticJar = jarMeUpBoys(mod.modid, null, mod.versionAgnosticSourceSet);
+				mod.versionAgnosticJar = jarTask(mod.modid, null, mod.versionAgnosticSourceSet);
 				
 				mod.perVersionSourceSets.forEach((minecraftVersion, perVersionSourceSet) -> {
-					TaskProvider<Jar> versionSpecificJar = jarMeUpBoys(mod.modid, minecraftVersion, perVersionSourceSet);
+					TaskProvider<Jar> versionSpecificJar = jarTask(mod.modid, minecraftVersion, perVersionSourceSet);
 					mod.perVersionJars.put(minecraftVersion, versionSpecificJar);
 					
 					//fill out its consumable configuration
@@ -215,6 +223,7 @@ public class VanillaSetupPlugin implements Plugin<Project> {
 			}
 			
 			/// SIMPLE RUN ///
+			project.getLogger().lifecycle("setting up simpleruns");
 			
 			for(VanillaMod mod : mods) {
 				if(mod.simpleRunMainClass != null) {

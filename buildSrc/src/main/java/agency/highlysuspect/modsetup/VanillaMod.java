@@ -23,6 +23,8 @@ public class VanillaMod implements Named {
 		vars.put("name", StringGroovyMethods.capitalize(modid));
 	}
 	
+	// IF YOU ADD ANYTHING REMEMBER TO ADD IT TO THE LoaderMod COPY CONSTRUCTOR //
+	
 	String modid;
 	Set<String> versions = new LinkedHashSet<>();
 	Map<String, Object> vars = new HashMap<>();

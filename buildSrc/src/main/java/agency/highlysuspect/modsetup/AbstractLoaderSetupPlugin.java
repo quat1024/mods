@@ -59,16 +59,20 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 	public static class Ext extends AbstractSetupExtension {
 		public Ext(Project project) {
 			super(project);
-			this.mods = project.getObjects().domainObjectContainer(LoaderMod.class);
+			
+			//reach across and get vanilla (evaluationDependsOn was set up so this should be ok)
+			Project vanilla = project.project(":vanilla");
+			VanillaSetupPlugin.Ext vanillaExt = vanilla.getExtensions().getByType(VanillaSetupPlugin.Ext.class);
+			NamedDomainObjectContainer<VanillaMod> vanillaMods = vanillaExt.getVanillaMods();
+			
+			this.mods = project.getObjects().domainObjectContainer(LoaderMod.class, modid ->
+				new LoaderMod(vanillaMods.getByName(modid)));
 		}
 		
 		//TODO should these be the gradle "property" things lol
 		public String loader;
 		public String ver;
 		public NamedDomainObjectContainer<LoaderMod> mods;
-		
-		//janky little "out parameters", exposed as fields in case other bits of the code need em...
-		public TaskProvider<RemapJarTask> quatlibFatJarNamedLoom;
 		
 		public void go(Action<? super Ext> act) {
 			act.execute(this);
@@ -80,8 +84,7 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 			if(ver == null) throw new IllegalStateException("version not set");
 			if(loader == null) throw new IllegalStateException("loader not set");
 			
-			//reach across and get vanilla (evaluationDependsOn was set up
-			//so this should be ok)
+			//reach across and get vanilla (evaluationDependsOn was set up so this should be ok)
 			Project vanilla = project.project(":vanilla");
 			VanillaSetupPlugin.Ext vanillaExt = vanilla.getExtensions().getByType(VanillaSetupPlugin.Ext.class);
 			
@@ -108,13 +111,8 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 				tasks.named("remapJar", it -> it.setEnabled(false));
 			}
 			
-			for(LoaderMod mod : mods) {
-				mod.vanilla = vanillaExt.getVanillaMods().findByName(mod.modid);
-				if(mod.vanilla == null)
-					throw new IllegalArgumentException("No mod " + mod.modid + " in :vanilla, add that first");
-			}
-			
 			/// SOURCE SET SCAFFOLDING ///
+			project.getLogger().lifecycle("making source sets");
 			
 			//code shared across all mods on this loader
 			SourceSet quatlib = makeSourceSetWithCommonDeps("quatlib");
@@ -125,6 +123,7 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 			
 			//one source-set per mod
 			for(LoaderMod mod : mods) {
+				project.getLogger().lifecycle("...for {}", mod.modid);
 				mod.set = makeSourceSetWithCommonDeps(mod.modid);
 				
 				extendSourceSet2(mod.set, main);
@@ -133,17 +132,19 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 			}
 			
 			/// DEPENDENCIES ///
+			project.getLogger().lifecycle("preparing deps");
 			
 			for(LoaderMod mod : mods) {
 				//configuration containing code splatted into the mod jar
 				mod.splat = project.getConfigurations().create(mod.modid + "Splat");
-				withDeps(mod.splat, vanillaExt.dependOnVersionAndModSpecific(mod.vanilla, ver));
+				withDeps(mod.splat, vanillaExt.dependOnVersionAndModSpecific(mod, ver));
 				
 				//TODO: whats this do
 				withImplementation(mod.set, mod.splat);
 			}
 			
 			/// PROCESS RESOURCES ///
+			project.getLogger().lifecycle("configuring processResources");
 			
 			Map<String, Object> allVars = Util.plus(Util.broadlyApplicableProps(project), Map.of(
 				"minecraft_version", ver,
@@ -163,13 +164,14 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 				//include the resources from vanilla too
 				tasks.named(mod.set.getProcessResourcesTaskName(), ProcessResources.class, it -> {
 					it.from(
-						mod.vanilla.versionAgnosticSourceSet.getResources(),
-						mod.vanilla.perVersionSourceSets.get(ver).getResources()
+						mod.versionAgnosticSourceSet.getResources(),
+						mod.perVersionSourceSets.get(ver).getResources()
 					);
 				});
 			}
 			
 			/// JARS ///
+			project.getLogger().lifecycle("preparing jars");
 			
 			//produce quatlib fatjar
 			TaskProvider<Jar> quatlibFatJar = project.getTasks().register("quatlibFatJar", Jar.class, it -> {
@@ -181,12 +183,12 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 			
 			for(LoaderMod mod : mods) {
 				//contains all mod-specific code, including some splatted from other projects, but none of the quatlib code
-				mod.depJar = tasks.register(Util.modVersionLoader(mod.modid, ver, loader) + "DepJar", Jar.class, it -> {
+				mod.depJar = tasks.register(mod.modid + "DepJar", Jar.class, it -> {
 					it.from(mod.set.getOutput()); //code for this version of this mod
 					for(File splat : mod.splat) it.from(project.zipTree(splat)); //code for all versions of this mod, basically
 //					it.from(
-//						mod.vanilla.versionAgnosticSourceSet.getResources(),
-//						mod.vanilla.perVersionSourceSets.get(ver).getResources()
+//						mod.versionAgnosticSourceSet.getResources(),
+//						mod.perVersionSourceSets.get(ver).getResources()
 //					); //already done in processResources
 					
 					it.getArchiveBaseName().set(mod.modid + "-" + ver + "-" + loader);
@@ -200,7 +202,10 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 			}
 			
 			/// REMAPPED JARS ///
+			
 			if(loom != null) {
+				project.getLogger().lifecycle("preparing loom remapped jars");
+				
 				TaskProvider<RemapJarTask> quatlibFatJarNamedLoom = tasks.register("quatlibFatJarNamed", RemapJarTask.class, it -> {
 					it.getArchiveBaseName().set("ModderNameLib-" + ver + "-" + loader);
 					it.getInputFile().value(quatlibFatJar.flatMap(AbstractArchiveTask::getArchiveFile));
@@ -230,6 +235,7 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 			}
 			
 			/// RUN CONFIGS ///
+			project.getLogger().lifecycle("setting up run configs");
 			
 			if(loom != null) {
 				RunConfigSettings client = loom.getRuns().maybeCreate("client");
@@ -260,8 +266,8 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 				for(LoaderMod mod : mods) {
 					neoforge.getMods().create(mod.modid, it -> {
 						it.sourceSet(mod.set);
-						it.sourceSet(mod.vanilla.versionAgnosticSourceSet);
-						it.sourceSet(mod.vanilla.perVersionSourceSets.get(ver));
+						it.sourceSet(mod.versionAgnosticSourceSet);
+						it.sourceSet(mod.perVersionSourceSets.get(ver));
 					});
 				}
 			}

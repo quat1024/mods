@@ -52,6 +52,7 @@ public abstract class AbstractSetupExtension {
 			}));
 	}
 	
+	//really awesome api you have there gradle
 	public Dependency depOnMyConfiguration(NamedDomainObjectProvider<ConsumableConfiguration> c) {
 		return project.getDependencies().project(Map.of("path", project.getPath(), "configuration", c.getName()));
 	}

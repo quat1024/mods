@@ -15,10 +15,6 @@ public class Util {
 		return "mod" + mod2 + "Version" + ver2;
 	}
 	
-	public static String modVersionLoader(String mod, String version, String loader) {
-		return modVersion(mod, version) + "Loader" + StringGroovyMethods.capitalize(loader);
-	}
-	
 	public static Dependency floaderOnlyDep(Project project) {
 		return project.getDependencies().project(Map.of(
 			"path", ":floader-only",
