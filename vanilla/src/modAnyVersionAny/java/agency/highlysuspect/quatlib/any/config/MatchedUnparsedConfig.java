@@ -41,7 +41,7 @@ public class MatchedUnparsedConfig extends IdentityHashMap<ConfigOpt<?>, SnView>
 		}
 	}
 	
-	public ValidatedConfig parseAndValidate(CtxChain ctx) {
+	public ValidatedConfig parseAndValidate() {
 		ValidatedConfig validOptions = new ValidatedConfig();
 		
 		for(Map.Entry<ConfigOpt<?>, SnView> e : entrySet()) {
@@ -51,7 +51,7 @@ public class MatchedUnparsedConfig extends IdentityHashMap<ConfigOpt<?>, SnView>
 			
 			Object valid;
 			try {
-				valid = parseAndValidateImpl(opt, sn, ctx);
+				valid = parseAndValidateImpl(opt, sn, sn.ctx());
 			} catch (ReportedException reported) {
 				//there was some problem parsing this config option
 				//but it's been reported, so let's keep going and parse the next one
@@ -64,9 +64,9 @@ public class MatchedUnparsedConfig extends IdentityHashMap<ConfigOpt<?>, SnView>
 	
 	//just need to name the generic
 	private <T> T parseAndValidateImpl(ConfigOpt<T> opt, SnView view, CtxChain ctx) throws ReportedException {
-		T parsed = opt.parse(view, ctx); //throws on parse error
-		T corrected = opt.correct(parsed, ctx);
-		opt.validate(corrected, ctx); //throws on validation error
+		T parsed = opt.parse(view, ctx.detail("Option failed to parse")); //throws on parse error
+		T corrected = opt.correct(parsed, ctx.detail("Option needed correction"));
+		opt.validate(corrected, ctx.detail("Option failed validation")); //throws on validation error
 		return corrected;
 	}
 }

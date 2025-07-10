@@ -73,7 +73,7 @@ public interface SnView {
 		
 		@Override
 		public String toString() {
-			return "SnView onto '" + name(sn) + "': " + ctx;
+			return "SnView onto " + name(sn) + " at " + ctx;
 		}
 		
 		@Override

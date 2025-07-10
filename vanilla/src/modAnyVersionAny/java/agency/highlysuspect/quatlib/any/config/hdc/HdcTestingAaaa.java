@@ -48,26 +48,25 @@ public class HdcTestingAaaa {
 		MatchedUnparsedConfig matched = new MatchedUnparsedConfig(schema, view);
 		
 		//finally parse into real java objects
-		ValidatedConfig validated = matched.parseAndValidate(ctx.detail("parsing and validating"));
+		ValidatedConfig validated = matched.parseAndValidate();
 		ReadableConfig config = new MutableMapConfig(validated.toMap());
 		
 		//reading the config is pretty simple and uses the ConfigOpt objects for well-typedness
 		System.out.println("There are " + config.get(dragons) + " dragons");
 
-////		//what if there's an error?
-//		//TODO: the error report seems backwards to me (it starts with 'could not parse as integer')
-//		// (i hastily flipped it around with the console formatter, hmm)
-//		try {
-//			String modified2 = modified.replace("999", "jsdhakhdjsad");
-////			String modified2 = modified.replace("999", "{ \"oh\" = \"no\" }");
-//			System.out.println(modified2);
-//			view = new SnParser(modified2).parseTopLevel().view();
-//			matched = new MatchedUnparsedConfig(schema, view);
-//			validated = matched.parseAndValidate();
-//			config = new MutableMapConfig(validated);
-//		} catch (Throwable e) {
-//			new ConsoleReportFormatter().report(Report.modify(e, it -> it.addMessage("Problem loading MyCoolMod config file at config/my_cool_mod.txt")));
-//		}
+//		//what if there's an error?
+		try {
+			String modified2 = modified.replace("999", "-80");
+			System.out.println(modified2);
+			view = new SnParser(modified2).parseTopLevel(ctx).view(ctx);
+			matched = new MatchedUnparsedConfig(schema, view);
+			validated = matched.parseAndValidate();
+			config = new MutableMapConfig(validated);
+			
+			System.out.println("now there are " + config.get(dragons) + " dragons");
+		} catch (ReportedException e) {
+			//new ConsoleReportFormatter().report(Report.modify(e, it -> it.addMessage("Problem loading MyCoolMod config file at config/my_cool_mod.txt")));
+		}
 		
 		//you can browse this structure in a typesafe way without parsing it further than strings! kinda fun!
 		//useful for handling migrations. if you delete a config option it's still in the old config files, right?

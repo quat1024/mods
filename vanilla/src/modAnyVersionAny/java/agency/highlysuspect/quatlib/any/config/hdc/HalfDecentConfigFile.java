@@ -123,7 +123,7 @@ public class HalfDecentConfigFile extends MutableMapConfig {
 		MatchedUnparsedConfig matched = new MatchedUnparsedConfig(schema, parsed.view(ctx));
 		
 		//validate it
-		ValidatedConfig validated = matched.parseAndValidate(ctx);
+		ValidatedConfig validated = matched.parseAndValidate();
 		
 		//all good, time to load it
 		state = new IdentityHashMap<>(validated.toMap());

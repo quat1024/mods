@@ -43,7 +43,7 @@ public class FailureLogReporter implements FailureSourceSink {
 				}
 				case CtxChain.ThrowableLink t -> {
 					throwables.add(t.cause);
-					f.log(" - '{}' [exception {}]", t.cause.getMessage(), throwables.size());
+					f.log(" - '{}: {}' [exception {}]", t.cause.getClass().getSimpleName(), t.cause.getMessage(), throwables.size());
 					ctx = ctx.getParent();
 				}
 				//default -> throw new IllegalStateException("unexpected CtxChain type: " + ctx);
@@ -51,7 +51,7 @@ public class FailureLogReporter implements FailureSourceSink {
 		}
 		
 		for(int i = 0; i < throwables.size(); i++) {
-			f.log("");
+			f.log(" ");
 			f.log("=== Exception {} ===", i + 1, throwables.get(i));
 		}
 	}
