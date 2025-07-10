@@ -138,7 +138,7 @@ public class VanillaSetupPlugin implements Plugin<Project> {
 			}
 			
 			for(VanillaMod mod : mods) {
-				project.getLogger().lifecycle("mod {}", mod);
+				project.getLogger().lifecycle("mod {}", mod.modid);
 				//modSomethingVersionAny and such
 				mod.versionAgnosticSourceSet = makeSourceSetWithCommonDeps(Util.modVersion(mod.modid, null));
 				//it can see modAnyVersionAny if quatlib is enabled

@@ -11,6 +11,7 @@ import org.gradle.api.Action;
 import org.gradle.api.NamedDomainObjectContainer;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
+import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ConfigurationContainer;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
 import org.gradle.api.file.DuplicatesStrategy;
@@ -121,6 +122,13 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 			if(loom != null)
 				withImplementation(quatlib, Util.floaderOnlyDep(project));
 			
+			//quatlib code that gets put in the final quatlib jar...?
+			//this duplicates the other thing, meh
+			Configuration quatlibSplat = project.getConfigurations().create("quatlibSplat");
+			withDeps(quatlibSplat, vanillaExt.dependOnModAgnostic(ver));
+			if(loom != null)
+				withDeps(quatlibSplat, Util.floaderOnlyDep(project));
+			
 			//one source-set per mod
 			for(LoaderMod mod : mods) {
 				project.getLogger().lifecycle("...for {}", mod.modid);
@@ -176,6 +184,8 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 			//produce quatlib fatjar
 			TaskProvider<Jar> quatlibFatJar = project.getTasks().register("quatlibFatJar", Jar.class, it -> {
 				it.from(quatlib.getOutput());
+				for(File splat : quatlibSplat) it.from(project.zipTree(splat));
+				
 				it.getArchiveBaseName().set("ModderNameLib-" + ver + "-" + loader);
 				devlibs(it, loom);
 			});
