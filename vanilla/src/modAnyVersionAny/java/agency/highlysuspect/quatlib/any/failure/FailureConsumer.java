@@ -1,6 +1,6 @@
 package agency.highlysuspect.quatlib.any.failure;
 
 public interface FailureConsumer {
-	void reportWarning(ContextChain warning);
-	void reportError(ContextChain error);
+	void reportWarning(CtxChain warning);
+	void reportError(CtxChain error);
 }

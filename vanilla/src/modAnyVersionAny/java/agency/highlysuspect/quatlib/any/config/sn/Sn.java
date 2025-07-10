@@ -1,6 +1,6 @@
 package agency.highlysuspect.quatlib.any.config.sn;
 
-import agency.highlysuspect.quatlib.any.failure.ContextChain;
+import agency.highlysuspect.quatlib.any.failure.CtxChain;
 
 /**
  * "String Notation", for lack of a better term.
@@ -9,7 +9,7 @@ import agency.highlysuspect.quatlib.any.failure.ContextChain;
 public sealed interface Sn<S extends Sn<S>> permits SnStr, SnList, SnMap {
 	S copy();
 	
-	default SnView view(ContextChain ctx) {
+	default SnView view(CtxChain ctx) {
 		return new SnView.Impl(this, ctx);
 	}
 	

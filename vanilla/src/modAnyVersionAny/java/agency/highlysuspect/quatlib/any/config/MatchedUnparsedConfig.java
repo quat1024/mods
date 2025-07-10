@@ -1,7 +1,7 @@
 package agency.highlysuspect.quatlib.any.config;
 
 import agency.highlysuspect.quatlib.any.config.sn.SnView;
-import agency.highlysuspect.quatlib.any.failure.ContextChain;
+import agency.highlysuspect.quatlib.any.failure.CtxChain;
 import agency.highlysuspect.quatlib.any.failure.ReportedException;
 
 import java.util.IdentityHashMap;
@@ -41,7 +41,7 @@ public class MatchedUnparsedConfig extends IdentityHashMap<ConfigOpt<?>, SnView>
 		}
 	}
 	
-	public ValidatedConfig parseAndValidate2(ContextChain ctx) {
+	public ValidatedConfig parseAndValidate2(CtxChain ctx) {
 		ValidatedConfig validOptions = new ValidatedConfig();
 		
 		for(Map.Entry<ConfigOpt<?>, SnView> e : entrySet()) {
@@ -60,7 +60,7 @@ public class MatchedUnparsedConfig extends IdentityHashMap<ConfigOpt<?>, SnView>
 	}
 	
 	//just need to name the generic
-	private <T> T parseAndValidateImpl2(ConfigOpt<T> opt, SnView view, ContextChain ctx) throws ReportedException {
+	private <T> T parseAndValidateImpl2(ConfigOpt<T> opt, SnView view, CtxChain ctx) throws ReportedException {
 		T parsed = opt.parse(view, ctx); //throws on parse error
 		T corrected = opt.correct(parsed, ctx);
 		opt.validate(corrected, ctx); //throws on validation error

@@ -1,6 +1,6 @@
 package agency.highlysuspect.quatlib.any.config.sn;
 
-import agency.highlysuspect.quatlib.any.failure.ContextChain;
+import agency.highlysuspect.quatlib.any.failure.CtxChain;
 import agency.highlysuspect.quatlib.any.failure.FailureBucket;
 import agency.highlysuspect.quatlib.any.failure.LogFacadeReporter;
 import agency.highlysuspect.quatlib.any.failure.ReportedException;
@@ -41,7 +41,7 @@ public class SnTesttesttest {
 	public static void main2() throws ReportedException {
 		LogFacade log = new LogFacade.Sysout();
 		FailureBucket failures = new FailureBucket.Reporting(new LogFacadeReporter(log));
-		ContextChain ctx = failures.detail("myCoolFile.txt");
+		CtxChain ctx = failures.detail("myCoolFile.txt");
 		
 		Sn<?> sn = new SnParser("""
 			modules {

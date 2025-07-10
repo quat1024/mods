@@ -2,7 +2,7 @@ package agency.highlysuspect.quatlib.any.config;
 
 import agency.highlysuspect.quatlib.any.config.sn.Sn;
 import agency.highlysuspect.quatlib.any.config.sn.SnView;
-import agency.highlysuspect.quatlib.any.failure.ContextChain;
+import agency.highlysuspect.quatlib.any.failure.CtxChain;
 import agency.highlysuspect.quatlib.any.failure.ReportedException;
 
 import java.util.ArrayList;
@@ -31,15 +31,15 @@ public abstract class ConfigOpt<T> implements SectOrOpt {
 	/// SER AND DE
 	
 	public abstract Sn<?> write(T thing);
-	public abstract T parse(SnView sn, ContextChain ctx) throws ReportedException;
+	public abstract T parse(SnView sn, CtxChain ctx) throws ReportedException;
 	
 	/// CORRECTION - fixing the value in an unambiguous way and reporting a warning
 	
 	public interface Corrector<T> {
-		T correct(T thing, ContextChain ctx);
+		T correct(T thing, CtxChain ctx);
 	}
 	
-	public T correct(T thing, ContextChain ctx) {
+	public T correct(T thing, CtxChain ctx) {
 		T best = thing;
 		for(Corrector<T> corrector : correctors)
 			best = corrector.correct(best, ctx);
@@ -54,10 +54,10 @@ public abstract class ConfigOpt<T> implements SectOrOpt {
 	/// VALIDATION: reporting an error if the value is invalid
 	
 	public interface Validator<T> {
-		void validate(T thing, ContextChain ctx) throws ReportedException;
+		void validate(T thing, CtxChain ctx) throws ReportedException;
 	}
 	
-	public void validate(T thing, ContextChain ctx) throws ReportedException {
+	public void validate(T thing, CtxChain ctx) throws ReportedException {
 		for(Validator<T> validator : validators)
 			validator.validate(thing, ctx);
 	}
@@ -94,7 +94,7 @@ public abstract class ConfigOpt<T> implements SectOrOpt {
 		}
 		
 		@Override
-		public String parse(SnView sn, ContextChain ctx) throws ReportedException {
+		public String parse(SnView sn, CtxChain ctx) throws ReportedException {
 			return sn.asString();
 		}
 	}
@@ -110,7 +110,7 @@ public abstract class ConfigOpt<T> implements SectOrOpt {
 		}
 		
 		@Override
-		public Boolean parse(SnView sn, ContextChain ctx) throws ReportedException {
+		public Boolean parse(SnView sn, CtxChain ctx) throws ReportedException {
 			String s = sn.asString().toLowerCase(Locale.ROOT).trim();
 			return switch(s) {
 				case "true" -> true;
@@ -170,7 +170,7 @@ public abstract class ConfigOpt<T> implements SectOrOpt {
 		}
 		
 		@Override
-		public Integer parse(SnView sn, ContextChain ctx) throws ReportedException {
+		public Integer parse(SnView sn, CtxChain ctx) throws ReportedException {
 			String s = sn.asString();
 			
 			try {

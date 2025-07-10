@@ -4,18 +4,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FailureBucket implements FailureConsumer {
-	List<ContextChain> warnings = new ArrayList<>(4);
-	List<ContextChain> errors = new ArrayList<>(2);
+	List<CtxChain> warnings = new ArrayList<>(4);
+	List<CtxChain> errors = new ArrayList<>(2);
 	
-	public ContextChain detail(String message) {
-		return new ContextChain.StringLink(null, this, message);
+	public CtxChain detail(String message) {
+		return new CtxChain.StringLink(null, this, message);
 	}
 	
-	public void reportWarning(ContextChain warning) {
+	public void reportWarning(CtxChain warning) {
 		warnings.add(warning);
 	}
 	
-	public void reportError(ContextChain error) {
+	public void reportError(CtxChain error) {
 		errors.add(error);
 	}
 	
@@ -28,13 +28,13 @@ public class FailureBucket implements FailureConsumer {
 		FailureConsumer log;
 		
 		@Override
-		public void reportWarning(ContextChain warning) {
+		public void reportWarning(CtxChain warning) {
 			super.reportWarning(warning);
 			log.reportWarning(warning);
 		}
 		
 		@Override
-		public void reportError(ContextChain error) {
+		public void reportError(CtxChain error) {
 			super.reportError(error);
 			log.reportError(error);
 		}

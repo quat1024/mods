@@ -1,6 +1,6 @@
 package agency.highlysuspect.quatlib.any.config.sn;
 
-import agency.highlysuspect.quatlib.any.failure.ContextChain;
+import agency.highlysuspect.quatlib.any.failure.CtxChain;
 import agency.highlysuspect.quatlib.any.failure.ReportedException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -9,7 +9,7 @@ import java.util.Objects;
 import java.util.Set;
 
 public interface SnView {
-	ContextChain ctx();
+	CtxChain ctx();
 	
 	boolean isList();
 	ListView asList() throws ReportedException;
@@ -40,13 +40,13 @@ public interface SnView {
 	
 	//TODO: can this *extend* ContextChain? lol. save an allocation
 	class Impl implements SnView, ListView, MapView {
-		public Impl(@NotNull Sn<?> sn, @NotNull ContextChain ctx) {
+		public Impl(@NotNull Sn<?> sn, @NotNull CtxChain ctx) {
 			this.sn = Objects.requireNonNull(sn);
 			this.ctx = Objects.requireNonNull(ctx);
 		}
 		
 		private final @NotNull Sn<?> sn;
-		private final @NotNull ContextChain ctx;
+		private final @NotNull CtxChain ctx;
 		
 		private ReportedException expected(Class<? extends Sn<?>> expected) {
 			String expectedName = name(expected);
@@ -63,7 +63,7 @@ public interface SnView {
 		}
 		
 		@Override
-		public ContextChain ctx() {
+		public CtxChain ctx() {
 			return ctx;
 		}
 		

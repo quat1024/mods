@@ -15,13 +15,13 @@ class LogFacadeReporter implements FailureConsumer {
 	public final LogFacade log;
 	
 	@Override
-	public void reportWarning(ContextChain warning) {
+	public void reportWarning(CtxChain warning) {
 		log.info("Warning:");
 		report(warning, log::info);
 	}
 	
 	@Override
-	public void reportError(ContextChain error) {
+	public void reportError(CtxChain error) {
 		log.warn("Error:");
 		report(error, log::warn);
 	}
@@ -30,23 +30,24 @@ class LogFacadeReporter implements FailureConsumer {
 		void log(String pattern, Object... args);
 	}
 	
-	private void report(ContextChain ctx, LogFunc f) {
+	private void report(CtxChain ctx, LogFunc f) {
 		List<Throwable> throwables = new ArrayList<>();
 		
 		while(ctx != null) {
 			switch(ctx) {
-				case ContextChain.StringLink s -> {
+				case CtxChain.StringLink s -> {
 					f.log(" - {}", s.message);
-					ctx = ctx.parent;
+					ctx = ctx.getParent();
 				}
-				case ContextChain.PathLink s -> {
+				case CtxChain.PathLink s -> {
 					ctx = logPath(s, f);
 				}
-				case ContextChain.ThrowableLink t -> {
+				case CtxChain.ThrowableLink t -> {
 					throwables.add(t.cause);
 					f.log(" - '{}' [exception {}]", t.cause.getMessage(), throwables.size());
-					ctx = ctx.parent;
+					ctx = ctx.getParent();
 				}
+				//default -> throw new IllegalStateException("unexpected CtxChain type: " + ctx);
 			}
 		}
 		
@@ -56,15 +57,15 @@ class LogFacadeReporter implements FailureConsumer {
 		}
 	}
 	
-	private ContextChain logPath(ContextChain.PathLink pathEnd, LogFunc f) {
+	private CtxChain logPath(CtxChain.PathLink pathEnd, LogFunc f) {
 		String bob = pathEnd.pathSegment;
 		
-		ContextChain ctx = pathEnd;
-		while(ctx.parent instanceof ContextChain.PathLink path) {
+		CtxChain ctx = pathEnd;
+		while(ctx.getParent() instanceof CtxChain.PathLink path) {
 			bob = path.pathSegment + "." + bob;
-			ctx = ctx.parent;
+			ctx = ctx.getParent();
 		}
 		f.log(" - at {}", bob);
-		return ctx.parent;
+		return ctx.getParent();
 	}
 }

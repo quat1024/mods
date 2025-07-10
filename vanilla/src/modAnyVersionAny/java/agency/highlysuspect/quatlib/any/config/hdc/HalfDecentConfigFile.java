@@ -7,7 +7,7 @@ import agency.highlysuspect.quatlib.any.config.MutableMapConfig;
 import agency.highlysuspect.quatlib.any.config.ValidatedConfig;
 import agency.highlysuspect.quatlib.any.config.sn.Sn;
 import agency.highlysuspect.quatlib.any.config.sn.SnParser;
-import agency.highlysuspect.quatlib.any.failure.ContextChain;
+import agency.highlysuspect.quatlib.any.failure.CtxChain;
 import agency.highlysuspect.quatlib.any.failure.ReportedException;
 import agency.highlysuspect.quatlib.any.util.LogFacade;
 import agency.highlysuspect.quatlib.any.util.SharedConfigFileWatcher;
@@ -21,7 +21,7 @@ import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 
 public class HalfDecentConfigFile extends MutableMapConfig {
-	public HalfDecentConfigFile(Path path, ConfigSection schema, LogFacade log, Executor background, ContextChain ctx) {
+	public HalfDecentConfigFile(Path path, ConfigSection schema, LogFacade log, Executor background, CtxChain ctx) {
 		this.path = path;
 		this.schema = schema;
 		this.log = log;
@@ -33,7 +33,7 @@ public class HalfDecentConfigFile extends MutableMapConfig {
 	private final ConfigSection schema;
 	private final LogFacade log;
 	private final Executor background;
-	private final ContextChain ctx;
+	private final CtxChain ctx;
 	
 	//filewatcher debouncing. we can get multiple events from the OS.
 	long filewatcherDebounce = 0;
@@ -52,11 +52,11 @@ public class HalfDecentConfigFile extends MutableMapConfig {
 		saveLater2(ctx);
 	}
 	
-	public void saveNow2(ContextChain ctx) {
+	public void saveNow2(CtxChain ctx) {
 		doSave2(state, ctx);
 	}
 	
-	public void saveLater2(ContextChain ctx) {
+	public void saveLater2(CtxChain ctx) {
 		log.info("Scheduling save of config file {}", path);
 		
 		//make a clone that's hopefully safe to pass between threads
@@ -64,7 +64,7 @@ public class HalfDecentConfigFile extends MutableMapConfig {
 		background.execute(() -> doSave2(stateClone, ctx));
 	}
 	
-	private void doSave2(Map<ConfigOpt<?>, Object> theState, ContextChain ctx) {
+	private void doSave2(Map<ConfigOpt<?>, Object> theState, CtxChain ctx) {
 		log.info("Saving config file to {}", path);
 		ctx = ctx.detail("While saving config file to " + path);
 		
@@ -90,7 +90,7 @@ public class HalfDecentConfigFile extends MutableMapConfig {
 		}
 	}
 	
-	public void load2(ContextChain ctx) {
+	public void load2(CtxChain ctx) {
 		log.info("Loading config file {}", path);
 		ctx = ctx.detail("While loading config file from " + path);
 		
@@ -134,8 +134,8 @@ public class HalfDecentConfigFile extends MutableMapConfig {
 		saveLater2(ctx.detail("Saveback after loading file"));
 	}
 	
-	public void watchForChanges(ContextChain ctx) {
-		ContextChain ctx2 = ctx.detail("While watching the file at " + path);
+	public void watchForChanges(CtxChain ctx) {
+		CtxChain ctx2 = ctx.detail("While watching the file at " + path);
 		
 		SharedConfigFileWatcher.watch(path, () -> {
 			//we're on a different thread now

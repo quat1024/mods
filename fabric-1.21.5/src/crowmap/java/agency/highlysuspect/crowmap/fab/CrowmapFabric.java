@@ -5,7 +5,7 @@ import agency.highlysuspect.crowmap.ver.Crowmap1_21_5;
 import agency.highlysuspect.quatlib.any.config.ConfigSection;
 import agency.highlysuspect.quatlib.any.config.WritableConfig;
 import agency.highlysuspect.quatlib.any.config.hdc.HalfDecentConfigFile;
-import agency.highlysuspect.quatlib.any.failure.ContextChain;
+import agency.highlysuspect.quatlib.any.failure.CtxChain;
 import agency.highlysuspect.quatlib.any.failure.FailureBucket;
 import agency.highlysuspect.quatlib.any.util.SharedConfigFileWatcher;
 import agency.highlysuspect.quatlib.any.ver.Slf4jLogFacade;
@@ -35,7 +35,7 @@ public class CrowmapFabric extends Crowmap1_21_5 implements ModInitializer {
 		//TODO: push up?
 		FailureBucket fail = new FailureBucket();
 		
-		ContextChain ctx = fail.detail("Crowmap config file");
+		CtxChain ctx = fail.detail("Crowmap config file");
 		HalfDecentConfigFile cfg = new HalfDecentConfigFile(
 			FabricLoader.getInstance().getConfigDir().resolve("crowmap.txt"),
 			schema,

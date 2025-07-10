@@ -10,7 +10,7 @@ import agency.highlysuspect.quatlib.any.config.ValidatedConfig;
 import agency.highlysuspect.quatlib.any.config.sn.SnMap;
 import agency.highlysuspect.quatlib.any.config.sn.SnParser;
 import agency.highlysuspect.quatlib.any.config.sn.SnView;
-import agency.highlysuspect.quatlib.any.failure.ContextChain;
+import agency.highlysuspect.quatlib.any.failure.CtxChain;
 import agency.highlysuspect.quatlib.any.failure.FailureBucket;
 
 public class HdcTestingAaaa {
@@ -35,7 +35,7 @@ public class HdcTestingAaaa {
 		System.out.println(modified);
 		
 		FailureBucket failures = new FailureBucket();
-		ContextChain ctx = failures.detail("lkdklasjdksadsd");
+		CtxChain ctx = failures.detail("lkdklasjdksadsd");
 		
 		//parse it back, first into an Sn (a structure that's like json, if it had only strings)
 		SnMap parsed = new SnParser(modified).parseTopLevel();
