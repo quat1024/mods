@@ -50,7 +50,7 @@ public interface SnView {
 		
 		private ReportedException expected(Class<? extends Sn<?>> expected) {
 			String expectedName = name(expected);
-			String gotName = name(sn.getClass());
+			String gotName = name(sn);
 			return ctx.detail("Expected " + expectedName + ", but there was " + gotName).reportError();
 		}
 		
@@ -62,9 +62,18 @@ public interface SnView {
 			return it.getSimpleName(); //unreachable
 		}
 		
+		private static String name(Sn<?> s) {
+			return s == null ? "null?" : name(s.getClass());
+		}
+		
 		@Override
 		public CtxChain ctx() {
 			return ctx;
+		}
+		
+		@Override
+		public String toString() {
+			return "SnView onto '" + name(sn) + "': " + ctx;
 		}
 		
 		@Override
@@ -116,7 +125,7 @@ public interface SnView {
 		}
 		
 		private RuntimeException impossible() {
-			return new IllegalStateException("Unreachable?!");
+			return new IllegalStateException("Unreachable?! at " + this);
 		}
 		
 		//implements two interfaces at once

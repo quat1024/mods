@@ -49,22 +49,22 @@ public class HalfDecentConfigFile extends MutableMapConfig {
 	public void modify(Consumer<Handle> modifier) {
 		//apply all of the changes, and then schedule a save (once!)
 		super.modify(modifier);
-		saveLater2(ctx);
+		saveLater(ctx);
 	}
 	
-	public void saveNow2(CtxChain ctx) {
-		doSave2(state, ctx);
+	public void saveNow(CtxChain ctx) {
+		doSave(state, ctx);
 	}
 	
-	public void saveLater2(CtxChain ctx) {
+	public void saveLater(CtxChain ctx) {
 		log.info("Scheduling save of config file {}", path);
 		
 		//make a clone that's hopefully safe to pass between threads
 		Map<ConfigOpt<?>, Object> stateClone = new IdentityHashMap<>(state);
-		background.execute(() -> doSave2(stateClone, ctx));
+		background.execute(() -> doSave(stateClone, ctx));
 	}
 	
-	private void doSave2(Map<ConfigOpt<?>, Object> theState, CtxChain ctx) {
+	private void doSave(Map<ConfigOpt<?>, Object> theState, CtxChain ctx) {
 		log.info("Saving config file to {}", path);
 		ctx = ctx.detail("While saving config file to " + path);
 		
@@ -90,14 +90,14 @@ public class HalfDecentConfigFile extends MutableMapConfig {
 		}
 	}
 	
-	public void load2(CtxChain ctx) {
+	public void load(CtxChain ctx) {
 		log.info("Loading config file {}", path);
 		ctx = ctx.detail("While loading config file from " + path);
 		
 		if(Files.notExists(path)) {
 			log.info("Config file doesn't exist. Writing a new one and loading default options");
 			state = new IdentityHashMap<>();
-			doSave2(state, ctx.detail("Config file did not exist, writing a new one"));
+			doSave(state, ctx.detail("Config file did not exist, writing a new one"));
 			return;
 		}
 		
@@ -114,8 +114,7 @@ public class HalfDecentConfigFile extends MutableMapConfig {
 		//parse it into sn
 		Sn<?> parsed;
 		try {
-			parsed = new SnParser(read).parseTopLevel();
-			ReportedException.fake();
+			parsed = new SnParser(read).parseTopLevel(ctx);
 		} catch (ReportedException e) {
 			return; //couldn't parse into sn, give up
 		}
@@ -124,14 +123,14 @@ public class HalfDecentConfigFile extends MutableMapConfig {
 		MatchedUnparsedConfig matched = new MatchedUnparsedConfig(schema, parsed.view(ctx));
 		
 		//validate it
-		ValidatedConfig validated = matched.parseAndValidate2(ctx);
+		ValidatedConfig validated = matched.parseAndValidate(ctx);
 		
 		//all good, time to load it
 		state = new IdentityHashMap<>(validated.toMap());
 		log.info("Loaded {} options.", state.size());
 		
 		//schedule a saveback
-		saveLater2(ctx.detail("Saveback after loading file"));
+		saveLater(ctx.detail("Saveback after loading file"));
 	}
 	
 	public void watchForChanges(CtxChain ctx) {
@@ -150,7 +149,9 @@ public class HalfDecentConfigFile extends MutableMapConfig {
 				log.info("Only been {}ms since last in-game save, ignoring change to {}", now - lastIngameSave, path.getFileName());
 			} else {
 				//uhhhhmh hopefully this is safe to call off-thread?
-				load2(ctx2);
+				//the only thing that touches the main thread is swapping the 'state' variable, and... the new warning-reporting stuff (oh)
+				//yeah that might not be thread safe
+				load(ctx2);
 			}
 		});
 	}

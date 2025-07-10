@@ -34,8 +34,8 @@ public class CrowmapFabric extends Crowmap1_21_5 implements ModInitializer {
 	public WritableConfig makeConfig(ConfigSection schema) {
 		//TODO: push up?
 		FailureBucket fail = new FailureBucket();
-		
 		CtxChain ctx = fail.detail("Crowmap config file");
+		
 		HalfDecentConfigFile cfg = new HalfDecentConfigFile(
 			FabricLoader.getInstance().getConfigDir().resolve("crowmap.txt"),
 			schema,
@@ -45,7 +45,7 @@ public class CrowmapFabric extends Crowmap1_21_5 implements ModInitializer {
 		);
 		
 		cfg.watchForChanges(ctx);
-		cfg.load2(ctx);
+		cfg.load(ctx);
 		
 		return cfg;
 	}

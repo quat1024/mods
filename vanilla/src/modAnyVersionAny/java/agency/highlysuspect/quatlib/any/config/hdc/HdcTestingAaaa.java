@@ -11,7 +11,10 @@ import agency.highlysuspect.quatlib.any.config.sn.SnMap;
 import agency.highlysuspect.quatlib.any.config.sn.SnParser;
 import agency.highlysuspect.quatlib.any.config.sn.SnView;
 import agency.highlysuspect.quatlib.any.failure.CtxChain;
-import agency.highlysuspect.quatlib.any.failure.FailureBucket;
+import agency.highlysuspect.quatlib.any.failure.FailureLogReporter;
+import agency.highlysuspect.quatlib.any.failure.FailureSourceSink;
+import agency.highlysuspect.quatlib.any.failure.ReportedException;
+import agency.highlysuspect.quatlib.any.util.LogFacade;
 
 public class HdcTestingAaaa {
 	public static void main(String... args) {
@@ -34,18 +37,18 @@ public class HdcTestingAaaa {
 		String modified = written.replace("dragons = 5", "dragons = 999");
 		System.out.println(modified);
 		
-		FailureBucket failures = new FailureBucket();
-		CtxChain ctx = failures.detail("lkdklasjdksadsd");
+		FailureSourceSink failures = new FailureLogReporter(LogFacade.Sysout.INSTANCE);
+		CtxChain ctx = failures.detail("MyCoolFile.txt");
 		
 		//parse it back, first into an Sn (a structure that's like json, if it had only strings)
-		SnMap parsed = new SnParser(modified).parseTopLevel();
+		SnMap parsed = new SnParser(modified).tryParseTopLevel(ctx);
 		SnView view = parsed.view(ctx);
 		
 		//figure out which fragment of Sn goes to which option
 		MatchedUnparsedConfig matched = new MatchedUnparsedConfig(schema, view);
 		
 		//finally parse into real java objects
-		ValidatedConfig validated = matched.parseAndValidate2(ctx.detail("parsing and validating"));
+		ValidatedConfig validated = matched.parseAndValidate(ctx.detail("parsing and validating"));
 		ReadableConfig config = new MutableMapConfig(validated.toMap());
 		
 		//reading the config is pretty simple and uses the ConfigOpt objects for well-typedness
@@ -67,12 +70,16 @@ public class HdcTestingAaaa {
 //		}
 		
 		//you can browse this structure in a typesafe way without parsing it further than strings! kinda fun!
-//		//useful for handling migrations. if you delete a config option it's still in the old config files, right?
-//		SnView reptilesView = view.asMap().get("reptiles");
-//		SnView essayQuestionView = reptilesView.asMap().get("Dragon Essay Question");
-//		System.out.println(essayQuestionView);
-//		//-> SnView, path 'reptiles.Dragon Essay Question' (looking at SnStr)
-//		System.out.println("the essay is: " + essayQuestionView.asString());
-//		//-> Pretty good
+		//useful for handling migrations. if you delete a config option it's still in the old config files, right?
+		try {
+			SnView reptilesView = view.asMap().get("reptiles");
+			SnView essayQuestionView = reptilesView.asMap().get("Dragon Essay Question");
+			System.out.println(essayQuestionView);
+			//-> SnView, path 'reptiles.Dragon Essay Question' (looking at SnStr)
+			System.out.println("the essay is: " + essayQuestionView.asString());
+			//-> Pretty good
+		} catch (ReportedException e) {
+			//already reported
+		}
 	}
 }

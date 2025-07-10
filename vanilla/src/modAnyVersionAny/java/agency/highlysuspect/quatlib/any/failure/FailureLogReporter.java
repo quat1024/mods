@@ -6,9 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 @SuppressWarnings("ClassCanBeRecord")
-public
-class LogFacadeReporter implements FailureConsumer {
-	public LogFacadeReporter(LogFacade log) {
+public class FailureLogReporter implements FailureSourceSink {
+	public FailureLogReporter(LogFacade log) {
 		this.log = log;
 	}
 	
@@ -59,13 +58,12 @@ class LogFacadeReporter implements FailureConsumer {
 	
 	private CtxChain logPath(CtxChain.PathLink pathEnd, LogFunc f) {
 		String bob = pathEnd.pathSegment;
-		
 		CtxChain ctx = pathEnd;
 		while(ctx.getParent() instanceof CtxChain.PathLink path) {
 			bob = path.pathSegment + "." + bob;
 			ctx = ctx.getParent();
 		}
-		f.log(" - at {}", bob);
+		f.log(" - at '{}'", bob);
 		return ctx.getParent();
 	}
 }

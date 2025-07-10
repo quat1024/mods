@@ -24,13 +24,13 @@ public sealed interface CtxChain permits CtxChain.StringLink, CtxChain.Throwable
 	
 	sealed abstract class Base implements CtxChain permits StringLink, ThrowableLink, PathLink {
 		//public constructor is in FailureBucket
-		protected Base(@Nullable CtxChain parent, @NotNull FailureConsumer failures) {
+		protected Base(@Nullable CtxChain parent, @NotNull FailureSourceSink failures) {
 			this.parent = parent;
 			this.failures = failures;
 		}
 		
 		@Nullable CtxChain parent;
-		@NotNull protected FailureConsumer failures;
+		@NotNull protected FailureSourceSink failures;
 		
 		// creating them
 		
@@ -77,7 +77,7 @@ public sealed interface CtxChain permits CtxChain.StringLink, CtxChain.Throwable
 	}
 	
 	final class StringLink extends Base implements CtxChain {
-		StringLink(@Nullable CtxChain parent, @NotNull FailureConsumer warnings, String message) {
+		StringLink(@Nullable CtxChain parent, @NotNull FailureSourceSink warnings, String message) {
 			super(parent, warnings);
 			this.message = message;
 		}
@@ -91,7 +91,7 @@ public sealed interface CtxChain permits CtxChain.StringLink, CtxChain.Throwable
 	}
 	
 	final class ThrowableLink extends Base implements CtxChain {
-		ThrowableLink(@Nullable CtxChain parent, @NotNull FailureConsumer failures, Throwable cause) {
+		ThrowableLink(@Nullable CtxChain parent, @NotNull FailureSourceSink failures, Throwable cause) {
 			super(parent, failures);
 			this.cause = cause;
 		}
@@ -104,8 +104,11 @@ public sealed interface CtxChain permits CtxChain.StringLink, CtxChain.Throwable
 		}
 	}
 	
+	//context segment representing like, "a path inside a structured file"
+	//differs from StringLink in the way that they are formatted by error reporters (and toString)
+	//adjacent pathlinks will get glued together into a string
 	final class PathLink extends Base implements CtxChain {
-		PathLink(@Nullable CtxChain parent, @NotNull FailureConsumer failures, String pathSegment) {
+		PathLink(@Nullable CtxChain parent, @NotNull FailureSourceSink failures, String pathSegment) {
 			super(parent, failures);
 			this.pathSegment = pathSegment;
 		}

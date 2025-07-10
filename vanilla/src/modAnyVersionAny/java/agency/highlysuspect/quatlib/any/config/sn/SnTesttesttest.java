@@ -1,15 +1,15 @@
 package agency.highlysuspect.quatlib.any.config.sn;
 
 import agency.highlysuspect.quatlib.any.failure.CtxChain;
-import agency.highlysuspect.quatlib.any.failure.FailureBucket;
-import agency.highlysuspect.quatlib.any.failure.LogFacadeReporter;
+import agency.highlysuspect.quatlib.any.failure.FailureSourceSink;
+import agency.highlysuspect.quatlib.any.failure.FailureLogReporter;
 import agency.highlysuspect.quatlib.any.failure.ReportedException;
 import agency.highlysuspect.quatlib.any.util.LogFacade;
 
 public class SnTesttesttest {
 	public static void main(String... args) throws ReportedException {
 		LogFacade log = new LogFacade.Sysout();
-		FailureBucket failures = new FailureBucket.Reporting(new LogFacadeReporter(log));
+		FailureSourceSink failures = new FailureLogReporter(log);
 		
 		SnMap map = Sn.map(
 			"foo", "bar",
@@ -40,7 +40,7 @@ public class SnTesttesttest {
 
 	public static void main2() throws ReportedException {
 		LogFacade log = new LogFacade.Sysout();
-		FailureBucket failures = new FailureBucket.Reporting(new LogFacadeReporter(log));
+		FailureSourceSink failures = new FailureLogReporter(log);
 		CtxChain ctx = failures.detail("myCoolFile.txt");
 		
 		Sn<?> sn = new SnParser("""
@@ -53,7 +53,7 @@ public class SnTesttesttest {
 			    enabled = false
 			  }
 			}
-		""").parseTopLevel();
+		""").parseTopLevel(ctx);
 
 		SnView view = sn.view(ctx);
 
