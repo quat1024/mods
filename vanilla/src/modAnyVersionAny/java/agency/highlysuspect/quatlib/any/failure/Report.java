@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
+@Deprecated
 public class Report extends Exception {
 	public Report(String message, Throwable cause) {
 		super(cause);

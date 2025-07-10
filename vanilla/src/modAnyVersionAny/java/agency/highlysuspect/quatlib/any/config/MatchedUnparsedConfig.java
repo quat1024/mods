@@ -1,10 +1,13 @@
 package agency.highlysuspect.quatlib.any.config;
 
-import agency.highlysuspect.quatlib.any.failure.Report;
 import agency.highlysuspect.quatlib.any.config.sn.SnView;
+import agency.highlysuspect.quatlib.any.failure.ContextChain;
+import agency.highlysuspect.quatlib.any.failure.Report;
+import agency.highlysuspect.quatlib.any.failure.ReportedException;
 
 import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.Optional;
 
 public class MatchedUnparsedConfig extends IdentityHashMap<ConfigOpt<?>, SnView> {
 	public MatchedUnparsedConfig(ConfigSection schema, SnView view) {
@@ -64,5 +67,31 @@ public class MatchedUnparsedConfig extends IdentityHashMap<ConfigOpt<?>, SnView>
 		} catch (Throwable e) {
 			throw Report.modify(e, it -> it.addMessage("Problem while parsing option '" + view.path() + "'"));
 		}
+	}
+	
+	public ValidatedConfig parseAndValidate2(ContextChain ctx) {
+		ValidatedConfig validOptions = new ValidatedConfig();
+		
+		for(Map.Entry<ConfigOpt<?>, SnView> e : entrySet()) {
+			ConfigOpt<?> opt = e.getKey();
+			SnView sn = e.getValue();
+			if(sn == null) continue;
+			
+			try {
+				validOptions.put(opt, parseAndValidateImpl2(opt, sn, ctx));
+			} catch (ReportedException reported) {
+				//was some problem parsing this config option
+				//but it's been reported so let's keep going and parse the next one
+			}
+		}
+		return validOptions;
+	}
+	
+	//just need to name the generic
+	private <T> T parseAndValidateImpl2(ConfigOpt<T> opt, SnView view, ContextChain ctx) throws ReportedException {
+		T parsed = opt.parse(view);
+		T corrected = opt.correct(parsed);
+		opt.validate(corrected);
+		return corrected;
 	}
 }
