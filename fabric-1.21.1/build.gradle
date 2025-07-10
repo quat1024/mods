@@ -11,8 +11,6 @@ modSetup.go {
 	ver = "1.21.1"
 	
 	mods {
-		rebind_narrator {
-			vars.name = "Rebind Narrator"
-		}
+		rebind_narrator
 	}
 }

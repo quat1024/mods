@@ -11,10 +11,7 @@ modSetup.go {
 	ver = "1.21.5"
 	
 	mods {
-		rebind_narrator {
-			vars.name = "Rebind Narrator"
-			quatlib = false
-		}
+		rebind_narrator
 		crowmap
 	}
 }

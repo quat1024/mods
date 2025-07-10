@@ -8,8 +8,8 @@ logoFile = "${modid}_icon.png"
 modId = "${modid}"
 version = "${version}"
 displayName = "${name}"
-description = "Maps update anywhere in your inventory."
+description = "${description}"
 authors = "${author}"
 
 [[mixins]]
-config = "crowmap.mixins.json"
+config = "${modid}.mixins.json"
