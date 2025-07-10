@@ -23,6 +23,7 @@ public class LoaderMod implements Named {
 	public boolean quatlib = true;
 	
 	//"out params"
+	public VanillaMod vanilla;
 	public SourceSet set;
 	public Configuration splat;
 	public TaskProvider<Jar> depJar;

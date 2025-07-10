@@ -30,11 +30,11 @@ gradlePlugin {
 	plugins {
 		"mod-setup-fabric" {
 			id = "mod-setup-fabric"
-			implementationClass = "agency.highlysuspect.modsetup.FabricSetupPlugin"
+			implementationClass = "agency.highlysuspect.modsetup.AbstractLoaderSetupPlugin\$FabricSetupPlugin"
 		}
 		"mod-setup-neoforge" {
 			id = "mod-setup-neoforge"
-			implementationClass = "agency.highlysuspect.modsetup.NeoforgeSetupPlugin"
+			implementationClass = "agency.highlysuspect.modsetup.AbstractLoaderSetupPlugin\$NeoforgeSetupPlugin"
 		}
 		"vanilla-setup" {
 			id = "vanilla-setup"

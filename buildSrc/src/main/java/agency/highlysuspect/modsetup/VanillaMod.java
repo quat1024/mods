@@ -2,6 +2,11 @@ package agency.highlysuspect.modsetup;
 
 import org.codehaus.groovy.runtime.StringGroovyMethods;
 import org.gradle.api.Named;
+import org.gradle.api.NamedDomainObjectProvider;
+import org.gradle.api.artifacts.ConsumableConfiguration;
+import org.gradle.api.tasks.SourceSet;
+import org.gradle.api.tasks.TaskProvider;
+import org.gradle.jvm.tasks.Jar;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
@@ -24,6 +29,15 @@ public class VanillaMod implements Named {
 	boolean quatlib = true;
 	
 	@Nullable String simpleRunMainClass;
+	
+	//set in afterEvaluate
+	SourceSet versionAgnosticSourceSet;
+	Map<String, SourceSet> perVersionSourceSets = new HashMap<>();
+	
+	//NamedDomainObjectProvider<ConsumableConfiguration> versionAgnosticElements;
+	Map<String, NamedDomainObjectProvider<ConsumableConfiguration>> perVersionElements = new HashMap<>();
+	TaskProvider<Jar> versionAgnosticJar;
+	Map<String, TaskProvider<Jar>> perVersionJars = new HashMap<>();
 	
 	@Override
 	public String getName() {

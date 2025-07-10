@@ -1,15 +1,16 @@
 package agency.highlysuspect.modsetup;
 
+import net.fabricmc.loom.LoomGradlePlugin;
 import net.fabricmc.loom.api.LoomGradleExtensionAPI;
 import net.fabricmc.loom.configuration.ide.RunConfigSettings;
 import net.fabricmc.loom.task.AbstractRunTask;
 import net.fabricmc.loom.task.RemapJarTask;
+import net.neoforged.moddevgradle.boot.ModDevPlugin;
 import net.neoforged.moddevgradle.dsl.NeoForgeExtension;
 import org.gradle.api.Action;
 import org.gradle.api.NamedDomainObjectContainer;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
-import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ConfigurationContainer;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
 import org.gradle.api.file.DuplicatesStrategy;
@@ -28,26 +29,38 @@ import java.util.Map;
 public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 	@Override
 	public void apply(Project project) {
-		project.getLogger().lifecycle("HELLO FROM LoaderSetupPlugin");
-		
-		//apply java while we're here
-		project.getPlugins().apply("java");
-		
-		//ext
+		project.evaluationDependsOn(":vanilla"); //make sure :vanilla is evalled first
+		project.getPlugins().apply("java"); //apply java while we're here
 		project.getExtensions().create("modSetup", Ext.class, project);
+	}
+	
+	public static class NeoforgeSetupPlugin extends AbstractLoaderSetupPlugin {
+		@Override
+		public void apply(Project project) {
+			super.apply(project);
+			project.getPlugins().apply(ModDevPlugin.class); //apply ModDevGradle
+			getExt(project).loader = "neoforge";
+		}
+	}
+	
+	public static class FabricSetupPlugin extends AbstractLoaderSetupPlugin {
+		@Override
+		public void apply(Project project) {
+			super.apply(project);
+			project.getPlugins().apply(LoomGradlePlugin.class);
+			getExt(project).loader = "fabric";
+		}
 	}
 	
 	protected Ext getExt(Project project) {
 		return project.getExtensions().getByType(Ext.class);
 	}
 	
-	public static class Ext {
+	public static class Ext extends AbstractSetupExtension {
 		public Ext(Project project) {
-			this.project = project;
+			super(project);
 			this.mods = project.getObjects().domainObjectContainer(LoaderMod.class);
 		}
-		
-		public final Project project;
 		
 		//TODO should these be the gradle "property" things lol
 		public String loader;
@@ -55,7 +68,6 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 		public NamedDomainObjectContainer<LoaderMod> mods;
 		
 		//janky little "out parameters", exposed as fields in case other bits of the code need em...
-		public TaskProvider<Jar> quatlibFatJar;
 		public TaskProvider<RemapJarTask> quatlibFatJarNamedLoom;
 		
 		public void go(Action<? super Ext> act) {
@@ -67,6 +79,11 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 		public void doIt() {
 			if(ver == null) throw new IllegalStateException("version not set");
 			if(loader == null) throw new IllegalStateException("loader not set");
+			
+			//reach across and get vanilla (evaluationDependsOn was set up
+			//so this should be ok)
+			Project vanilla = project.project(":vanilla");
+			VanillaSetupPlugin.Ext vanillaExt = vanilla.getExtensions().getByType(VanillaSetupPlugin.Ext.class);
 			
 			//abbreviations
 			SourceSetContainer sourceSets = project.getExtensions().getByType(SourceSetContainer.class);
@@ -83,189 +100,122 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 			@Nullable NeoForgeExtension neoforge = project.getExtensions().findByType(NeoForgeExtension.class);
 			
 			if(loom != null) {
-				//loom has been applied by FabricSetupPlugin already
-				//setup minecraft with official names
+				//set up official names on loom (just so i don't need to do it in the buildscript)
 				dependencies.add("minecraft", "com.mojang:minecraft:" + ver);
 				dependencies.add("mappings", loom.officialMojangMappings());
 				
-				//run config stuff would go here
-				RunConfigSettings client = loom.getRuns().maybeCreate("client");
-				client.client(); //client client
-				client.setIdeConfigGenerated(true);
-				
-				//also disable the default remapJar task since `jar` was disabled
+				//disable the default remapJar since we don't use the default `jar` task
 				tasks.named("remapJar", it -> it.setEnabled(false));
 			}
 			
-			//neoforge: a basic run configuration
-			if(neoforge != null) {
-				neoforge.getRuns().create("client", it -> {
-					//noinspection Convert2MethodRef
-					it.client();
+			for(LoaderMod mod : mods) {
+				mod.vanilla = vanillaExt.getVanillaMods().findByName(mod.modid);
+				if(mod.vanilla == null)
+					throw new IllegalArgumentException("No mod " + mod.modid + " in :vanilla, add that first");
+			}
+			
+			/// SOURCE SET SCAFFOLDING ///
+			
+			//code shared across all mods on this loader
+			SourceSet quatlib = makeSourceSetWithCommonDeps("quatlib");
+			extendSourceSet2(quatlib, main); //contains minecraft + loader code
+			withImplementation(quatlib, vanillaExt.dependOnModAgnostic(ver)); //mod-agnostic code from :vanilla
+			if(loom != null)
+				withImplementation(quatlib, Util.floaderOnlyDep(project));
+			
+			//one source-set per mod
+			for(LoaderMod mod : mods) {
+				mod.set = makeSourceSetWithCommonDeps(mod.modid);
+				
+				extendSourceSet2(mod.set, main);
+				if(mod.quatlib)
+					extendSourceSet2(mod.set, quatlib);
+			}
+			
+			/// DEPENDENCIES ///
+			
+			for(LoaderMod mod : mods) {
+				//configuration containing code splatted into the mod jar
+				mod.splat = project.getConfigurations().create(mod.modid + "Splat");
+				withDeps(mod.splat, vanillaExt.dependOnVersionAndModSpecific(mod.vanilla, ver));
+				
+				//TODO: whats this do
+				withImplementation(mod.set, mod.splat);
+			}
+			
+			/// PROCESS RESOURCES ///
+			
+			Map<String, Object> allVars = Util.plus(Util.broadlyApplicableProps(project), Map.of(
+				"minecraft_version", ver,
+				"loader", loader
+			));
+			
+			//quatlib
+			configureProcessResources(quatlib, allVars, Map.of(
+				"modid", "modder_name_lib",
+				"name", "ModderNameLib"
+			));
+			
+			//mods
+			for(LoaderMod mod : mods) {
+				configureProcessResources(mod.set, allVars, mod.vars);
+				
+				//include the resources from vanilla too
+				tasks.named(mod.set.getProcessResourcesTaskName(), ProcessResources.class, it -> {
+					it.from(
+						mod.vanilla.versionAgnosticSourceSet.getResources(),
+						mod.vanilla.perVersionSourceSets.get(ver).getResources()
+					);
 				});
 			}
 			
-			//a source-set for quatlib (code shared across all mods on this loader)
-			SourceSet quatlib = sourceSets.create("quatlib");
+			/// JARS ///
 			
-			//it should see minecraft (which the mc ecosystem plugin has put in `main`)
-			Util.extendSourceSetFrom(quatlib, main);
-			
-			//it should see the applicable-to-all-mods code from :vanilla
-			Util.withImplementation(project, quatlib,
-				Util.vanillaDep(project, null, null),
-				Util.vanillaDep(project, null, ver)
-			);
-			//and on fabric it should also see :floader-only
-			if(loom != null) {
-				Util.withImplementation(project, quatlib, Util.floaderOnlyDep(project));
-			}
-			
-			//process resources
-			Util.configureProcessResources(project, quatlib,
-				Util.broadlyApplicableProps(project),
-				Map.of(
-					"modid", "modder_name_lib",
-					"name", "ModderNameLib",
-					"loader", loader,
-					"minecraft_version", ver
-				)
-			);
-			
-			//produce quatlib jar
-			quatlibFatJar = project.getTasks().register("quatlibFatJar", Jar.class, it -> {
+			//produce quatlib fatjar
+			TaskProvider<Jar> quatlibFatJar = project.getTasks().register("quatlibFatJar", Jar.class, it -> {
 				it.from(quatlib.getOutput());
-				
 				it.getArchiveBaseName().set("ModderNameLib-" + ver + "-" + loader);
-				if(loom != null) { //needs remapping
-					it.getArchiveClassifier().set("dev");
-					devlibs(it);
-				}
+				devlibs(it, loom);
 			});
 			tasks.named("jar", it -> it.dependsOn(quatlibFatJar));
 			
-			//neoforge: put quatlib on a run config
-			if(neoforge != null) {
-				neoforge.getMods().create("quatlib", it -> {
-					it.sourceSet(quatlib);
-					it.sourceSet(Util.vanillaSourceSet(project, null, null));
-					it.sourceSet(Util.vanillaSourceSet(project, null, ver));
+			for(LoaderMod mod : mods) {
+				//contains all mod-specific code, including some splatted from other projects, but none of the quatlib code
+				mod.depJar = tasks.register(Util.modVersionLoader(mod.modid, ver, loader) + "DepJar", Jar.class, it -> {
+					it.from(mod.set.getOutput()); //code for this version of this mod
+					for(File splat : mod.splat) it.from(project.zipTree(splat)); //code for all versions of this mod, basically
+//					it.from(
+//						mod.vanilla.versionAgnosticSourceSet.getResources(),
+//						mod.vanilla.perVersionSourceSets.get(ver).getResources()
+//					); //already done in processResources
+					
+					it.getArchiveBaseName().set(mod.modid + "-" + ver + "-" + loader);
+					
+					devlibs(it, loom);
+					
+					//TODO: kludge, i'm picking up dupe resources from somewhere...
+					it.setDuplicatesStrategy(DuplicatesStrategy.INCLUDE);
 				});
+				tasks.named("jar", it -> it.dependsOn(mod.depJar));
 			}
 			
-			//loom: remap quatlib
+			/// REMAPPED JARS ///
 			if(loom != null) {
-				quatlibFatJarNamedLoom = tasks.register("quatlibFatJarNamed", RemapJarTask.class, it -> {
+				TaskProvider<RemapJarTask> quatlibFatJarNamedLoom = tasks.register("quatlibFatJarNamed", RemapJarTask.class, it -> {
 					it.getArchiveBaseName().set("ModderNameLib-" + ver + "-" + loader);
 					it.getInputFile().value(quatlibFatJar.flatMap(AbstractArchiveTask::getArchiveFile));
 					it.dependsOn(quatlibFatJar);
 				});
 				tasks.named("jar", it -> it.dependsOn(quatlibFatJarNamedLoom));
-			}
-			
-			//for each mod..
-			for(LoaderMod loaderModOptions : mods) {
-				String mod = loaderModOptions.getName();
 				
-				//make a source-set for it
-				SourceSet set = sourceSets.create(mod);
-				loaderModOptions.set = set;
-				
-				Util.configureProcessResources(project, set,
-					Util.broadlyApplicableProps(project),
-					Map.of("minecraft_version", ver, "loader", loader),
-					loaderModOptions.vars
-				);
-				
-				//inherit from main source-set (containing minecraft, the modloader, and code shared across all mods using the loader)
-				Util.extendSourceSetFrom(set, main);
-				
-				//if quatlib is used, inherit from that too
-				if(loaderModOptions.quatlib) {
-					Util.extendSourceSetFrom(set, quatlib);
-				}
-				
-				//inherit from relevant :vanilla projects
-				Configuration modSplat = project.getConfigurations().create(mod + "Splat");
-				Util.withDeps(project, modSplat,
-					Util.vanillaDep(project, mod, null),
-					Util.vanillaDep(project, mod, ver)
-				);
-				loaderModOptions.splat = modSplat;
-				
-				//plug this thing in... hmm
-				Util.withImplementation(project, set,
-					quatlib.getOutput(),
-					modSplat,
-					Util.broadlyApplicableDeps(project)
-				);
-				if(loaderModOptions.quatlib) {
-					Util.withImplementation(project, set, quatlib.getOutput());
-				}
-//				dependencies.add(set.getImplementationConfigurationName(), main.getOutput());
-//				dependencies.add(set.getImplementationConfigurationName(), dependencies.create(quatlibVanilla));
-//				dependencies.add(set.getImplementationConfigurationName(), dependencies.create(modSplat));
-				
-				//TODO testing
-				//Configuration modSplat1 = project.getConfigurations().create(mod + "Splat1");
-	//			Configuration modSplat2 = project.getConfigurations().create(mod + "Splat2");
-				//dependencies.add(modSplat1.getName(), vanillaDep(mod, null));
-	//			dependencies.add(modSplat2.getName(), vanillaDep(mod, ver));
-				//TODO: the following line appears to be responsible for IDEA showing too many
-				// minecraft versions in autocomplete and such
-	//			dependencies.add(impl, dependencies.create(modSplat2));
-				
-				//loom: slap it on the classpath of all run configs
-				if(loom != null) {
-					tasks.withType(AbstractRunTask.class).configureEach(it ->
-						it.classpath(set.getRuntimeClasspath()));
-				}
-				
-				//fold in the vanilla resources
-				//TODO: test this and make sure it works on neoforge too, built jars, etc
-				tasks.named(set.getProcessResourcesTaskName(), ProcessResources.class, it -> {
-					it.from(
-						Util.vanillaSourceSet(project, mod, null).getResources(),
-						Util.vanillaSourceSet(project, mod, ver).getResources()
-					);
-				});
-				
-				//a "dep jar". all mod-specific code is splatted into it, but
-				//all non-mod-specific code is expected to be supplied via quatlib dependency
-				TaskProvider<Jar> depJar = tasks.register(Util.modVersionLoader(mod, ver, loader) + "DepJar", Jar.class, it -> {
-					it.from(set.getOutput());
-					for(File splat : modSplat) it.from(project.zipTree(splat));
-					it.getArchiveBaseName().set(mod + "-" + ver + "-" + loader);
-					
-					if(loom != null) { //needs remapping
-						it.getArchiveClassifier().set("dev");
-						devlibs(it);
-					}
-					
-					//TODO: kludge, happens since resources from :vanilla are added into processResources...
-					it.setDuplicatesStrategy(DuplicatesStrategy.INCLUDE);
-				});
-				tasks.named("jar", it -> it.dependsOn(depJar));
-				loaderModOptions.depJar = depJar;
-				
-				//neoforge: put this mod on a run config
-				if(neoforge != null) {
-					neoforge.getMods().create(mod, it -> {
-						it.sourceSet(set);
-						it.sourceSet(Util.vanillaSourceSet(project, mod, ver));
-						it.sourceSet(Util.vanillaSourceSet(project, mod, null));
-					});
-				}
-				
-				//loom: remap
-				if(loom != null) {
-					TaskProvider<RemapJarTask> depJarNamed = tasks.register(depJar.getName() + "Named", RemapJarTask.class, it -> {
-						it.dependsOn(depJar, quatlibFatJar, quatlibFatJarNamedLoom);
+				for(LoaderMod mod : mods) {
+					TaskProvider<RemapJarTask> depJarNamed = tasks.register(mod.depJar.getName() + "Named", RemapJarTask.class, it -> {
+						it.dependsOn(mod.depJar, quatlibFatJar, quatlibFatJarNamedLoom);
 						
-						it.getArchiveBaseName().set(mod + "-" + ver + "-" + loader);
-						it.getInputFile().set(depJar.flatMap(AbstractArchiveTask::getArchiveFile));
+						it.getArchiveBaseName().set(mod.modid + "-" + ver + "-" + loader);
+						it.getInputFile().set(mod.depJar.flatMap(AbstractArchiveTask::getArchiveFile));
 						
-						if(loaderModOptions.quatlib) {
+						if(mod.quatlib) {
 							//put quatlib-fat-dev on the remap classpath so tiny-remapper can see into it
 							it.getClasspath().from(quatlibFatJar.get().getArchiveFile());
 							
@@ -278,14 +228,43 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 					tasks.named("jar", it -> it.dependsOn(depJarNamed));
 				}
 			}
-		}
-		
-		private void devlibs(AbstractArchiveTask it) {
-			//loom changes `jar`'s dest dir to ./build/devlibs, and uses a separate RemapJarTask to create
-			//the jar in ./build/libs. so this idiom will move a task to the devlibs folder iff `jar` was
-			//moved by loom, and do nothing otherwise
-			TaskProvider<Jar> mainJarTask = project.getTasks().named("jar", Jar.class);
-			it.getDestinationDirectory().set(mainJarTask.flatMap(AbstractArchiveTask::getDestinationDirectory));
+			
+			/// RUN CONFIGS ///
+			
+			if(loom != null) {
+				RunConfigSettings client = loom.getRuns().maybeCreate("client");
+				client.client(); //client client
+				client.setIdeConfigGenerated(true);
+				
+				//put all mods on the runtime classpath
+				tasks.withType(AbstractRunTask.class).configureEach(it -> {
+					for(LoaderMod mod : mods) {
+						it.classpath(mod.set.getRuntimeClasspath());
+					}
+				});
+			}
+			
+			if(neoforge != null) {
+				neoforge.getRuns().create("client", it -> {
+					it.client();
+				});
+				
+				//quatlib
+				neoforge.getMods().create("modder_name_lib", it -> {
+					it.sourceSet(quatlib);
+					it.sourceSet(vanillaExt.modAnyVersionAny);
+					it.sourceSet(vanillaExt.modAgnosticSourceSets.get(ver));
+				});
+				
+				//each mod
+				for(LoaderMod mod : mods) {
+					neoforge.getMods().create(mod.modid, it -> {
+						it.sourceSet(mod.set);
+						it.sourceSet(mod.vanilla.versionAgnosticSourceSet);
+						it.sourceSet(mod.vanilla.perVersionSourceSets.get(ver));
+					});
+				}
+			}
 		}
 	}
 }
