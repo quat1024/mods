@@ -1,12 +1,9 @@
 package agency.highlysuspect.quatlib.any.util;
 
-import agency.highlysuspect.quatlib.any.failure.LogFacadeReportFormatter;
-import agency.highlysuspect.quatlib.any.failure.ReportFormatter;
-
 import java.io.PrintStream;
 import java.util.function.Consumer;
 
-public interface LogFacade extends Consumer<String>, ReportFormatter {
+public interface LogFacade extends Consumer<String> {
 	void info(String pattern, Object... args);
 	void warn(String pattern, Object... args);
 	
@@ -17,11 +14,6 @@ public interface LogFacade extends Consumer<String>, ReportFormatter {
 	@Override
 	default void accept(String s) {
 		info("{}", s);
-	}
-	
-	@Override
-	default void report(Throwable throwable) {
-		new LogFacadeReportFormatter(this).report(throwable);
 	}
 	
 	class Sysout implements LogFacade {

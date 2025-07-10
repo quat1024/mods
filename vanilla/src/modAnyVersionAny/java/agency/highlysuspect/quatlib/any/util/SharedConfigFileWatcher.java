@@ -1,7 +1,5 @@
 package agency.highlysuspect.quatlib.any.util;
 
-import agency.highlysuspect.quatlib.any.failure.Report;
-
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.StandardWatchEventKinds;
@@ -43,8 +41,7 @@ public class SharedConfigFileWatcher {
 				try {
 					dir.register(WATCHER, StandardWatchEventKinds.ENTRY_MODIFY);
 				} catch (Exception e) {
-					Report.withMessage(e, "Failed to register " + dir + " to WatchService")
-						.logTo(log);
+					log.warn("Failed to register {} to WatchService", dir, e);
 					return;
 				}
 				watchedDirectories.add(dir);
@@ -90,9 +87,8 @@ public class SharedConfigFileWatcher {
 				key.reset();
 			}
 		} catch (Throwable e) {
-			Report.withMessage(e, "ModderNameLib filewatcher failed")
-				.logTo(log);
-			//and exit the thread
+			log.warn("ModderNameLib filewatcher thread crashed", e);
+			//and exit stage left
 		}
 	}
 	
@@ -101,8 +97,7 @@ public class SharedConfigFileWatcher {
 		try {
 			theWatcher = FileSystems.getDefault().newWatchService();
 		} catch (Exception e) {
-			Report.withMessage(e, "ModderNameLib failed to make WatchService")
-				.logTo(log);
+			log.warn("ModderNameLib failed to make WatchService", e);
 		}
 		
 		WATCHER = theWatcher;

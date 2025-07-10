@@ -1,6 +1,7 @@
 package agency.highlysuspect.quatlib.any.config.sn;
 
-import agency.highlysuspect.quatlib.any.util.SnocList;
+import agency.highlysuspect.quatlib.any.failure.ContextChain;
+import agency.highlysuspect.quatlib.any.failure.ReportedException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -8,53 +9,62 @@ import java.util.Objects;
 import java.util.Set;
 
 public interface SnView {
-	SnocList<String> path();
+	ContextChain ctx();
 	
 	boolean isList();
-	ListView asList() throws SnException;
+	ListView asList() throws ReportedException;
 	@Nullable ListView asListOrNull();
 	
 	//TODO this should return an SnView.StringView onto the string or whatever
 	// useful if i ever add mutators to this interface
 	boolean isString();
-	String asString() throws SnException;
+	String asString() throws ReportedException;
 	@Nullable String asStringOrNull();
 	
 	boolean isMap();
-	MapView asMap() throws SnException;
+	MapView asMap() throws ReportedException;
 	@Nullable MapView asMapOrNull();
 	
 	interface ListView extends SnView {
 		int size();
-		SnView get(int i) throws SnException;
+		SnView get(int i) throws ReportedException;
 	}
 	
 	interface MapView extends SnView {
 		int size();
 		Set<String> keySet();
 		boolean containsKey(String key);
-		SnView get(String key) throws SnException;
+		SnView get(String key) throws ReportedException;
 		@Nullable SnView getOrNull(String key);
 	}
 	
-	//TODO: remove the SnocList and make SnViews just point at each other
-	// saves an allocation
+	//TODO: can this *extend* ContextChain? lol. save an allocation
 	class Impl implements SnView, ListView, MapView {
-		public Impl(@NotNull Sn<?> sn, @NotNull SnocList<String> path) {
+		public Impl(@NotNull Sn<?> sn, @NotNull ContextChain ctx) {
 			this.sn = Objects.requireNonNull(sn);
-			this.path = Objects.requireNonNull(path);
-		}
-		
-		public Impl(Sn<?> sn) {
-			this(sn, SnocList.empty());
+			this.ctx = Objects.requireNonNull(ctx);
 		}
 		
 		private final @NotNull Sn<?> sn;
-		private final @NotNull SnocList<String> path;
+		private final @NotNull ContextChain ctx;
+		
+		private ReportedException expected(Class<? extends Sn<?>> expected) {
+			String expectedName = name(expected);
+			String gotName = name(sn.getClass());
+			return ctx.detail("Expected " + expectedName + ", but there was " + gotName).reportError();
+		}
+		
+		private static String name(Class<?> it) {
+			if(it == null) return "nothing";
+			if(it == SnList.class) return "a list";
+			if(it == SnStr.class) return "a string";
+			if(it == SnMap.class) return "a map";
+			return it.getSimpleName(); //unreachable
+		}
 		
 		@Override
-		public @NotNull SnocList<String> path() {
-			return path;
+		public ContextChain ctx() {
+			return ctx;
 		}
 		
 		@Override
@@ -63,9 +73,9 @@ public interface SnView {
 		}
 		
 		@Override
-		public ListView asList() throws SnException {
+		public ListView asList() throws ReportedException {
 			if(sn instanceof SnList) return this;
-			else throw SnException.expected(SnList.class, sn, path);
+			else throw expected(SnList.class);
 		}
 		
 		@Override
@@ -79,9 +89,9 @@ public interface SnView {
 		}
 		
 		@Override
-		public String asString() throws SnException {
+		public String asString() throws ReportedException {
 			if(sn instanceof SnStr(String value)) return value;
-			else throw SnException.expected(SnStr.class, sn, path);
+			else throw expected(SnStr.class);
 		}
 		
 		@Override
@@ -95,9 +105,9 @@ public interface SnView {
 		}
 		
 		@Override
-		public MapView asMap() throws SnException {
+		public MapView asMap() throws ReportedException {
 			if(sn instanceof SnMap) return this;
-			else throw SnException.expected(SnMap.class, sn, path);
+			else throw expected(SnMap.class);
 		}
 		
 		@Override
@@ -106,7 +116,7 @@ public interface SnView {
 		}
 		
 		private RuntimeException impossible() {
-			return new IllegalStateException(path.toString());
+			return new IllegalStateException("Unreachable?!");
 		}
 		
 		//implements two interfaces at once
@@ -118,10 +128,10 @@ public interface SnView {
 		}
 		
 		@Override
-		public SnView get(int i) throws SnException {
+		public SnView get(int i) throws ReportedException {
 			if(!(sn instanceof SnList arr)) throw impossible();
-			if(i < 0 || i >= arr.size()) throw new SnException("Index " + i + " out of bounds for range " + arr.size() + " at ", path);
-			return new Impl(arr.get(i), path.snoc("[" + i + "]"));
+			if(i < 0 || i >= arr.size()) throw ctx.detail("Index " + i + " out of bounds for range " + arr.size()).reportError();
+			return new Impl(arr.get(i), ctx.path("[" + i + "]"));
 		}
 		
 		@Override
@@ -137,11 +147,11 @@ public interface SnView {
 		}
 		
 		@Override
-		public SnView get(String key) throws SnException {
+		public SnView get(String key) throws ReportedException {
 			if(!(sn instanceof SnMap map)) throw impossible();
 			Sn<?> child = map.get(key);
-			if(child == null) throw new SnException("No such key '" + key + "' at ", path);
-			return new Impl(child, path.snoc(key));
+			if(child == null) throw ctx.detail("No such key '" + key + "'").reportError();
+			return new Impl(child, ctx.path(key));
 		}
 		
 		@Override
@@ -149,12 +159,7 @@ public interface SnView {
 			if(!(sn instanceof SnMap map)) throw impossible();
 			Sn<?> child = map.get(key);
 			if(child == null) return null;
-			else return new Impl(child, path.snoc(key));
-		}
-		
-		@Override
-		public String toString() {
-			return "SnView, path '" + path() + "' (looking at " + sn.getClass().getSimpleName() + ")";
+			else return new Impl(child, ctx.path(key));
 		}
 	}
 }

@@ -121,7 +121,7 @@ public class HalfDecentConfigFile extends MutableMapConfig {
 		}
 		
 		//match it to config options
-		MatchedUnparsedConfig matched = new MatchedUnparsedConfig(schema, parsed.view());
+		MatchedUnparsedConfig matched = new MatchedUnparsedConfig(schema, parsed.view(ctx));
 		
 		//validate it
 		ValidatedConfig validated = matched.parseAndValidate2(ctx);

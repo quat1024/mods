@@ -1,10 +1,9 @@
 package agency.highlysuspect.quatlib.any.config;
 
-import agency.highlysuspect.quatlib.any.failure.Report;
 import agency.highlysuspect.quatlib.any.config.sn.Sn;
 import agency.highlysuspect.quatlib.any.config.sn.SnView;
-import agency.highlysuspect.quatlib.any.util.QuatUtil;
-import org.jetbrains.annotations.Nullable;
+import agency.highlysuspect.quatlib.any.failure.ContextChain;
+import agency.highlysuspect.quatlib.any.failure.ReportedException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,17 +28,21 @@ public abstract class ConfigOpt<T> implements SectOrOpt {
 	private final List<Validator<T>> validators = new ArrayList<>(1);
 	private final List<Corrector<T>> correctors = new ArrayList<>(1);
 	
-	//serialization and deserialization
-	public abstract Sn<?> write(T thing);
-	public abstract T parse(SnView sn) throws Report;
+	/// SER AND DE
 	
-	//correction
-	public T correct(T thing) {
+	public abstract Sn<?> write(T thing);
+	public abstract T parse(SnView sn, ContextChain ctx) throws ReportedException;
+	
+	/// CORRECTION - fixing the value in an unambiguous way and reporting a warning
+	
+	public interface Corrector<T> {
+		T correct(T thing, ContextChain ctx);
+	}
+	
+	public T correct(T thing, ContextChain ctx) {
 		T best = thing;
-		for(Corrector<T> corrector : correctors) {
-			@Nullable T corrected = corrector.correct(best);
-			if(corrected != null) best = corrected;
-		}
+		for(Corrector<T> corrector : correctors)
+			best = corrector.correct(best, ctx);
 		return best;
 	}
 	
@@ -48,16 +51,15 @@ public abstract class ConfigOpt<T> implements SectOrOpt {
 		return this;
 	}
 	
-	//todo is this the right shape
-	// feels like you'd want some notification that a config value was corrected
-	public interface Corrector<T> {
-		@Nullable T correct(T thing);
+	/// VALIDATION: reporting an error if the value is invalid
+	
+	public interface Validator<T> {
+		void validate(T thing, ContextChain ctx) throws ReportedException;
 	}
 	
-	//validation
-	public void validate(T thing) throws Report {
+	public void validate(T thing, ContextChain ctx) throws ReportedException {
 		for(Validator<T> validator : validators)
-			validator.validate(thing);
+			validator.validate(thing, ctx);
 	}
 	
 	public ConfigOpt<T> addValidator(Validator<T> v) {
@@ -65,9 +67,7 @@ public abstract class ConfigOpt<T> implements SectOrOpt {
 		return this;
 	}
 	
-	public interface Validator<T> {
-		void validate(T thing) throws Report;
-	}
+	/// YEAHG
 	
 	@Override
 	public String getName() {
@@ -94,7 +94,7 @@ public abstract class ConfigOpt<T> implements SectOrOpt {
 		}
 		
 		@Override
-		public String parse(SnView sn) throws Report {
+		public String parse(SnView sn, ContextChain ctx) throws ReportedException {
 			return sn.asString();
 		}
 	}
@@ -110,12 +110,12 @@ public abstract class ConfigOpt<T> implements SectOrOpt {
 		}
 		
 		@Override
-		public Boolean parse(SnView sn) throws Report {
+		public Boolean parse(SnView sn, ContextChain ctx) throws ReportedException {
 			String s = sn.asString().toLowerCase(Locale.ROOT).trim();
 			return switch(s) {
 				case "true" -> true;
 				case "false" -> false;
-				case null, default -> throw new Report("Expected 'true' or 'false', but got " + s);
+				case null, default -> throw ctx.detail("Expected 'true' or 'false' but got '" + s + "'").reportError();
 			};
 		}
 	}
@@ -123,6 +123,32 @@ public abstract class ConfigOpt<T> implements SectOrOpt {
 	public static class IntOpt extends ConfigOpt<Integer> {
 		public IntOpt(String name, Integer defaultValue, String... comment) {
 			super(name, defaultValue, comment);
+			
+			addCorrector((thing, ctx) -> {
+				if(thing < min) {
+					if(min == 0) ctx.detail("Value " + thing + " cannot be negative").reportWarning();
+					else ctx.detail("Value " + thing + " cannot be below " + min).reportWarning();
+					return min;
+				}
+				
+				if(thing > max) {
+					ctx.detail("Value " + thing + " cannot be above " + max).reportWarning();
+					return max;
+				}
+				
+				return thing;
+			});
+			
+			addValidator((thing, ctx) -> {
+				if(min != Integer.MIN_VALUE && thing < min) {
+					if(min == 0) throw ctx.detail("Value " + thing + " cannot be negative").reportError();
+					else throw ctx.detail("Value " + thing + " cannot be below " + min).reportError();
+				}
+				
+				if(max != Integer.MAX_VALUE && thing > max) {
+					throw ctx.detail("Value " + thing + " cannot be above " + max).reportError();
+				}
+			});
 		}
 		
 		private int min = Integer.MIN_VALUE;
@@ -139,37 +165,18 @@ public abstract class ConfigOpt<T> implements SectOrOpt {
 		}
 		
 		@Override
-		public Integer correct(Integer thing) {
-			return QuatUtil.clamp(super.correct(thing), min, max);
-		}
-		
-		@Override
-		public void validate(Integer thing) throws Report {
-			super.validate(thing);
-			
-			if(min != Integer.MIN_VALUE && thing < min) {
-				if(min == 0) throw new Report("Value " + thing + " cannot be negative");
-				else throw new Report("Value " + thing + " cannot be below " + min);
-			}
-			
-			if(max != Integer.MAX_VALUE && thing > max) {
-				throw new Report("Value " + thing + " cannot be above " + max);
-			}
-		}
-		
-		@Override
 		public Sn<?> write(Integer thing) {
 			return Sn.str(Integer.toString(thing));
 		}
 		
 		@Override
-		public Integer parse(SnView sn) throws Report {
+		public Integer parse(SnView sn, ContextChain ctx) throws ReportedException {
 			String s = sn.asString();
 			
 			try {
 				return Integer.parseInt(s.trim());
 			} catch (Throwable e) {
-				throw new Report("Could not parse '" + s + "' as an integer", e);
+				throw ctx.cause(e).detail("Could not parse '" + s + "' as an integer").reportError();
 			}
 		}
 		

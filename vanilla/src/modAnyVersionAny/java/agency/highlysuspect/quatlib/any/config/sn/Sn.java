@@ -1,5 +1,7 @@
 package agency.highlysuspect.quatlib.any.config.sn;
 
+import agency.highlysuspect.quatlib.any.failure.ContextChain;
+
 /**
  * "String Notation", for lack of a better term.
  * It's JSON but the only things left are strings and collections.
@@ -7,8 +9,8 @@ package agency.highlysuspect.quatlib.any.config.sn;
 public sealed interface Sn<S extends Sn<S>> permits SnStr, SnList, SnMap {
 	S copy();
 	
-	default SnView view() {
-		return new SnView.Impl(this);
+	default SnView view(ContextChain ctx) {
+		return new SnView.Impl(this, ctx);
 	}
 	
 	static SnStr str(String s) {

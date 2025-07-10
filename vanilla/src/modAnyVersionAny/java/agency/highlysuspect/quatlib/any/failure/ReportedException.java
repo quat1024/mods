@@ -7,7 +7,6 @@ public class ReportedException extends Exception {
 		super();
 	}
 	
-	public static void fake() throws ReportedException {
-	
-	}
+	//for filling out catch blocks
+	public static void fake() throws ReportedException {}
 }
