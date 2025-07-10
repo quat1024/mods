@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
+//this type of Report adds information while stack-unwinding. so it gets information "upwards"
 public class Report extends Exception {
 	public Report(String message, Throwable cause) {
 		super(cause);

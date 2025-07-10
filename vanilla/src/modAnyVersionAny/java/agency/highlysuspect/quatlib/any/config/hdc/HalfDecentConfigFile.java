@@ -4,9 +4,12 @@ import agency.highlysuspect.quatlib.any.config.ConfigOpt;
 import agency.highlysuspect.quatlib.any.config.ConfigSection;
 import agency.highlysuspect.quatlib.any.config.MatchedUnparsedConfig;
 import agency.highlysuspect.quatlib.any.config.MutableMapConfig;
+import agency.highlysuspect.quatlib.any.config.ValidatedConfig;
 import agency.highlysuspect.quatlib.any.config.sn.Sn;
 import agency.highlysuspect.quatlib.any.config.sn.SnParser;
-import agency.highlysuspect.quatlib.any.failure.Report;
+import agency.highlysuspect.quatlib.any.failure.ContextChain;
+import agency.highlysuspect.quatlib.any.failure.FailureBin;
+import agency.highlysuspect.quatlib.any.failure.Report2;
 import agency.highlysuspect.quatlib.any.util.LogFacade;
 import agency.highlysuspect.quatlib.any.util.SharedConfigFileWatcher;
 
@@ -48,7 +51,7 @@ public class HalfDecentConfigFile extends MutableMapConfig {
 		saveLater();
 	}
 	
-	public void saveNow() throws Report {
+	public void saveNow() {
 		doSave(state);
 	}
 	
@@ -57,58 +60,81 @@ public class HalfDecentConfigFile extends MutableMapConfig {
 		
 		//make a clone that's hopefully safe to pass between threads
 		Map<ConfigOpt<?>, Object> stateClone = new IdentityHashMap<>(state);
-		background.execute(() -> {
-			try {
-				doSave(stateClone);
-			} catch (Report e) {
-				e.logTo(log);
-			}
-		});
+		background.execute(() -> doSave(stateClone));
 	}
 	
-	private void doSave(Map<ConfigOpt<?>, Object> theState) throws Report {
+	private void doSave(Map<ConfigOpt<?>, Object> theState) {
+		log.info("Saving config file to {}", path);
+		//write it out
+		String serializedConfig = new HalfDecentConfigWriter().writeTopLevel(schema, new MutableMapConfig(theState));
+		
+		//we're about to trigger the filewatcher by saving the file
+		lastIngameSave = System.currentTimeMillis();
+		
+		//do it
 		try {
-			log.info("Saving config file to {}", path);
-			//write it out
-			String serializedConfig = new HalfDecentConfigWriter().writeTopLevel(schema, new MutableMapConfig(theState));
-			
-			//we're about to trigger the filewatcher by saving the file
-			lastIngameSave = System.currentTimeMillis();
-			
-			//do it
 			Files.writeString(path, serializedConfig, StandardCharsets.UTF_8);
 			log.info("Saved successfully!");
-		} catch (Throwable e) {
-			throw Report.modify(e, it -> it.addMessage("Failed to save config to " + path));
+		} catch (Exception e) {
+			log.warn("Failed to save config file at " + path, e);
 		}
 	}
 	
-	public void load() throws Report {
-		try {
-			log.info("Loading config file {}", path);
-			
-			if(Files.notExists(path)) {
-				log.info("Config file doesn't exist. Writing a new one and loading default options", path);
-				state = new IdentityHashMap<>();
-				doSave(state);
-				return;
-			}
-			
-			//parse the file
-			Sn<?> parsed = new SnParser(Files.readString(path, StandardCharsets.UTF_8)).parseTopLevel();
-			
-			//match it to config options
-			MatchedUnparsedConfig matched = new MatchedUnparsedConfig(schema, parsed.view());
-			
-			//validate it
-			state = new IdentityHashMap<>(matched.parseAndValidate().toMap());
-			log.info("Loaded successfully!");
-			
-			//schedule a saveback (fixes the formatting, etc)
-			saveLater();
-		} catch (Throwable e) {
-			throw Report.modify(e, it -> it.addMessage("Failed to load config from " + path));
+	public void load() {
+		log.info("Loading config file {}", path);
+		
+		if(Files.notExists(path)) {
+			log.info("Config file doesn't exist. Writing a new one and loading default options", path);
+			state = new IdentityHashMap<>();
+			doSave(state);
+			return;
 		}
+		
+		FailureBin failures = new FailureBin();
+		Report2.Report2Formatter reporter = new Report2.LogFacadeReport2Formatter(log);
+		ContextChain ctx = failures.detail("Config file at " + path);
+		
+		//read the file
+		
+		String read;
+		try {
+			read = Files.readString(path, StandardCharsets.UTF_8);
+		} catch (Exception e) {
+			ctx.detail("Failed to read file from " + path).addError(e);
+			failures.reportWarnings(reporter);
+			failures.reportErrors(reporter);
+			return;
+		}
+		
+		//parse the file
+		Sn<?> parsed;
+		try {
+			parsed = new SnParser(read).parseTopLevel(ctx.detail("While parsing the file"));
+		} catch (Report2 e) {
+			failures.reportWarnings(reporter);
+			failures.reportErrors(reporter);
+			return;
+		}
+		
+		//match
+		MatchedUnparsedConfig matched = new MatchedUnparsedConfig(schema, parsed.view(), ctx.detail("While matching the file"));
+		
+		//validate
+		ValidatedConfig validated = matched.parseAndValidate(ctx.detail("While validating the file"));
+		
+		//report errors, and if there aren't any, load the file
+		failures.reportWarnings(reporter);
+		failures.reportErrors(reporter);
+		
+		if(failures.noErrors()) {
+			state = validated.toMap();
+			log.info("Loaded successfully!");
+		} else {
+			log.warn("Not loading config file; there were errors. See above.");
+		}
+		
+		//schedule a saveback (fixes the formatting, etc)
+		saveLater();
 	}
 	
 	public void watchForChanges() {
@@ -124,12 +150,8 @@ public class HalfDecentConfigFile extends MutableMapConfig {
 			} else if(now - lastIngameSave < SAVE_TIMEOUT_MS) {
 				log.info("Only been {}ms since last in-game save, ignoring change to {}", now - lastIngameSave, path.getFileName());
 			} else {
-				try {
-					//uhhhhmh hopefully this is safe to call off-thread?
-					load();
-				} catch (Report e) {
-					e.logTo(log);
-				}
+				//uhhhhmh hopefully this is safe to call off-thread?
+				load();
 			}
 		});
 	}

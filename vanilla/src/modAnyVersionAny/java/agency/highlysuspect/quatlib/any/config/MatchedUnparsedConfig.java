@@ -1,17 +1,19 @@
 package agency.highlysuspect.quatlib.any.config;
 
-import agency.highlysuspect.quatlib.any.failure.Report;
 import agency.highlysuspect.quatlib.any.config.sn.SnView;
+import agency.highlysuspect.quatlib.any.failure.ContextChain;
+import agency.highlysuspect.quatlib.any.failure.Report;
+import agency.highlysuspect.quatlib.any.failure.Report2;
 
 import java.util.IdentityHashMap;
 import java.util.Map;
 
 public class MatchedUnparsedConfig extends IdentityHashMap<ConfigOpt<?>, SnView> {
-	public MatchedUnparsedConfig(ConfigSection schema, SnView view) {
-		matchImpl(schema, view);
+	public MatchedUnparsedConfig(ConfigSection schema, SnView view, ContextChain ctx) {
+		matchImpl(schema, view, ctx);
 	}
 	
-	private void matchImpl(SectOrOpt item, SnView view) {
+	private void matchImpl(SectOrOpt item, SnView view, ContextChain ctx) {
 		if(view == null) return;
 		
 		//if we're looking at a config section
@@ -30,7 +32,7 @@ public class MatchedUnparsedConfig extends IdentityHashMap<ConfigOpt<?>, SnView>
 					//TODO: warning?
 					continue;
 				}
-				matchImpl(child, childSn);
+				matchImpl(child, childSn, ctx);
 			}
 		}
 		
@@ -40,29 +42,40 @@ public class MatchedUnparsedConfig extends IdentityHashMap<ConfigOpt<?>, SnView>
 		}
 	}
 	
-	public ValidatedConfig parseAndValidate() throws Report {
+	public ValidatedConfig parseAndValidate(ContextChain ctx) {
 		ValidatedConfig validOptions = new ValidatedConfig();
 		
 		for(Map.Entry<ConfigOpt<?>, SnView> e : entrySet()) {
 			ConfigOpt<?> opt = e.getKey();
 			SnView sn = e.getValue();
-			if(sn == null) continue;
+			if(sn == null) continue; //expected, if the config file is too small
 			
-			validOptions.put(opt, parseAndValidateImpl(opt, sn));
+			validOptions.put(opt, parseAndValidateImpl(opt, sn, ctx));
 		}
 		return validOptions;
 	}
 	
 	//just need to name the generic
-	private <T> T parseAndValidateImpl(ConfigOpt<T> opt, SnView view) throws Report {
-		//TODO: catch exceptions and add them to a warnings list, then ignore the failing option
+	private <T> T parseAndValidateImpl(ConfigOpt<T> opt, SnView view, ContextChain ctx) {
+		//parse it. parsing is a failable operation and we might not get a T.
+		T parsed;
 		try {
-			T parsed = opt.parse(view);
-			T corrected = opt.correct(parsed);
-			opt.validate(corrected);
-			return corrected;
-		} catch (Throwable e) {
-			throw Report.modify(e, it -> it.addMessage("Problem while parsing option '" + view.path() + "'"));
+			parsed = opt.parse(view, ctx.detail("Option '" + view.path() + "' failed to parse"));
+		} catch (Report e) {
+			//TODO phasing out Report in favor of Report2.
+			throw new RuntimeException(e);
+		} catch (Report2 e) {
+			//TODO: include some kind of "using default value ..." warning?
+			return opt.getDefaultValue();
 		}
+		
+		//correct it. this might pop a warning if the value is out of range or something.
+		T corrected = opt.correct(parsed, ctx.detail("Option '" + view.path() + "' needed correction"));
+		
+		//validate it. this will pop errors if the value breaks constraints
+		boolean valid = opt.validate(corrected, ctx.detail("Option '" + view.path() + "' failed validation"));
+		if(valid) return corrected;
+		
+		return opt.getDefaultValue();
 	}
 }

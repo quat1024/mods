@@ -1,5 +1,6 @@
 package agency.highlysuspect.quatlib.any.config.sn;
 
+import agency.highlysuspect.quatlib.any.failure.ContextChain;
 import agency.highlysuspect.quatlib.any.util.SnocList;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -40,21 +41,18 @@ public interface SnView {
 	//TODO: remove the SnocList and make SnViews just point at each other
 	// saves an allocation
 	class Impl implements SnView, ListView, MapView {
-		public Impl(@NotNull Sn<?> sn, @NotNull SnocList<String> path) {
+		public Impl(@NotNull Sn<?> sn, @NotNull ContextChain ctx) {
 			this.sn = Objects.requireNonNull(sn);
-			this.path = Objects.requireNonNull(path);
-		}
-		
-		public Impl(Sn<?> sn) {
-			this(sn, SnocList.empty());
+			this.ctx = Objects.requireNonNull(ctx);
 		}
 		
 		private final @NotNull Sn<?> sn;
-		private final @NotNull SnocList<String> path;
+		private final @NotNull ContextChain ctx;
 		
 		@Override
+		@Deprecated(forRemoval = true)
 		public @NotNull SnocList<String> path() {
-			return path;
+			throw new IllegalStateException("deleting this method");
 		}
 		
 		@Override
@@ -65,7 +63,7 @@ public interface SnView {
 		@Override
 		public ListView asList() throws SnException {
 			if(sn instanceof SnList) return this;
-			else throw SnException.expected(SnList.class, sn, path);
+			else throw SnException.expected(SnList.class, sn, ctx);
 		}
 		
 		@Override
@@ -81,7 +79,7 @@ public interface SnView {
 		@Override
 		public String asString() throws SnException {
 			if(sn instanceof SnStr(String value)) return value;
-			else throw SnException.expected(SnStr.class, sn, path);
+			else throw SnException.expected(SnStr.class, sn, ctx);
 		}
 		
 		@Override
@@ -97,7 +95,7 @@ public interface SnView {
 		@Override
 		public MapView asMap() throws SnException {
 			if(sn instanceof SnMap) return this;
-			else throw SnException.expected(SnMap.class, sn, path);
+			else throw SnException.expected(SnMap.class, sn, ctx);
 		}
 		
 		@Override
@@ -106,7 +104,7 @@ public interface SnView {
 		}
 		
 		private RuntimeException impossible() {
-			return new IllegalStateException(path.toString());
+			return new IllegalStateException(String.join(", ", ctx.collectMessages()));
 		}
 		
 		//implements two interfaces at once
@@ -120,8 +118,8 @@ public interface SnView {
 		@Override
 		public SnView get(int i) throws SnException {
 			if(!(sn instanceof SnList arr)) throw impossible();
-			if(i < 0 || i >= arr.size()) throw new SnException("Index " + i + " out of bounds for range " + arr.size() + " at ", path);
-			return new Impl(arr.get(i), path.snoc("[" + i + "]"));
+			if(i < 0 || i >= arr.size()) throw new SnException("Index " + i + " out of bounds for range " + arr.size(), ctx);
+			return new Impl(arr.get(i), ctx.detail("[" + i + "]"));
 		}
 		
 		@Override
@@ -140,8 +138,8 @@ public interface SnView {
 		public SnView get(String key) throws SnException {
 			if(!(sn instanceof SnMap map)) throw impossible();
 			Sn<?> child = map.get(key);
-			if(child == null) throw new SnException("No such key '" + key + "' at ", path);
-			return new Impl(child, path.snoc(key));
+			if(child == null) throw new SnException("No such key '" + key, ctx);
+			return new Impl(child, ctx.detail(key));
 		}
 		
 		@Override
@@ -149,7 +147,7 @@ public interface SnView {
 			if(!(sn instanceof SnMap map)) throw impossible();
 			Sn<?> child = map.get(key);
 			if(child == null) return null;
-			else return new Impl(child, path.snoc(key));
+			else return new Impl(child, ctx.detail(key));
 		}
 		
 		@Override

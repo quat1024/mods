@@ -1,19 +1,19 @@
 package agency.highlysuspect.quatlib.any.config.sn;
 
-import agency.highlysuspect.quatlib.any.failure.Report;
-import agency.highlysuspect.quatlib.any.util.SnocList;
+import agency.highlysuspect.quatlib.any.failure.ContextChain;
+import agency.highlysuspect.quatlib.any.failure.Report2;
 
-//TODO: this could probably be removed and folded into the Report mechanism now
-public class SnException extends Report {
-	public SnException(String message, SnocList<String> path) {
-		super(message + "'" + path + "'");
+//TODO: this could probably be removed and folded into the Report2 mechanism now
+public class SnException extends Report2 {
+	public SnException(String message, ContextChain ctx) {
+		super(ctx.detail(message), null);
 	}
 	
-	public static SnException expected(Class<? extends Sn<?>> expected, Sn<?> got, SnocList<String> path) {
+	public static SnException expected(Class<? extends Sn<?>> expected, Sn<?> got, ContextChain ctx) {
 		String expectedName = name(expected);
 		String gotName = got == null ? name(null) : name(got.getClass());
 		
-		return new SnException("Expected " + expectedName + ", but there was " + gotName + " at ", path);
+		return new SnException("Expected " + expectedName + ", but there was " + gotName, ctx);
 	}
 	
 	private static String name(Class<?> it) {

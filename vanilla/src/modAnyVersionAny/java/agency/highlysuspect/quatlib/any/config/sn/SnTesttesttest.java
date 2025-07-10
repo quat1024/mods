@@ -1,7 +1,10 @@
 package agency.highlysuspect.quatlib.any.config.sn;
 
+import agency.highlysuspect.quatlib.any.failure.FailureBin;
+import agency.highlysuspect.quatlib.any.failure.Report2;
+
 public class SnTesttesttest {
-	public static void main(String... args) throws SnException {
+	public static void main(String... args) throws SnException, Report2 {
 		SnMap map = Sn.map(
 			"foo", "bar",
 			"baz", Sn.list(
@@ -29,7 +32,9 @@ public class SnTesttesttest {
 		main2();
 	}
 	
-	public static void main2() throws SnException {
+	public static void main2() throws SnException, Report2 {
+		FailureBin failures = new FailureBin();
+		
 		Sn<?> sn = new SnParser("""
 			modules {
 			  gaming {
@@ -40,7 +45,7 @@ public class SnTesttesttest {
 			    enabled = false
 			  }
 			}
-		""").parseTopLevel();
+		""").parseTopLevel(failures.detail("while parsing"));
 		
 		SnView view = sn.view();
 		

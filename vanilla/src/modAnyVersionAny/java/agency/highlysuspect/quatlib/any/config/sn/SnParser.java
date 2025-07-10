@@ -1,5 +1,10 @@
 package agency.highlysuspect.quatlib.any.config.sn;
 
+import agency.highlysuspect.quatlib.any.failure.ContextChain;
+import agency.highlysuspect.quatlib.any.failure.FailureBin;
+import agency.highlysuspect.quatlib.any.failure.Report2;
+import agency.highlysuspect.quatlib.any.util.LogFacade;
+
 public class SnParser {
 	public SnParser(String s) {
 		this.s = s;
@@ -20,20 +25,21 @@ public class SnParser {
 //	private static final String BARE_VALUE_ENDERS_WITHIN_MAP = "}\r\n" + LINE_COMMENT_CHAR;
 //	private static final String BARE_VALUE_ENDERS_WITHIN_LIST = ",]\r\n" + LINE_COMMENT_CHAR;
 	
-	public SnMap parseTopLevel() {
+	public SnMap parseTopLevel(ContextChain ctx) throws Report2 {
 		//keep parsing items until we run out the file, put em in a big map
 		SnMap top = new SnMap();
 		while(true) {
 			cursor.skipWhitespaceAndComments();
 			int next = cursor.peek();
 			if(next == EOF) return top;
-			else parseKvInto(top);
+			else parseKvInto(top, ctx);
 		}
 	}
 	
-	private void parseKvInto(SnMap map) {
+	private void parseKvInto(SnMap map, ContextChain ctx) throws Report2 {
 		cursor.skipWhitespaceAndComments();
-		String key = parseKey();
+		String key = parseKey(ctx);
+		ctx = ctx.detail("While parsing the value for '" + key + "'");
 		
 		cursor.skipWhitespaceAndComments();
 		int next = cursor.peek();
@@ -49,25 +55,26 @@ public class SnParser {
 			//definitely parses as 'foo = ""' and 'bar = baz'
 			cursor.skipSameLineWhitespaceAndComments();
 			next = cursor.peek();
-			//System.out.println("parsed key " + key + " cursor is at " + cursor + " next char is " + (char) next);
 			if(next == '\r' || next == '\n') map.put(key, Sn.str(""));
-			else map.put(key, parseValue());
+			else map.put(key, parseValue(ctx));
 		} else if(next == '{') {
 			//a map with the initial equal-sign omitted
-			map.put(key, parseMap());
+			map.put(key, parseMap(ctx));
 		} else if(next == '[') {
 			//a list with the initial equal-sign omitted
-			map.put(key, parseList());
+			map.put(key, parseList(ctx));
 		} else if(next == EOF) {
-			throw new IllegalStateException("unexpected end of file after parsing key '" + key + "'");
+			//the end of the file? uh, ok, i guess we're not getting a value after all
+			ctx.detail("Unexpected end-of-file on line " + cursor.endLine).addWarning();
 		} else {
-			throw new IllegalStateException("unexpected character '" + (char) next + "' after parsing key '" + key + "'");
+			throw ctx.detail("Unexpected character '" + (char) next + "'").addErrorWithException();
 		}
 	}
 	
-	private SnMap parseMap() {
+	private SnMap parseMap(ContextChain ctx) throws Report2 {
+		ctx = ctx.detail("While parsing a curly-brace block");
+		
 		assert cursor.peek() == '{';
-		int blockStartLine = cursor.startLine;
 		cursor.right();
 		
 		SnMap map = new SnMap();
@@ -77,8 +84,7 @@ public class SnParser {
 			int next = cursor.peek();
 			
 			if(next == EOF) {
-				//TODO: report the warning
-				//throw new IllegalStateException("unclosed block starting on line " + blockStartLine);
+				ctx.detail("Unexpected end-of-file on line " + cursor.endLine).addWarning();
 				return map;
 			} else if(next == ',') {
 				//skip it but keep going
@@ -89,12 +95,15 @@ public class SnParser {
 				return map;
 			} else {
 				//parse a key-value, put it in the map, and go round again to parse another
-				parseKvInto(map);
+				int i = map.size() + 1;
+				parseKvInto(map, ctx.detail("While parsing the " + englishOrdinal(i) + " entry in the curly-brace block"));
 			}
 		}
 	}
 	
-	private SnList parseList() {
+	private SnList parseList(ContextChain ctx) throws Report2 {
+		ctx = ctx.detail("While parsing a square-bracketed list");
+		
 		assert cursor.peek() == '[';
 		cursor.right();
 		
@@ -104,7 +113,7 @@ public class SnParser {
 			cursor.skipWhitespaceAndComments();
 			int next = cursor.peek();
 			if(next == EOF) {
-				//TODO: report a warning
+				ctx.detail("Unexpected end-of-file on line " + cursor.endLine).addWarning();
 				return list;
 			} else if(next == ',') {
 				//skip it but go again
@@ -115,25 +124,28 @@ public class SnParser {
 				return list;
 			} else {
 				//parse an item
-				list.add(parseValue());
+				int i = list.size() + 1;
+				list.add(parseValue(ctx.detail("While parsing the " + englishOrdinal(i) + " item of the list")));
 			}
 		}
 	}
 	
-	private String parseKey() {
-		return cursor.peek() == '"' ? parseQuotedString() : parseBareString();
+	private String parseKey(ContextChain ctx) throws Report2 {
+		return cursor.peek() == '"' ? parseQuotedString(ctx) : parseBareString(ctx);
 	}
 	
-	private Sn<?> parseValue() {
+	private Sn<?> parseValue(ContextChain ctx) throws Report2 {
 		int next = cursor.peek();
-		if(next == EOF) throw new IllegalStateException("unexpected end of file while parsing value");
-		if(next == '"') return Sn.str(parseQuotedString());
-		if(next == '{') return parseMap();
-		if(next == '[') return parseList();
-		return Sn.str(parseBareString());
+		if(next == EOF) throw ctx.detail("Unexpected end-of-file on line " + cursor.endLine).addErrorWithException();
+		if(next == '{') return parseMap(ctx);
+		if(next == '[') return parseList(ctx);
+		if(next == '"') return Sn.str(parseQuotedString(ctx));
+		return Sn.str(parseBareString(ctx));
 	}
 	
-	private String parseBareString() {
+	private String parseBareString(ContextChain ctx) throws Report2 {
+		ctx = ctx.detail("While parsing an unquoted string on line " + cursor.startLine);
+		
 		cursor.selectUntil(BARE_STRING_ENDERS);
 		String bareStringWithWhitespace = cursor.cut();
 		
@@ -148,29 +160,40 @@ public class SnParser {
 			//try to produce a more sensible error message in this case.
 			int next = cursor.peek();
 			if(next == EOF) {
-				//todo figure out why this can happen lol..
-				throw new IllegalStateException("unexpected end of file, at " + cursor);
+				//todo figure out whenif this can happen lol..
+				throw ctx.detail("Unexpected end-of-file").addErrorWithException();
 			} else {
-				throw new IllegalStateException("To use the character '" + (char) next + "' in a string, it must be quoted. At: " + cursor);
+				throw ctx.detail("To use the character '" + (char) next + "' in a string, it must be quoted").addErrorWithException();
 			}
 		}
 		
 		return bareStringWithWhitespace.trim();
 	}
 	
-	private String parseQuotedString() {
+	private String parseQuotedString(ContextChain ctx) throws Report2 {
 		assert cursor.peek() == '"';
 		cursor.right();
 		cursor.delete(); //move past opening double-quote
 		
+		ctx = ctx.detail("While parsing a quoted string starting on line " + cursor.startLine);
+		
 		StringBuilder quotedString = new StringBuilder();
-		int startLine = cursor.startLine; //for error reporting
+		
 		while(true) {
 			cursor.selectUntil("\\\"\n"); //select until backslash, double-quote, or newline
 			int next = cursor.peek();
-			if(next == EOF) throw new RuntimeException("non-terminated string, starting on line " + startLine);
-			else if(next == '\n') throw new RuntimeException("a string runs off the end of line " + cursor.endLine + " (hint: use backslash as a line-continuation character, or use '\\n')");
-			else if(next == '\\') {
+			if(next == EOF) {
+				ctx.detail("Unexpected end-of-file. Is the string missing a closing quote?").addWarning();
+				quotedString.append(cursor.cut());
+				break;
+			} else if(next == '\n') {
+				//TODO: should this be a hard error? (to try and avoid messing up the rest of the file by parsing strings as data and data as strings?)
+				ctx.detail("String runs off the end of the line.")
+					.addSection("Note", "If you want a multiline string, use \\ as a line-continuation character.")
+					.addWarning();
+				quotedString.append(cursor.cut());
+				break;
+			} else if(next == '\\') {
 				quotedString.append(cursor.cut()); //cut everything before backslash
 				cursor.right(); //eat backslash
 				
@@ -178,7 +201,7 @@ public class SnParser {
 				cursor.right();
 				cursor.delete();
 				switch(thingToUnescape) {
-					case EOF: throw new RuntimeException("non-terminated string (end-of-file parsing an escape sequence) starting on line " + startLine);
+					case EOF: throw ctx.detail("Unexpected end-of-file parsing an escape sequence on line " + cursor.endLine).addErrorWithException();
 					case 'n': quotedString.append('\n');
 					case 't': quotedString.append('\t');
 					default: quotedString.append((char) thingToUnescape); //including \" and \<literal-newline>
@@ -295,7 +318,22 @@ public class SnParser {
 		}
 	}
 	
-	public static void main(String... args) {
+	private String englishOrdinal(int i) {
+		return i + ordinalSuffix(i);
+	}
+	
+	private static String ordinalSuffix(int i) {
+		int mod100 = i % 100;
+		if(mod100 >= 4 && mod100 <= 19) return "th";
+		else return switch(i % 10) {
+			case 1 -> "st";
+			case 2 -> "nd";
+			case 3 -> "rd";
+			default -> "th";
+		};
+	}
+	
+	public static void main(String... args) throws Report2 {
 		
 		String testFile = """
 		% cool comemnt i've decide on
@@ -318,7 +356,7 @@ public class SnParser {
 			This file format is a little bit of a disaster, don't you think.
 			Haha, anyway, just catching up.
 			{
-			  signed = "Your friend, quat."
+			  signed = "Your friend, quat.
 			  date = Jun 24 2025
 			  enclosed = [heart sticker, postcard, "an opening bracket ["
 			              "and curly brace {", smashed M&M candy]
@@ -333,10 +371,16 @@ public class SnParser {
 		  outer[inner]outer[inner again, that's neat]outer
 		]
 		
-		coolmap { with = keys, on = one, line = ? }
-		\t
-		\t""";
-		SnMap map = new SnParser(testFile).parseTopLevel();
+		coolmap { with = keys, on = one, line = ? }""";
+		
+		FailureBin failures = new FailureBin();
+		SnMap map = new SnParser(testFile).parseTopLevel(failures.detail("While parsing the config file at sample.txt"));
+		
+		LogFacade log = LogFacade.Sysout.INSTANCE;
+		Report2.Report2Formatter formatter = new Report2.LogFacadeReport2Formatter(log);
+		failures.reportWarnings(formatter);
+		failures.reportErrors(formatter);
+		
 		new FlatteningSnWriter().accept(map, (k, v) -> System.out.println(k + "\n\t-> '" + v + "'"));
 		System.out.println(new SnWriter().write(map));
 	}
