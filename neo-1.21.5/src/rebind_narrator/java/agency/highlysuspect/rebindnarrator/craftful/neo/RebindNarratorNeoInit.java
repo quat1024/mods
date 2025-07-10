@@ -1,8 +1,8 @@
 package agency.highlysuspect.rebindnarrator.craftful.neo;
 
-import agency.highlysuspect.rebindnarrator.craftless.RebindNarratorImpl;
+import agency.highlysuspect.rebindnarrator.craftless.NarratorKeyPredicate;
 import agency.highlysuspect.rebindnarrator.craftless.RebindNarratorModBase;
-import agency.highlysuspect.rebindnarrator.craftful.RebindNarratorVanilla1_21_5;
+import agency.highlysuspect.rebindnarrator.craftful.VanillaNarratorKeyPredicate;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
 import net.neoforged.api.distmarker.Dist;
@@ -12,12 +12,12 @@ import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.client.settings.KeyConflictContext;
 import net.neoforged.neoforge.client.settings.KeyModifier;
 
-@Mod(value = RebindNarratorModBase.MODID, dist = Dist.CLIENT)
-public class RebindNarratorNeoInit {
+@Mod(value = RebindNarratorNeoInit.MODID, dist = Dist.CLIENT)
+public class RebindNarratorNeoInit extends RebindNarratorModBase {
 	public RebindNarratorNeoInit(IEventBus modBus) {
-		modBus.addListener(this::onRegisterKeyMappings);
+		super.init();
 		
-		RebindNarratorImpl.IMPL = new Impl();
+		modBus.addListener(this::onRegisterKeyMappings);
 	}
 	
 	public final KeyMapping NARRATOR_KEY = new KeyMapping(
@@ -32,7 +32,12 @@ public class RebindNarratorNeoInit {
 		e.register(NARRATOR_KEY);
 	}
 	
-	public class Impl extends RebindNarratorVanilla1_21_5 {
+	@Override
+	public NarratorKeyPredicate makeKeyPredicate() {
+		return new NeoforgeNarratorKeyPredicate();
+	}
+	
+	public class NeoforgeNarratorKeyPredicate extends VanillaNarratorKeyPredicate {
 		@Override
 		public boolean isCorrectKey(int glfwKeyToken) {
 			return glfwKeyToken == NARRATOR_KEY.getKey().getValue();

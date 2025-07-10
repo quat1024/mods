@@ -1,7 +1,6 @@
 package agency.highlysuspect.rebindnarrator.craftful.mixin.client;
 
-import agency.highlysuspect.rebindnarrator.craftless.RebindNarrator;
-import agency.highlysuspect.rebindnarrator.craftless.RebindNarratorImpl;
+import agency.highlysuspect.rebindnarrator.craftless.NarratorKeyPredicate;
 import net.minecraft.client.KeyboardHandler;
 import net.minecraft.client.gui.screens.Screen;
 import org.lwjgl.glfw.GLFW;
@@ -17,7 +16,7 @@ public class KeyboardHandlerMixin {
 	//window, key, scancode, action, mods -> original method parameters, from GLFWKeyCallbackI.
 	@ModifyConstant(method = "keyPress", constant = @Constant(intValue = GLFW.GLFW_KEY_B))
 	private int rebindnarrator$keyPress$modifyConst(int keyB, long windowHandle, int key, int scancode, int action, int mods) {
-		RebindNarrator IMPL = RebindNarratorImpl.IMPL;
+		NarratorKeyPredicate IMPL = NarratorKeyPredicate.Impl.INSTANCE;
 		if(IMPL == null) return keyB;
 		
 		//This constant (which is normally 66, the B key) is compared with the method's argument "key".
@@ -33,7 +32,7 @@ public class KeyboardHandlerMixin {
 	//relating to the screenshot key. The other is for narrator-key purposes.
 	@Redirect(method = "keyPress", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/Screen;hasControlDown()Z"))
 	private boolean rebindnarrator$keyPress$redirHasControlDown() {
-		RebindNarrator IMPL = RebindNarratorImpl.IMPL;
+		NarratorKeyPredicate IMPL = NarratorKeyPredicate.Impl.INSTANCE;
 		if(IMPL == null) return Screen.hasControlDown(); //TODO this seems like a job for mixinextras instead of this...
 		
 		return IMPL.correctModifiersPressed();

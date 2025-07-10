@@ -2,7 +2,7 @@ package agency.highlysuspect.quatlib.craftless.bridge;
 
 import java.util.function.UnaryOperator;
 
-public interface Id<RESOURCELOCATION> {
+public interface IdBridge<RESOURCELOCATION> {
 	RESOURCELOCATION id(String namespace, String path);
 	
 	String ns(RESOURCELOCATION rl);
