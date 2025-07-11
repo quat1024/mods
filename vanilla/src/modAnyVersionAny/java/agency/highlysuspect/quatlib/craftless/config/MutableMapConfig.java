@@ -17,7 +17,7 @@ public class MutableMapConfig implements ReadableConfig, WritableConfig {
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T> T get(ConfigOpt<? extends T> opt) {
+	public <T> T get(ConfigOpt<T> opt) {
 		T val = (T) state.get(opt);
 		return val == null ? opt.getDefaultValue() : val;
 	}
@@ -26,7 +26,7 @@ public class MutableMapConfig implements ReadableConfig, WritableConfig {
 	public void modify(Consumer<Handle> modifier) {
 		modifier.accept(new Handle() {
 			@Override
-			public <T> Handle set(ConfigOpt<? super T> opt, T value) {
+			public <T> Handle set(ConfigOpt<T> opt, T value) {
 				state.put(opt, value);
 				return this;
 			}

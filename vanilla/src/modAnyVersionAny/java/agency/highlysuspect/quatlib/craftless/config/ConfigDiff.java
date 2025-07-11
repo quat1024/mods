@@ -18,7 +18,7 @@ public class ConfigDiff implements ReadableConfig, WritableConfig, WritableConfi
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T> T get(ConfigOpt<? extends T> opt) {
+	public <T> T get(ConfigOpt<T> opt) {
 		T changed = (T) changes.get(opt);
 		if(changed != null) return changed;
 		else return base.get(opt);
@@ -30,7 +30,7 @@ public class ConfigDiff implements ReadableConfig, WritableConfig, WritableConfi
 	}
 	
 	@Override
-	public <T> Handle set(ConfigOpt<? super T> opt, T value) {
+	public <T> Handle set(ConfigOpt<T> opt, T value) {
 		Object underlying = base.get((ConfigOpt<?>) opt);
 		if(Objects.equals(value, underlying)) changes.remove(opt); //reverting to previous value
 		else changes.put(opt, value); //new change

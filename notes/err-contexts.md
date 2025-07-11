@@ -39,10 +39,14 @@ Instead there is `ContextChain` which is a way to proactively pass information *
   * Parsing state gets FUBARd and I know it'd just confuse things even further if I tried to guess what the user meant.
   * Stuff like `SnView.asMap` on not-maps. I can't return anything.
 * *Recoverable errors*? Catching exceptions.
-  * E.g. if there is a problem while parsing a config option to an integer. I can't return an integer, but I would still like to try and parse the rest of the options in the file, and maybe set this config value to its default
-  * usually the recoverable-ness is decided by the call site, not by the nature of the error. I don't care *why* it wasn't possible to parse the config option to an integer I already know i need to move on.
+  * E.g. if there is a problem while parsing a config option to an integer. I can't return an integer, but I would still like to try and parse the rest of the options in the file, and maybe set this config value to its default, instead of crashing the game
+  * usually the recoverable-ness is decided by the call site, not by the nature of the error. I don't care *why* it wasn't possible to parse the config option to an integer, I already know i need to move on.
 
 Observations:
 
 * The context mechanism seems good for both recoverable and unrecoverable errors. In both cases I have a nice amount of context to display.
-* If reporting an error through the context mechanism is the only way to throw the exception used for unrecoverable-errors, then the exception itself doesn't need any information. It's already been reported.
+* If "reporting an error through the context mechanism" is the only way to throw "the exception used for unrecoverable errors", then the exception itself doesn't need to carry any information. It's already been reported.
+
+A ~global for error-reporting is probably fine
+
+I'd like to have an "error listener" or something, would be cool to send a toast on errors.

@@ -9,6 +9,6 @@ public interface WritableConfig extends ReadableConfig {
 	void modify(Consumer<Handle> modifier);
 	
 	interface Handle {
-		<T> Handle set(ConfigOpt<? super T> opt, T value);
+		<T> Handle set(ConfigOpt<T> opt, T value);
 	}
 }

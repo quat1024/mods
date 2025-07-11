@@ -12,11 +12,8 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
-import net.neoforged.fml.config.ModConfig;
-import net.neoforged.fml.event.config.ModConfigEvent;
 import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
-import net.neoforged.neoforge.common.ModConfigSpec;
 
 @Mod(CrowmapBase.MODID)
 public class CrowmapNeoforge extends Crowmap1_21_5 {
@@ -53,19 +50,7 @@ public class CrowmapNeoforge extends Crowmap1_21_5 {
 //		cfg.watchForChanges(ctx);
 //		cfg.load(ctx);
 		
-		ModConfigSpec.Builder bob = new ModConfigSpec.Builder();
-		NeoBackedConfig_V1 cfg = new NeoBackedConfig_V1(ctx, schema, bob);
-		ModConfigSpec spec = bob.build();
-		me.registerConfig(ModConfig.Type.COMMON, spec);
-		
-		modBus.addListener(ModConfigEvent.Loading.class, evt -> {
-			if(evt.getConfig().getSpec() == spec) cfg.onExternalChange();
-		});
-		modBus.addListener(ModConfigEvent.Reloading.class, evt -> {
-			if(evt.getConfig().getSpec() == spec) cfg.onExternalChange();
-		});
-		
-		return cfg;
+		return NeoBackedConfig_V1.make(ctx, schema, modBus, me);
 	}
 	
 	@Mod(value = CrowmapNeoforge.MODID, dist = Dist.CLIENT)
