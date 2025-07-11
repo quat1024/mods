@@ -29,6 +29,6 @@
 		"minecraft": ">=${minecraft_version}"
 	},
 	"suggests": {
-		"amecs": "*"
+		"amecs-reborn": "*"
 	}
 }
