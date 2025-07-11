@@ -1,15 +1,16 @@
 package agency.highlysuspect.quatlib.craftless.config.sn;
 
 import agency.highlysuspect.quatlib.craftless.failure.CtxChain;
-import agency.highlysuspect.quatlib.craftless.failure.FailureSourceSink;
-import agency.highlysuspect.quatlib.craftless.failure.FailureLogReporter;
+import agency.highlysuspect.quatlib.craftless.failure.FailureLogger;
+import agency.highlysuspect.quatlib.craftless.failure.FailureRoot;
 import agency.highlysuspect.quatlib.craftless.failure.ReportedException;
 import agency.highlysuspect.quatlib.craftless.util.LogFacade;
 
 public class SnTesttesttest {
 	public static void main(String... args) throws ReportedException {
-		LogFacade log = new LogFacade.Sysout();
-		FailureSourceSink failures = new FailureLogReporter(log);
+		FailureRoot failures = new FailureRoot("SnTesttesttest")
+			.addListener(new FailureLogger(LogFacade.Sysout.INSTANCE));
+		CtxChain ctx = failures.context();
 		
 		SnMap map = Sn.map(
 			"foo", "bar",
@@ -21,7 +22,7 @@ public class SnTesttesttest {
 			)
 		);
 
-		SnView view = map.view(failures.detail("my cool file"));
+		SnView view = map.view(ctx.detail("my cool file"));
 
 		//traversal
 		view = view.asMap().get("baz");
@@ -39,9 +40,9 @@ public class SnTesttesttest {
 	}
 
 	public static void main2() throws ReportedException {
-		LogFacade log = new LogFacade.Sysout();
-		FailureSourceSink failures = new FailureLogReporter(log);
-		CtxChain ctx = failures.detail("myCoolFile.txt");
+		FailureRoot failures = new FailureRoot("SnTesttesttest#main2")
+			.addListener(new FailureLogger(LogFacade.Sysout.INSTANCE));
+		CtxChain ctx = failures.context();
 		
 		Sn<?> sn = new SnParser("""
 			modules {

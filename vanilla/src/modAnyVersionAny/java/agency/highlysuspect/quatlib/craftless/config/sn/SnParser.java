@@ -1,8 +1,8 @@
 package agency.highlysuspect.quatlib.craftless.config.sn;
 
 import agency.highlysuspect.quatlib.craftless.failure.CtxChain;
-import agency.highlysuspect.quatlib.craftless.failure.FailureLogReporter;
-import agency.highlysuspect.quatlib.craftless.failure.FailureSourceSink;
+import agency.highlysuspect.quatlib.craftless.failure.FailureLogger;
+import agency.highlysuspect.quatlib.craftless.failure.FailureRoot;
 import agency.highlysuspect.quatlib.craftless.failure.ReportedException;
 import agency.highlysuspect.quatlib.craftless.util.LogFacade;
 import org.jetbrains.annotations.Nullable;
@@ -329,7 +329,8 @@ public class SnParser {
 	
 	public static void main(String... args) {
 		
-		FailureSourceSink blah = new FailureLogReporter(LogFacade.Sysout.INSTANCE);
+		FailureRoot failures = new FailureRoot("SnParser")
+			.addListener(new FailureLogger(LogFacade.Sysout.INSTANCE));
 		
 		String testFile = """
 		% cool comemnt i've decide on
@@ -376,7 +377,7 @@ public class SnParser {
 		      key = "value
 				
 		""";
-		SnMap map = new SnParser(testFile).tryParseTopLevel(blah.detail("in MyConfigFile.txt"));
+		SnMap map = new SnParser(testFile).tryParseTopLevel(failures.context().detail("in MyConfigFile.txt"));
 		new FlatteningSnWriter().accept(map, (k, v) -> System.out.println(k + "\n\t-> '" + v + "'"));
 		System.out.println(new SnWriter().write(map));
 	}

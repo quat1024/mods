@@ -160,8 +160,6 @@ public class NeoBackedConfig_V1 implements WritableConfig {
 	}
 	
 	public void onExternalChange() {
-		ctx.detail("onExternalChange called").reportWarning();
-		
 		//reparse all the values, keep the ones which didn't error.
 		//this means an option failing validation or parsing will keep the
 		//old value which i think is reasonable

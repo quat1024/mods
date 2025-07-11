@@ -11,8 +11,8 @@ import agency.highlysuspect.quatlib.craftless.config.sn.SnMap;
 import agency.highlysuspect.quatlib.craftless.config.sn.SnParser;
 import agency.highlysuspect.quatlib.craftless.config.sn.SnView;
 import agency.highlysuspect.quatlib.craftless.failure.CtxChain;
-import agency.highlysuspect.quatlib.craftless.failure.FailureLogReporter;
-import agency.highlysuspect.quatlib.craftless.failure.FailureSourceSink;
+import agency.highlysuspect.quatlib.craftless.failure.FailureLogger;
+import agency.highlysuspect.quatlib.craftless.failure.FailureRoot;
 import agency.highlysuspect.quatlib.craftless.failure.ReportedException;
 import agency.highlysuspect.quatlib.craftless.util.LogFacade;
 
@@ -37,8 +37,9 @@ public class HdcTestingAaaa {
 		String modified = written.replace("dragons = 5", "dragons = 999");
 		System.out.println(modified);
 		
-		FailureSourceSink failures = new FailureLogReporter(LogFacade.Sysout.INSTANCE);
-		CtxChain ctx = failures.detail("MyCoolFile.txt");
+		FailureRoot failures = new FailureRoot("testing")
+			.addListener(new FailureLogger(LogFacade.Sysout.INSTANCE));
+		CtxChain ctx = failures.context().detail("MyCoolFile.txt");
 		
 		//parse it back, first into an Sn (a structure that's like json, if it had only strings)
 		SnMap parsed = new SnParser(modified).tryParseTopLevel(ctx);

@@ -6,8 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 @SuppressWarnings("ClassCanBeRecord")
-public class FailureLogReporter implements FailureSourceSink {
-	public FailureLogReporter(LogFacade log) {
+public class FailureLogger implements FailureListener {
+	public FailureLogger(LogFacade log) {
 		this.log = log;
 	}
 	

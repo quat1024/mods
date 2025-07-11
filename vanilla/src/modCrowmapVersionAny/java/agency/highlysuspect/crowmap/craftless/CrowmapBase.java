@@ -2,6 +2,7 @@ package agency.highlysuspect.crowmap.craftless;
 
 import agency.highlysuspect.quatlib.craftless.config.ConfigSection;
 import agency.highlysuspect.quatlib.craftless.config.WritableConfig;
+import agency.highlysuspect.quatlib.craftless.failure.FailureRoot;
 import org.jetbrains.annotations.Nullable;
 
 public abstract class CrowmapBase {
@@ -10,22 +11,22 @@ public abstract class CrowmapBase {
 	}
 	
 	public static final String MODID = "crowmap";
+	public static final String NAME = "Crowmap";
+	protected static @Nullable CrowmapBase INST;
 	
-	//singleton
-	public static @Nullable CrowmapBase INST;
+	public FailureRoot failures = new FailureRoot(NAME);
+	public ConfigSection configSchema;
+	public WritableConfig config;
+	
 	public static CrowmapBase inst() {
 		return INST;
 	}
 	
-	//init
 	public void init() {
 		configSchema = visitConfigSchema(new ConfigSection("crowmap", "Options for Crowmap."));
 		config = makeConfig(configSchema);
 	}
 	
-	//config
-	public ConfigSection configSchema;
-	public WritableConfig config;
 	public ConfigSection visitConfigSchema(ConfigSection root) {
 		return CrowmapBaseOpts.visit(root);
 	}

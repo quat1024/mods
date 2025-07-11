@@ -21,19 +21,19 @@ import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 
 public class HalfDecentConfigFile extends MutableMapConfig {
-	public HalfDecentConfigFile(Path path, ConfigSection schema, LogFacade log, Executor background, CtxChain ctx) {
-		this.path = path;
+	public HalfDecentConfigFile(CtxChain ctx, ConfigSection schema, Path path, LogFacade log, Executor background) {
+		this.ctx = ctx.detail("Config file at " + path);
 		this.schema = schema;
+		this.path = path;
 		this.log = log;
 		this.background = background;
-		this.ctx = ctx;
 	}
 	
-	private final Path path;
+	private final CtxChain ctx;
 	private final ConfigSection schema;
+	private final Path path;
 	private final LogFacade log;
 	private final Executor background;
-	private final CtxChain ctx;
 	
 	//filewatcher debouncing. we can get multiple events from the OS.
 	long filewatcherDebounce = 0;
@@ -49,33 +49,31 @@ public class HalfDecentConfigFile extends MutableMapConfig {
 	public void modify(Consumer<Handle> modifier) {
 		//apply all of the changes, and then schedule a save (once!)
 		super.modify(modifier);
-		saveLater(ctx);
+		saveLater();
 	}
 	
-	public void saveNow(CtxChain ctx) {
-		doSave(state, ctx);
+	public void saveNow() {
+		doSave(state);
 	}
 	
-	public void saveLater(CtxChain ctx) {
+	public void saveLater() {
 		log.info("Scheduling save of config file {}", path);
 		
 		//make a clone that's hopefully safe to pass between threads
 		Map<ConfigOpt<?>, Object> stateClone = new IdentityHashMap<>(state);
-		background.execute(() -> doSave(stateClone, ctx));
+		background.execute(() -> doSave(stateClone));
 	}
 	
-	private void doSave(Map<ConfigOpt<?>, Object> theState, CtxChain ctx) {
+	private void doSave(Map<ConfigOpt<?>, Object> theState) {
 		log.info("Saving config file to {}", path);
-		ctx = ctx.detail("While saving config file to " + path);
+		CtxChain ctx2 = ctx.detail("Problem saving config file");
 		
 		//if this throws, it's probably my bug, throw a runtime exception
 		String serializedConfig;
 		try {
 			serializedConfig = new HalfDecentConfigWriter().writeTopLevel(schema, new MutableMapConfig(theState));
 		} catch (Exception e) {
-			RuntimeException oops = new RuntimeException("Failed to serialize config! This is a bug!", e);
-			ctx.cause(oops).sneakyReportError();
-			throw oops;
+			throw ctx2.cause(e).detail("Failed to serialize config! This is a bug!").uncheckedReportError();
 		}
 		
 		//we're about to trigger the filewatcher by saving the file
@@ -86,18 +84,18 @@ public class HalfDecentConfigFile extends MutableMapConfig {
 			Files.writeString(path, serializedConfig, StandardCharsets.UTF_8);
 			log.info("Saved successfully!");
 		} catch (Exception e) {
-			ctx.cause(e).detail("Failed to save config file!").sneakyReportError();
+			throw ctx2.cause(e).detail("Failed to write config file to disk!").uncheckedReportError();
 		}
 	}
 	
-	public void load(CtxChain ctx) {
+	public void load() {
 		log.info("Loading config file {}", path);
-		ctx = ctx.detail("While loading config file from " + path);
+		CtxChain ctx2 = ctx.detail("Problem loading config file");
 		
 		if(Files.notExists(path)) {
 			log.info("Config file doesn't exist. Writing a new one and loading default options");
 			state = new IdentityHashMap<>();
-			doSave(state, ctx.detail("Config file did not exist, writing a new one"));
+			doSave(state);
 			return;
 		}
 		
@@ -106,36 +104,28 @@ public class HalfDecentConfigFile extends MutableMapConfig {
 		try {
 			read = Files.readString(path, StandardCharsets.UTF_8);
 		} catch (Exception e) {
-			RuntimeException r = new RuntimeException("Failed to read config file at " + path, e);
-			ctx.cause(r).sneakyReportError();
-			throw r;
+			throw ctx2.cause(e).detail("Failed to read config file at " + path).uncheckedReportError();
 		}
 		
-		//parse it into sn
+		//parse, match, validate
 		Sn<?> parsed;
 		try {
-			parsed = new SnParser(read).parseTopLevel(ctx);
+			parsed = new SnParser(read).parseTopLevel(ctx2);
 		} catch (ReportedException e) {
-			return; //couldn't parse into sn, give up
+			log.warn("Aborting config load, unrecoverable parse error");
+			return;
 		}
-		
-		//match it to config options
-		MatchedUnparsedConfig matched = new MatchedUnparsedConfig(schema, parsed.view(ctx));
-		
-		//validate it
+		MatchedUnparsedConfig matched = new MatchedUnparsedConfig(schema, parsed.view(ctx2));
 		ValidatedConfig validated = matched.parseAndValidate();
 		
-		//all good, time to load it
 		state = new IdentityHashMap<>(validated.toMap());
 		log.info("Loaded {} options.", state.size());
 		
 		//schedule a saveback
-		saveLater(ctx.detail("Saveback after loading file"));
+		saveLater();
 	}
 	
-	public void watchForChanges(CtxChain ctx) {
-		CtxChain ctx2 = ctx.detail("While watching the file at " + path);
-		
+	public void watchForChanges() {
 		SharedConfigFileWatcher.watch(path, () -> {
 			//we're on a different thread now
 			long lastFilewatcherDebounce = filewatcherDebounce;
@@ -146,13 +136,20 @@ public class HalfDecentConfigFile extends MutableMapConfig {
 				//too spammy
 				//log.info("Only been {}ms since last filewatcher ping, ignoring change to {}", now - lastFilewatcherDebounce, path.getFileName());
 			} else if(now - lastIngameSave < SAVE_TIMEOUT_MS) {
-				log.info("Only been {}ms since last in-game save, ignoring change to {}", now - lastIngameSave, path.getFileName());
+				log.info("Only been {}ms since last save, ignoring change to {}", now - lastIngameSave, path.getFileName());
 			} else {
 				//uhhhhmh hopefully this is safe to call off-thread?
 				//the only thing that touches the main thread is swapping the 'state' variable, and... the new warning-reporting stuff (oh)
 				//yeah that might not be thread safe
-				load(ctx2);
+				load();
 			}
 		});
+	}
+	
+	public static HalfDecentConfigFile make(CtxChain ctx, ConfigSection schema, Path path, LogFacade log, Executor background) {
+		HalfDecentConfigFile cfg = new HalfDecentConfigFile(ctx, schema, path, log, background);
+		cfg.load();
+		cfg.watchForChanges();
+		return cfg;
 	}
 }

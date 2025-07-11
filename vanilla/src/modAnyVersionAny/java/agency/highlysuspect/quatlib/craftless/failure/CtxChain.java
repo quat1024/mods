@@ -20,45 +20,49 @@ public sealed interface CtxChain permits CtxChain.StringLink, CtxChain.Throwable
 		reportError();
 	}
 	
+	@SuppressWarnings("ThrowableNotThrown")
+	default RuntimeException uncheckedReportError() {
+		reportError();
+		if(this instanceof ThrowableLink t) return new RuntimeException(t.cause.getMessage(), t.cause);
+		else return new RuntimeException(thisSegmentString());
+	}
+	
 	String thisSegmentString();
 	
+	//create a CtxChain through FailureRoot, not here
+	
 	sealed abstract class Base implements CtxChain permits StringLink, ThrowableLink, PathLink {
-		//public constructor is in FailureBucket
-		protected Base(@Nullable CtxChain parent, @NotNull FailureSourceSink failures) {
+		protected Base(@Nullable CtxChain parent, @NotNull FailureRoot root) {
 			this.parent = parent;
-			this.failures = failures;
+			this.root = root;
 		}
 		
 		@Nullable CtxChain parent;
-		@NotNull protected FailureSourceSink failures;
+		@NotNull protected FailureRoot root;
 		
 		// creating them
 		
 		public CtxChain detail(String message) {
-			return new CtxChain.StringLink(this, failures, message);
+			return new CtxChain.StringLink(this, root, message);
 		}
 		
 		public CtxChain cause(Throwable cause) {
-			return new CtxChain.ThrowableLink(this, failures, cause);
+			return new CtxChain.ThrowableLink(this, root, cause);
 		}
 		
 		public CtxChain path(String pathSegment) {
-			return new CtxChain.PathLink(this, failures, pathSegment);
+			return new CtxChain.PathLink(this, root, pathSegment);
 		}
 		
 		// reporting problems
 		
 		public void reportWarning() {
-			failures.reportWarning(this);
+			root.reportWarning(this);
 		}
 		
 		public ReportedException reportError() {
-			failures.reportError(this);
+			root.reportError(this);
 			return new ReportedException();
-		}
-		
-		public void sneakyReportError() {
-			failures.reportError(this);
 		}
 		
 		//yeah
@@ -73,12 +77,11 @@ public sealed interface CtxChain permits CtxChain.StringLink, CtxChain.Throwable
 			if(parent == null) return thisSegmentString();
 			else return parent + ", " + thisSegmentString();
 		}
-		
 	}
 	
 	final class StringLink extends Base implements CtxChain {
-		StringLink(@Nullable CtxChain parent, @NotNull FailureSourceSink warnings, String message) {
-			super(parent, warnings);
+		StringLink(@Nullable CtxChain parent, @NotNull FailureRoot root, String message) {
+			super(parent, root);
 			this.message = message;
 		}
 		
@@ -91,8 +94,8 @@ public sealed interface CtxChain permits CtxChain.StringLink, CtxChain.Throwable
 	}
 	
 	final class ThrowableLink extends Base implements CtxChain {
-		ThrowableLink(@Nullable CtxChain parent, @NotNull FailureSourceSink failures, Throwable cause) {
-			super(parent, failures);
+		ThrowableLink(@Nullable CtxChain parent, @NotNull FailureRoot root, Throwable cause) {
+			super(parent, root);
 			this.cause = cause;
 		}
 		
@@ -108,8 +111,8 @@ public sealed interface CtxChain permits CtxChain.StringLink, CtxChain.Throwable
 	//differs from StringLink in the way that they are formatted by error reporters (and toString)
 	//adjacent pathlinks will get glued together into a string
 	final class PathLink extends Base implements CtxChain {
-		PathLink(@Nullable CtxChain parent, @NotNull FailureSourceSink failures, String pathSegment) {
-			super(parent, failures);
+		PathLink(@Nullable CtxChain parent, @NotNull FailureRoot root, String pathSegment) {
+			super(parent, root);
 			this.pathSegment = pathSegment;
 		}
 		
