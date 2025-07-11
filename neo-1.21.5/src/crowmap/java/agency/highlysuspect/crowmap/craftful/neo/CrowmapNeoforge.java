@@ -8,11 +8,14 @@ import agency.highlysuspect.quatlib.craftless.config.WritableConfig;
 import agency.highlysuspect.quatlib.craftless.failure.CtxChain;
 import agency.highlysuspect.quatlib.craftless.failure.FailureLogReporter;
 import agency.highlysuspect.quatlib.craftless.failure.FailureSourceSink;
+import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.event.config.ModConfigEvent;
+import net.neoforged.neoforge.client.gui.ConfigurationScreen;
+import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
 @Mod(CrowmapBase.MODID)
@@ -63,5 +66,12 @@ public class CrowmapNeoforge extends Crowmap1_21_5 {
 		});
 		
 		return cfg;
+	}
+	
+	@Mod(value = CrowmapNeoforge.MODID, dist = Dist.CLIENT)
+	public static class ClientInit {
+		public ClientInit(ModContainer me) {
+			me.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
+		}
 	}
 }

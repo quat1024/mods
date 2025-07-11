@@ -11,6 +11,7 @@ import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.bundling.AbstractArchiveTask;
+import org.gradle.api.tasks.compile.JavaCompile;
 import org.gradle.jvm.tasks.Jar;
 import org.gradle.language.jvm.tasks.ProcessResources;
 import org.jetbrains.annotations.Nullable;
@@ -112,5 +113,12 @@ public abstract class AbstractSetupExtension {
 			it.getDestinationDirectory().set(mainJarTask.flatMap(AbstractArchiveTask::getDestinationDirectory));
 			it.getArchiveClassifier().set("dev");
 		}
+	}
+	
+	public void setCompatLevel(SourceSet set, int compatLevel) {
+		project.getLogger().lifecycle("setting compat level for {} to {}", set.getCompileJavaTaskName(), compatLevel);
+		project.getTasks().named(set.getCompileJavaTaskName(), JavaCompile.class, it -> {
+			it.getOptions().getRelease().set(compatLevel);
+		});
 	}
 }

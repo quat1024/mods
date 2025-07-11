@@ -85,6 +85,8 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 			if(ver == null) throw new IllegalStateException("version not set");
 			if(loader == null) throw new IllegalStateException("loader not set");
 			
+			int javaCompatLevel = Util.compatLevelForMinecraft(ver);
+			
 			//reach across and get vanilla (evaluationDependsOn was set up so this should be ok)
 			Project vanilla = project.project(":vanilla");
 			VanillaSetupPlugin.Ext vanillaExt = vanilla.getExtensions().getByType(VanillaSetupPlugin.Ext.class);
@@ -121,6 +123,8 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 			withImplementation(quatlib, vanillaExt.dependOnModAgnostic(ver)); //mod-agnostic code from :vanilla
 			if(loom != null)
 				withImplementation(quatlib, Util.floaderOnlyDep(project));
+			//java version
+			setCompatLevel(quatlib, javaCompatLevel);
 			
 			//quatlib code that gets put in the final quatlib jar...?
 			//this duplicates the other thing, meh
@@ -137,6 +141,8 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 				extendSourceSet2(mod.set, main);
 				if(mod.quatlib)
 					extendSourceSet2(mod.set, quatlib);
+				
+				setCompatLevel(mod.set, javaCompatLevel);
 			}
 			
 			/// DEPENDENCIES ///

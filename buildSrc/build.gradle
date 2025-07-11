@@ -24,6 +24,9 @@ dependencies {
 	
 	// https://github.com/CrackedPolishedBlackstoneBricksMC/minivan/releases
 	implementation "agency.highlysuspect.minivan:agency.highlysuspect.minivan.gradle.plugin:0.5"
+	
+	// https://github.com/unascribed/FlexVer/tree/trunk/java
+	implementation "com.unascribed:flexver-java:1.1.1"
 }
 
 gradlePlugin {

@@ -126,7 +126,14 @@ public class VanillaSetupPlugin implements Plugin<Project> {
 			project.getLogger().lifecycle("making source sets");
 			
 			//modAnyVersionAny contains code shared across everything in the ecosystem
+			//it should be compiled against the minimum java version used across all mods with quatlib enabled
 			modAnyVersionAny = makeSourceSetWithCommonDeps(Util.modVersion(null, null));
+			setCompatLevel(modAnyVersionAny, mods.stream()
+				.filter(mod -> mod.quatlib)
+				.flatMap(mod -> mod.versions.stream())
+				.mapToInt(Util::compatLevelForMinecraft)
+				.min().orElse(8)
+			);
 			
 			for(String minecraftVersion : versionsToMake) {
 				project.getLogger().lifecycle("minecraft {}", minecraftVersion);
@@ -135,6 +142,8 @@ public class VanillaSetupPlugin implements Plugin<Project> {
 				modAgnosticSourceSets.put(minecraftVersion, modAgnosticSourceSet);
 				//it can see modAnyVersionAny
 				extendSourceSet2(modAgnosticSourceSet, modAnyVersionAny);
+				//it should be compiled against the java version used for this version
+				setCompatLevel(modAgnosticSourceSet, Util.compatLevelForMinecraft(minecraftVersion));
 			}
 			
 			for(VanillaMod mod : mods) {
@@ -144,6 +153,8 @@ public class VanillaSetupPlugin implements Plugin<Project> {
 				//it can see modAnyVersionAny if quatlib is enabled
 				if(mod.quatlib)
 					extendSourceSet2(mod.versionAgnosticSourceSet, modAnyVersionAny);
+				//it should be compiled against the lowest java version used in supported mods
+				setCompatLevel(mod.versionAgnosticSourceSet, mod.versions.stream().mapToInt(Util::compatLevelForMinecraft).min().orElse(8));
 				
 				for(String minecraftVersion : mod.versions) {
 					project.getLogger().lifecycle("...for {}", minecraftVersion);
@@ -154,6 +165,8 @@ public class VanillaSetupPlugin implements Plugin<Project> {
 					extendSourceSet2(modAndVersionSpecificSourceSet, mod.versionAgnosticSourceSet);
 					if(mod.quatlib)
 						extendSourceSet2(modAndVersionSpecificSourceSet, modAnyVersionAny, modAgnosticSourceSets.get(minecraftVersion));
+					//it should be compiled against the java version used for this version
+					setCompatLevel(modAndVersionSpecificSourceSet, Util.compatLevelForMinecraft(minecraftVersion));
 				}
 			}
 			

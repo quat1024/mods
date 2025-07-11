@@ -1,5 +1,6 @@
 package agency.highlysuspect.modsetup;
 
+import com.unascribed.flexver.FlexVerComparator;
 import org.codehaus.groovy.runtime.StringGroovyMethods;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Dependency;
@@ -44,6 +45,16 @@ public class Util {
 	public static Map<String, Object> plus(Map<String, Object>... maps) {
 		Map<String, Object> result = new HashMap<>();
 		for(Map<String, Object> map : maps) result.putAll(map);
+		return result;
+	}
+	
+	// https://notes.highlysuspect.agency/versions.html
+	public static int compatLevelForMinecraft(String minecraftVersion) {
+		int result;
+		if(FlexVerComparator.compare(minecraftVersion, "1.20.5") >= 0) result = 21;
+		else if(FlexVerComparator.compare(minecraftVersion, "1.18.0") >= 0) result = 17;
+		else if(FlexVerComparator.compare(minecraftVersion, "1.17.0") >= 0) result = 16;
+		else result = 8;
 		return result;
 	}
 }

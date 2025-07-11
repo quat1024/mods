@@ -46,8 +46,8 @@ public class NeoBackedConfig_V1 implements WritableConfig {
 	}
 	
 	private <T> void acceptOpt(ConfigOpt<T> opt, ModConfigSpec.Builder builder) {
-		//for simple types, integrate better into the forge config system
 		if(putDirectlyInForge(opt)) {
+			//forge config can handle this reflectively
 			liveValues.put(opt, builder.define(opt.getName(), opt.getDefaultValue()));
 		} else {
 			//fall back to the full sn system
@@ -56,6 +56,7 @@ public class NeoBackedConfig_V1 implements WritableConfig {
 		}
 	}
 	
+	//whether the forge config system can acceptably handle some type
 	private <T> boolean putDirectlyInForge(ConfigOpt<T> opt) {
 		T def = opt.getDefaultValue();
 		return def instanceof String || def instanceof Number || def instanceof Boolean;
