@@ -13,3 +13,10 @@ authors = "${author}"
 
 [[mixins]]
 config = "${modid}.mixins.json"
+
+[[dependencies.${modid}]]
+modId="modder_name_lib"
+type="required"
+versionRange="*"
+ordering="AFTER"
+side="BOTH"

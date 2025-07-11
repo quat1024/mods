@@ -16,7 +16,7 @@
 	"icon": "${modid}_icon.png",
 	"environment": "client",
 	"entrypoints": {
-		"client": [
+		"modder_name_lib:after_client": [
 			"agency.highlysuspect.rebindnarrator.craftful.fab.RebindNarratorFabric"
 		]
 	},
@@ -26,6 +26,7 @@
 	"depends": {
 		"fabricloader": "*",
 		"fabric-api": "*",
+		"modder_name_lib": "*",
 		"minecraft": ">=${minecraft_version}"
 	},
 	"suggests": {

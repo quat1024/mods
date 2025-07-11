@@ -16,7 +16,7 @@
 	"icon": "${modid}_icon.png",
 	"environment": "*",
 	"entrypoints": {
-		"main": [
+		"modder_name_lib:after": [
 			"agency.highlysuspect.crowmap.craftful.fab.CrowmapFabric"
 		]
 	},

@@ -2,21 +2,16 @@ package agency.highlysuspect.crowmap.craftful.fab;
 
 import agency.highlysuspect.crowmap.craftful.CrowmapMc;
 import agency.highlysuspect.crowmap.craftless.CrowmapBase;
-import agency.highlysuspect.quatlib.craftful.Slf4jLogFacade;
 import agency.highlysuspect.quatlib.craftless.config.ConfigSection;
 import agency.highlysuspect.quatlib.craftless.config.WritableConfig;
 import agency.highlysuspect.quatlib.craftless.config.hdc.HalfDecentConfigFile;
-import agency.highlysuspect.quatlib.craftless.util.SharedConfigFileWatcher;
-import net.fabricmc.api.ModInitializer;
+import agency.highlysuspect.quatlib.craftless.fab.AfterQuatlibInitializer;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.Util;
 
-public class CrowmapFabric extends CrowmapMc implements ModInitializer {
+public class CrowmapFabric extends CrowmapMc implements AfterQuatlibInitializer {
 	@Override
 	public void onInitialize() {
-		//TODO: put this in a better spot (maybe ModderNameLib needs an initializer)
-		SharedConfigFileWatcher.setLog(new Slf4jLogFacade("ModderNameLib"));
-		
 		init();
 	}
 	

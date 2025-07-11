@@ -13,6 +13,14 @@
 		"sources": "${sources}"
 	},
 	"license": "${license}",
+	"entrypoints": {
+		"main": [
+			"agency.highlysuspect.quatlib.craftful.fab.QuatlibFabric"
+		],
+		"client": [
+			"agency.highlysuspect.quatlib.craftful.fab.QuatlibFabricClient"
+		]
+	},
 	"depends": {
 		"minecraft": ">=${minecraft_version}",
 		"fabricloader": "*",

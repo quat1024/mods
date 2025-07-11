@@ -11,25 +11,33 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+//TODO: take a CtxStack as well as a log?
 public class SharedConfigFileWatcher {
-	static final WatchService WATCHER;
-	static final Object lock = new Object();
-	static final Set<Path> watchedDirectories = new HashSet<>();
-	static final Map<String, Runnable> changeActionsByFilename = new HashMap<>();
-	
-	static Thread watcherThread;
-	static LogFacade log = LogFacade.Sysout.INSTANCE;
-	
-	public static void setLog(LogFacade newLog) {
-		synchronized(lock) {
-			log = newLog;
+	public SharedConfigFileWatcher(LogFacade log) {
+		this.log = log;
+		
+		WatchService theWatcher;
+		try {
+			theWatcher = FileSystems.getDefault().newWatchService();
+		} catch (Exception e) {
+			log.warn("ModderNameLib failed to make WatchService", e);
+			theWatcher = null;
 		}
+		watcher = theWatcher;
 	}
 	
-	public static void watch(Path path, Runnable onChangeAction) {
+	final WatchService watcher;
+	final Object lock = new Object();
+	final Set<Path> watchedDirectories = new HashSet<>();
+	final Map<String, Runnable> changeActionsByFilename = new HashMap<>();
+	
+	static Thread watcherThread;
+	private final LogFacade log;
+	
+	public void watch(Path path, Runnable onChangeAction) {
 		synchronized(lock) {
 			//if it fails to initialize
-			if(WATCHER == null) {
+			if(watcher == null) {
 				log.warn("Can't watch {} for changes (my WatchService is null)", path);
 				return;
 			}
@@ -39,7 +47,7 @@ public class SharedConfigFileWatcher {
 			if(dir == null) throw new IllegalArgumentException("can't watch root of filesystem, path " + path);
 			if(!watchedDirectories.contains(dir)) {
 				try {
-					dir.register(WATCHER, StandardWatchEventKinds.ENTRY_MODIFY);
+					dir.register(watcher, StandardWatchEventKinds.ENTRY_MODIFY);
 				} catch (Exception e) {
 					log.warn("Failed to register {} to WatchService", dir, e);
 					return;
@@ -56,7 +64,7 @@ public class SharedConfigFileWatcher {
 			}
 			
 			if(watcherThread == null) {
-				watcherThread = new Thread(SharedConfigFileWatcher::watchJob, "ModderNameLib Config Watcher");
+				watcherThread = new Thread(this::watchJob, "ModderNameLib Config Watcher");
 				watcherThread.setPriority(Thread.MIN_PRIORITY); //be polite
 				watcherThread.setDaemon(true); //Don't block JVM shutdown
 				watcherThread.start();
@@ -65,11 +73,11 @@ public class SharedConfigFileWatcher {
 	}
 	
 	//in the watcher thread
-	private static void watchJob() {
+	private void watchJob() {
 		try {
 			while(!Thread.interrupted()) {
 				//block until there's a new event in this directory
-				WatchKey key = WATCHER.take();
+				WatchKey key = watcher.take();
 				if(!key.isValid()) continue;
 				
 				//look through the events
@@ -90,16 +98,5 @@ public class SharedConfigFileWatcher {
 			log.warn("ModderNameLib filewatcher thread crashed", e);
 			//and exit stage left
 		}
-	}
-	
-	static {
-		WatchService theWatcher = null;
-		try {
-			theWatcher = FileSystems.getDefault().newWatchService();
-		} catch (Exception e) {
-			log.warn("ModderNameLib failed to make WatchService", e);
-		}
-		
-		WATCHER = theWatcher;
 	}
 }

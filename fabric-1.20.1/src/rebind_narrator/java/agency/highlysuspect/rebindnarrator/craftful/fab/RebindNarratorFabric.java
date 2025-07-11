@@ -4,16 +4,16 @@ import agency.highlysuspect.quatlib.craftless.config.ConfigOpt;
 import agency.highlysuspect.quatlib.craftless.config.ConfigSection;
 import agency.highlysuspect.quatlib.craftless.config.WritableConfig;
 import agency.highlysuspect.quatlib.craftless.config.hdc.HalfDecentConfigFile;
+import agency.highlysuspect.quatlib.craftless.fab.AfterQuatlibClientInitializer;
 import agency.highlysuspect.rebindnarrator.craftful.RebindNarratorMc;
 import agency.highlysuspect.rebindnarrator.craftless.NarratorKeyPredicate;
 import agency.highlysuspect.rebindnarrator.craftless.RebindNarratorBase;
-import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.Util;
 
 import java.util.List;
 
-public class RebindNarratorFabric extends RebindNarratorMc implements ClientModInitializer {
+public class RebindNarratorFabric extends RebindNarratorMc implements AfterQuatlibClientInitializer {
 	@Override
 	public void onInitializeClient() {
 		super.initConfig();

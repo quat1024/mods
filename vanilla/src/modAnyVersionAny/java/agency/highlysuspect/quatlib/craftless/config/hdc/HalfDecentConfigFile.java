@@ -1,5 +1,6 @@
 package agency.highlysuspect.quatlib.craftless.config.hdc;
 
+import agency.highlysuspect.quatlib.craftless.QuatlibBase;
 import agency.highlysuspect.quatlib.craftless.config.ConfigOpt;
 import agency.highlysuspect.quatlib.craftless.config.ConfigSection;
 import agency.highlysuspect.quatlib.craftless.config.MatchedUnparsedConfig;
@@ -126,7 +127,12 @@ public class HalfDecentConfigFile extends MutableMapConfig {
 	}
 	
 	public void watchForChanges() {
-		SharedConfigFileWatcher.watch(path, () -> {
+		QuatlibBase qlib = QuatlibBase.inst();
+		if(qlib == null) throw new IllegalStateException("watchForChanges before ModderNameLib is set up");
+		SharedConfigFileWatcher watcher = qlib.watcher;
+		if(watcher == null) throw new IllegalStateException("ModderNameLib SharedConfigFileWatcher is null");
+		
+		watcher.watch(path, () -> {
 			//we're on a different thread now
 			long lastFilewatcherDebounce = filewatcherDebounce;
 			long now = System.currentTimeMillis();
