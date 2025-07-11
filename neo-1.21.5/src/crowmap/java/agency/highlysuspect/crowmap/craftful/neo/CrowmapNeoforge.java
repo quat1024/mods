@@ -1,6 +1,6 @@
 package agency.highlysuspect.crowmap.craftful.neo;
 
-import agency.highlysuspect.crowmap.craftful.Crowmap1_21_5;
+import agency.highlysuspect.crowmap.craftful.CrowmapMc;
 import agency.highlysuspect.crowmap.craftless.CrowmapBase;
 import agency.highlysuspect.quatlib.craftful.neo.NeoBackedConfig_V1;
 import agency.highlysuspect.quatlib.craftless.config.ConfigSection;
@@ -13,7 +13,7 @@ import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 
 @Mod(CrowmapBase.MODID)
-public class CrowmapNeoforge extends Crowmap1_21_5 {
+public class CrowmapNeoforge extends CrowmapMc {
 	public CrowmapNeoforge(ModContainer modContainer, IEventBus modBus) {
 		this.modContainer = modContainer;
 		this.modBus = modBus;
@@ -27,7 +27,7 @@ public class CrowmapNeoforge extends Crowmap1_21_5 {
 	@Override
 	public WritableConfig makeConfig(ConfigSection schema) {
 		return NeoBackedConfig_V1.make(
-			failures.context().detail("Crowmap's config file"),
+			failures.context(),
 			schema,
 			modBus, modContainer
 		);

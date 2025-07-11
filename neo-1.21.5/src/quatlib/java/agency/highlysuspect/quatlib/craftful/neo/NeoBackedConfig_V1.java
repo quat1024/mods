@@ -183,6 +183,8 @@ public class NeoBackedConfig_V1 implements WritableConfig {
 	}
 	
 	public static NeoBackedConfig_V1 make(CtxChain ctx, ConfigSection schema, IEventBus modBus, ModContainer me, ModConfig.Type type) {
+		ctx = ctx.detail("Config file at config/" + me.getModId() + "-" + type.extension() + ".toml");
+		
 		ModConfigSpec.Builder bob = new ModConfigSpec.Builder();
 		NeoBackedConfig_V1 cfg = new NeoBackedConfig_V1(ctx, schema, bob);
 		ModConfigSpec built = bob.build();

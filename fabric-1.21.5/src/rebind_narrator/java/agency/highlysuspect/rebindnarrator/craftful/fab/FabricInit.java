@@ -1,15 +1,15 @@
 package agency.highlysuspect.rebindnarrator.craftful.fab;
 
+import agency.highlysuspect.rebindnarrator.craftful.RebindNarratorMc;
 import agency.highlysuspect.rebindnarrator.craftful.VanillaNarratorKeyPredicate;
 import agency.highlysuspect.rebindnarrator.craftless.NarratorKeyPredicate;
-import agency.highlysuspect.rebindnarrator.craftless.RebindNarratorModBase;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.KeyMapping;
 import org.lwjgl.glfw.GLFW;
 
-public class FabricInit extends RebindNarratorModBase implements ClientModInitializer {
+public class FabricInit extends RebindNarratorMc implements ClientModInitializer {
 	@Override
 	public void onInitializeClient() {
 		super.init();

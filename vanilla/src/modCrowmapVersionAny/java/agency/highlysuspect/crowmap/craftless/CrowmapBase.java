@@ -3,7 +3,6 @@ package agency.highlysuspect.crowmap.craftless;
 import agency.highlysuspect.quatlib.craftless.config.ConfigSection;
 import agency.highlysuspect.quatlib.craftless.config.WritableConfig;
 import agency.highlysuspect.quatlib.craftless.failure.FailureRoot;
-import org.jetbrains.annotations.Nullable;
 
 public abstract class CrowmapBase {
 	public CrowmapBase() {
@@ -12,7 +11,7 @@ public abstract class CrowmapBase {
 	
 	public static final String MODID = "crowmap";
 	public static final String NAME = "Crowmap";
-	protected static @Nullable CrowmapBase INST;
+	protected static CrowmapBase INST;
 	
 	public FailureRoot failures = new FailureRoot(NAME);
 	public ConfigSection configSchema;
@@ -23,7 +22,7 @@ public abstract class CrowmapBase {
 	}
 	
 	public void init() {
-		configSchema = visitConfigSchema(new ConfigSection("crowmap", "Options for Crowmap."));
+		configSchema = visitConfigSchema(new ConfigSection(NAME, "Options for Crowmap."));
 		config = makeConfig(configSchema);
 	}
 	

@@ -1,8 +1,8 @@
 package agency.highlysuspect.rebindnarrator.craftful.neo;
 
-import agency.highlysuspect.rebindnarrator.craftless.NarratorKeyPredicate;
-import agency.highlysuspect.rebindnarrator.craftless.RebindNarratorModBase;
+import agency.highlysuspect.rebindnarrator.craftful.RebindNarratorMc;
 import agency.highlysuspect.rebindnarrator.craftful.VanillaNarratorKeyPredicate;
+import agency.highlysuspect.rebindnarrator.craftless.NarratorKeyPredicate;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
 import net.neoforged.api.distmarker.Dist;
@@ -13,7 +13,7 @@ import net.neoforged.neoforge.client.settings.KeyConflictContext;
 import net.neoforged.neoforge.client.settings.KeyModifier;
 
 @Mod(value = RebindNarratorNeoInit.MODID, dist = Dist.CLIENT)
-public class RebindNarratorNeoInit extends RebindNarratorModBase {
+public class RebindNarratorNeoInit extends RebindNarratorMc {
 	public RebindNarratorNeoInit(IEventBus modBus) {
 		super.init();
 		

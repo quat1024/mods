@@ -1,7 +1,5 @@
 package agency.highlysuspect.rebindnarrator.craftless;
 
-import org.jetbrains.annotations.Nullable;
-
 public interface NarratorKeyPredicate {
 	/**
 	 * GLFW sometimes calls these "key tokens", https://www.glfw.org/docs/3.3/input_guide.html#input_key .
@@ -16,8 +14,4 @@ public interface NarratorKeyPredicate {
 	 * @return whether the correct modifier keys are being pressed.
 	 */
 	boolean correctModifiersPressed();
-	
-	class Impl {
-		public static @Nullable NarratorKeyPredicate INSTANCE;
-	}
 }

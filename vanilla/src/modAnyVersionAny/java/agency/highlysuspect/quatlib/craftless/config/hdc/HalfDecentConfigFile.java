@@ -147,6 +147,8 @@ public class HalfDecentConfigFile extends MutableMapConfig {
 	}
 	
 	public static HalfDecentConfigFile make(CtxChain ctx, ConfigSection schema, Path path, LogFacade log, Executor background) {
+		ctx = ctx.detail("Config file at " + path.getParent().getFileName() + "/" + path.getFileName());
+		
 		HalfDecentConfigFile cfg = new HalfDecentConfigFile(ctx, schema, path, log, background);
 		cfg.load();
 		cfg.watchForChanges();
