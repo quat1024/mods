@@ -99,13 +99,13 @@ public interface SnView {
 		
 		@Override
 		public String asString() throws ReportedException {
-			if(sn instanceof SnStr(String value)) return value;
+			if(sn instanceof SnStr str) return str.value();
 			else throw expected(SnStr.class);
 		}
 		
 		@Override
 		public @Nullable String asStringOrNull() {
-			return sn instanceof SnStr(String value) ? value : null;
+			return sn instanceof SnStr str ? str.value() : null;
 		}
 		
 		@Override

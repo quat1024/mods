@@ -11,11 +11,9 @@ public class FlatteningSnWriter {
 	}
 	
 	public void accept(Sn<?> sn, SnocList<String> stack, BiConsumer<SnocList<String>, String> out) {
-		switch(sn) {
-			case SnList snList -> acceptList(snList, stack, out);
-			case SnMap snMap -> acceptMap(snMap, stack, out);
-			case SnStr snStr -> acceptStr(snStr, stack, out);
-		}
+		if(sn instanceof SnList snList) acceptList(snList, stack, out);
+		else if(sn instanceof SnMap snMap) acceptMap(snMap, stack, out);
+		else if(sn instanceof SnStr snStr) acceptStr(snStr, stack, out);
 	}
 	
 	public void acceptList(SnList list, SnocList<String> stack, BiConsumer<SnocList<String>, String> out) {

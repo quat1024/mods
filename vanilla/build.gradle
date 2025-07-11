@@ -5,7 +5,7 @@ plugins {
 vanillaSetup.go {
 	mods {
 		rebind_narrator {
-			versions += ["1.21.1", "1.21.5"]
+			versions += ["1.20.1", "1.21.1", "1.21.5"]
 			
 			vars.name = "Rebind Narrator"
 			vars.description = "Adds a keybind to options for the narrator."

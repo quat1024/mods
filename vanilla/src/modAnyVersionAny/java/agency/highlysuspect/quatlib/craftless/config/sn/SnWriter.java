@@ -10,11 +10,9 @@ public class SnWriter {
 	}
 	
 	public void accept(Sn<?> sn, IndentStringBuilder out) {
-		switch(sn) {
-			case SnList snList -> acceptList(snList, out);
-			case SnMap snMap -> acceptMap(snMap, out);
-			case SnStr snStr -> acceptStr(snStr, out);
-		}
+		if(sn instanceof SnList snList) acceptList(snList, out);
+		else if(sn instanceof SnMap snMap) acceptMap(snMap, out);
+		else if(sn instanceof SnStr snStr) acceptStr(snStr, out);
 	}
 	
 	public void acceptList(SnList list, IndentStringBuilder out) {

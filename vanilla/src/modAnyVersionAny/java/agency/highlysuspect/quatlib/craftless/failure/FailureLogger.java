@@ -33,20 +33,19 @@ public class FailureLogger implements FailureListener {
 		List<Throwable> throwables = new ArrayList<>();
 		
 		while(ctx != null) {
-			switch(ctx) {
-				case CtxChain.StringLink s -> {
-					f.log(" - {}", s.message);
-					ctx = ctx.getParent();
-				}
-				case CtxChain.PathLink s -> {
-					ctx = logPath(s, f);
-				}
-				case CtxChain.ThrowableLink t -> {
-					throwables.add(t.cause);
-					f.log(" - '{}: {}' [exception {}]", t.cause.getClass().getSimpleName(), t.cause.getMessage(), throwables.size());
-					ctx = ctx.getParent();
-				}
-				//default -> throw new IllegalStateException("unexpected CtxChain type: " + ctx);
+			if(ctx instanceof CtxChain.StringLink s) {
+				f.log(" - {}", s.message);
+				ctx = ctx.getParent();
+			} else if(ctx instanceof CtxChain.PathLink p) {
+				ctx = logPath(p, f);
+			} else if(ctx instanceof CtxChain.ThrowableLink t) {
+				throwables.add(t.cause);
+				f.log(" - '{}: {}' [exception {}]", t.cause.getClass().getSimpleName(), t.cause.getMessage(), throwables.size());
+				ctx = ctx.getParent();
+			} else {
+				//should be unreachable; i'm on j17 though so can't exhaustively switch over CtxChain types
+				f.log(" - {}", ctx.thisSegmentString());
+				ctx = ctx.getParent();
 			}
 		}
 		

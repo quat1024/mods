@@ -115,7 +115,7 @@ public abstract class ConfigOpt<T> implements SectOrOpt {
 			return switch(s) {
 				case "true" -> true;
 				case "false" -> false;
-				case null, default -> throw ctx.detail("Expected 'true' or 'false' but got '" + s + "'").reportError();
+				default -> throw ctx.detail("Expected 'true' or 'false' but got '" + s + "'").reportError();
 			};
 		}
 	}
