@@ -9,3 +9,11 @@ https://www.curseforge.com/minecraft/mc-mods/amecs-reborn/files
 ## `amecs-1.3.10`
 
 https://www.curseforge.com/minecraft/mc-mods/amecs/files/
+
+## `amecsapi-1.20-1.4.0`
+
+Harvested out of `amecs-1.3.10`'s jar-in-jar system
+
+## `nmuk-1.1.1`
+
+https://www.curseforge.com/minecraft/mc-mods/nmuk/files/

@@ -1,0 +1,35 @@
+{
+	"schemaVersion": 1,
+	"id": "${modid}",
+	"version": "${version}",
+	"name": "${name}",
+	"description": "${description}",
+	"authors": [
+		"${author}"
+	],
+	"contact": {
+		"homepage": "${homepage}",
+		"issues": "${issues}",
+		"sources": "${sources}"
+	},
+	"license": "${license}",
+	"icon": "${modid}_icon.png",
+	"environment": "client",
+	"entrypoints": {
+		"client": [
+			"agency.highlysuspect.rebindnarrator.craftful.fab.RebindNarratorFabric"
+		]
+	},
+	"mixins": [
+		"${modid}.mixins.json"
+	],
+	"depends": {
+		"fabricloader": "*",
+		"fabric-api": "*",
+		"minecraft": ">=${minecraft_version}"
+	},
+	"suggests": {
+		"amecsapi": "*",
+		"nmuk": "*"
+	}
+}

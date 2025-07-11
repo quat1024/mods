@@ -1,0 +1,21 @@
+{
+	"schemaVersion": 1,
+	"id": "${modid}",
+	"version": "${version}",
+	"name": "${name}",
+	"description": "${name} for ${loader} ${minecraft_version}",
+	"authors": [
+		"${author}"
+	],
+	"contact": {
+		"homepage": "${homepage}",
+		"issues": "${issues}",
+		"sources": "${sources}"
+	},
+	"license": "${license}",
+	"depends": {
+		"minecraft": ">=${minecraft_version}",
+		"fabricloader": "*",
+		"fabric-api": "*"
+	}
+}
