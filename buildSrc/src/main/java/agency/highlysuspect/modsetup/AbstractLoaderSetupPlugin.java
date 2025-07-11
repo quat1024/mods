@@ -143,6 +143,9 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 					extendSourceSet2(mod.set, quatlib);
 				
 				setCompatLevel(mod.set, javaCompatLevel);
+				
+				//modXxxxxxImplementation configurations
+				if(loom != null) loom.createRemapConfigurations(mod.set);
 			}
 			
 			/// DEPENDENCIES ///

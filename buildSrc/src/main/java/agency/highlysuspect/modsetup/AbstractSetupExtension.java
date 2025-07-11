@@ -121,4 +121,9 @@ public abstract class AbstractSetupExtension {
 			it.getOptions().getRelease().set(compatLevel);
 		});
 	}
+	
+	//intended to be used from gradle api
+	public Dependency lib(String filename) {
+		return project.getDependencies().create(project.files("../lib/" + filename));
+	}
 }

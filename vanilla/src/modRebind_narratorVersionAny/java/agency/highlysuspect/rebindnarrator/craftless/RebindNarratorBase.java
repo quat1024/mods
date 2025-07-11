@@ -25,10 +25,12 @@ public abstract class RebindNarratorBase {
 		return INST;
 	}
 	
-	public void init() {
+	public void initConfig() {
 		configSchema = visitConfigSchema(new ConfigSection(NAME, "Options for Rebind Narrator."));
 		config = makeConfig(configSchema);
-		
+	}
+	
+	public void init() {
 		impl = makeKeyPredicate();
 	}
 	

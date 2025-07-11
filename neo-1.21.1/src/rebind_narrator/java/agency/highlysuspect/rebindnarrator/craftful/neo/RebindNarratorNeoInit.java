@@ -15,6 +15,7 @@ import net.neoforged.neoforge.client.settings.KeyModifier;
 @Mod(value = RebindNarratorNeoInit.MODID, dist = Dist.CLIENT)
 public class RebindNarratorNeoInit extends RebindNarratorMc {
 	public RebindNarratorNeoInit(IEventBus modBus) {
+		super.initConfig();
 		super.init();
 		
 		modBus.addListener(this::onRegisterKeyMappings);

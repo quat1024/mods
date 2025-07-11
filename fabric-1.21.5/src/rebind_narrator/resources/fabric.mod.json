@@ -17,7 +17,7 @@
 	"environment": "client",
 	"entrypoints": {
 		"client": [
-			"agency.highlysuspect.rebindnarrator.craftful.fab.FabricInit"
+			"agency.highlysuspect.rebindnarrator.craftful.fab.RebindNarratorFabric"
 		]
 	},
 	"mixins": [
@@ -27,5 +27,8 @@
 		"fabricloader": "*",
 		"fabric-api": "*",
 		"minecraft": ">=${minecraft_version}"
+	},
+	"suggests": {
+		"amecs": "*"
 	}
 }

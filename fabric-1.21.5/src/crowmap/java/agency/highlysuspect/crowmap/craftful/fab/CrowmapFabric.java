@@ -26,7 +26,7 @@ public class CrowmapFabric extends CrowmapMc implements ModInitializer {
 			failures.context(),
 			schema,
 			FabricLoader.getInstance().getConfigDir().resolve("crowmap.txt"),
-			LOG, Util.backgroundExecutor()
+			LOG, Util.ioPool()
 		);
 	}
 	

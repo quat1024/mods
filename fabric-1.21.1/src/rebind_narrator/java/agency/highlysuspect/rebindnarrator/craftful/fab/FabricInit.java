@@ -12,6 +12,7 @@ import org.lwjgl.glfw.GLFW;
 public class FabricInit extends RebindNarratorMc implements ClientModInitializer {
 	@Override
 	public void onInitializeClient() {
+		super.initConfig();
 		super.init();
 		// ... mods like AMECS, no more useless keys ...
 		//interesting: https://www.curseforge.com/minecraft/mc-mods/amecs-reborn
@@ -34,7 +35,8 @@ public class FabricInit extends RebindNarratorMc implements ClientModInitializer
 	public class FabricNarratorKeyPredicate extends VanillaNarratorKeyPredicate {
 		@Override
 		public boolean isCorrectKey(int glfwKeyToken) {
-			return glfwKeyToken == KeyBindingHelper.getBoundKeyOf(NARRATOR_KEY).getValue();
+			int boundKeyToken = KeyBindingHelper.getBoundKeyOf(NARRATOR_KEY).getValue();
+			return boundKeyToken != -1 && glfwKeyToken == boundKeyToken;
 		}
 	}
 }
