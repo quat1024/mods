@@ -7,11 +7,13 @@ vanillaSetup.go {
 		rebind_narrator {
 			versions += ["1.21.1", "1.21.5"]
 			
+			vars.name = "Rebind Narrator"
 			vars.description = "Adds a keybind to options for the narrator."
 		}
 		crowmap {
 			versions += ["1.21.5"]
 			
+			vars.name = "Crowmap"
 			vars.description = "Maps update anywhere in your inventory."
 		}
 	}

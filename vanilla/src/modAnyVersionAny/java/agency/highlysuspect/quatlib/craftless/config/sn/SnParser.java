@@ -46,6 +46,12 @@ public class SnParser {
 		}
 	}
 	
+	//public-facing parseValue which skips whitespace and stuff
+	public Sn<?> parseValue(CtxChain ctx) throws ReportedException {
+		cursor.skipWhitespaceAndComments();
+		return parseValue2(ctx);
+	}
+	
 	private void parseKvInto(SnMap map, CtxChain ctx) throws ReportedException {
 		cursor.skipWhitespaceAndComments();
 		String key = parseKey(ctx);
@@ -67,7 +73,7 @@ public class SnParser {
 			next = cursor.peek();
 			//System.out.println("parsed key " + key + " cursor is at " + cursor + " next char is " + (char) next);
 			if(next == '\r' || next == '\n') map.put(key, Sn.str(""));
-			else map.put(key, parseValue(ctx));
+			else map.put(key, parseValue2(ctx));
 		} else if(next == '{') {
 			//a map with the initial equal-sign omitted
 			map.put(key, parseMap(ctx));
@@ -132,7 +138,7 @@ public class SnParser {
 				return list;
 			} else {
 				//parse an item
-				list.add(parseValue(ctx.path("[" + list.size() + "]")));
+				list.add(parseValue2(ctx.path("[" + list.size() + "]")));
 			}
 		}
 	}
@@ -141,7 +147,7 @@ public class SnParser {
 		return cursor.peek() == '"' ? parseQuotedString(ctx) : parseBareString(ctx);
 	}
 	
-	private Sn<?> parseValue(CtxChain ctx) throws ReportedException {
+	private Sn<?> parseValue2(CtxChain ctx) throws ReportedException {
 		int next = cursor.peek();
 		if(next == EOF) throw ctx.detail("unexpected end of file while parsing a value, on line " + cursor.endLine).reportError();
 		if(next == '"') return Sn.str(parseQuotedString(ctx));
