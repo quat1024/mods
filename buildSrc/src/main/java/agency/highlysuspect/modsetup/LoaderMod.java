@@ -5,7 +5,9 @@ import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.jvm.tasks.Jar;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.TreeSet;
 
 public class LoaderMod extends VanillaMod {
@@ -22,6 +24,8 @@ public class LoaderMod extends VanillaMod {
 		versionAgnosticJar = base.versionAgnosticJar;
 		perVersionJars = new HashMap<>(base.perVersionJars);
 	}
+	
+	List<String> legacyForgeMixinConfigs = new ArrayList<>();
 	
 	//"out params"
 	public SourceSet set;

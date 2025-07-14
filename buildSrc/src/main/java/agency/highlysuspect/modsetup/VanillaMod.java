@@ -36,7 +36,6 @@ public class VanillaMod implements Named {
 	SourceSet versionAgnosticSourceSet;
 	Map<String, SourceSet> perVersionSourceSets = new HashMap<>();
 	
-	//NamedDomainObjectProvider<ConsumableConfiguration> versionAgnosticElements;
 	Map<String, NamedDomainObjectProvider<ConsumableConfiguration>> perVersionElements = new HashMap<>();
 	TaskProvider<Jar> versionAgnosticJar;
 	Map<String, TaskProvider<Jar>> perVersionJars = new HashMap<>();
@@ -44,5 +43,17 @@ public class VanillaMod implements Named {
 	@Override
 	public String getName() {
 		return modid;
+	}
+	
+	public SourceSet getPerVersionSourceSet(String version) {
+		SourceSet set = perVersionSourceSets.get(version);
+		if(set == null) throw new NullPointerException("Can't get source-set for version " + version + " of mod " + modid + "; is it marked compatible with that version in :vanilla?");
+		return set;
+	}
+	
+	public NamedDomainObjectProvider<ConsumableConfiguration> getPerVersionElement(String version) {
+		NamedDomainObjectProvider<ConsumableConfiguration> cfg = perVersionElements.get(version);
+		if(cfg == null) throw new NullPointerException("Can't get consumable configuration for version " + version + " of mod " + modid + "; is it marked compatible with that version in :vanilla?");
+		return cfg;
 	}
 }

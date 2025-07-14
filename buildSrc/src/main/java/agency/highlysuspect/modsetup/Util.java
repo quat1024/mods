@@ -5,6 +5,7 @@ import org.codehaus.groovy.runtime.StringGroovyMethods;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Dependency;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -56,5 +57,17 @@ public class Util {
 		else if(FlexVerComparator.compare(minecraftVersion, "1.17.0") >= 0) result = 16;
 		else result = 8;
 		return result;
+	}
+	
+	//Copypasta from ModDefGradle's MixinCompilerArgs private class
+	//but using java File objects instead of the fancy gradle stuff
+	public static List<String> mixinArgs(File inMappings, File outMappings, File refmap) {
+		return List.of(
+			"-AreobfTsrgFile=" + inMappings.getAbsolutePath(),
+			"-AoutTsrgFile=" + outMappings.getAbsolutePath(),
+			"-AoutRefMapFile=" + refmap.getAbsolutePath(),
+			"-AmappingTypes=tsrg",
+			"-ApluginVersion=0.7",
+			"-AdefaultObfuscationEnv=searge");
 	}
 }

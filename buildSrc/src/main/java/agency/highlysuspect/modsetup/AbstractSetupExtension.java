@@ -98,7 +98,7 @@ public abstract class AbstractSetupExtension {
 			}
 			
 			it.filesMatching(List.of("pack.mcmeta", "fabric.mod.json", "*.mixins.json"), jsons -> jsons.expand(jsonEscaped));
-			it.filesMatching(List.of("META-INF/neoforge.mods.toml"), tomls -> tomls.expand(vars));
+			it.filesMatching(List.of("META-INF/neoforge.mods.toml", "META-INF/mods.toml"), tomls -> tomls.expand(vars));
 			
 			it.getInputs().properties(vars);
 		});

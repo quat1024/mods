@@ -20,7 +20,9 @@ dependencies {
 	implementation "fabric-loom:fabric-loom.gradle.plugin:1.10.5"
 	
 	// https://projects.neoforged.net/neoforged/ModDevGradle
-	implementation "net.neoforged.moddev:net.neoforged.moddev.gradle.plugin:2.0.95"
+	def mdgVersion = "2.0.95"
+	implementation "net.neoforged.moddev:net.neoforged.moddev.gradle.plugin:${mdgVersion}"
+	implementation "net.neoforged.moddev.legacyforge:net.neoforged.moddev.legacyforge.gradle.plugin:${mdgVersion}"
 	
 	// https://github.com/CrackedPolishedBlackstoneBricksMC/minivan/releases
 	implementation "agency.highlysuspect.minivan:agency.highlysuspect.minivan.gradle.plugin:0.5"
@@ -38,6 +40,10 @@ gradlePlugin {
 		"mod-setup-neoforge" {
 			id = "mod-setup-neoforge"
 			implementationClass = "agency.highlysuspect.modsetup.AbstractLoaderSetupPlugin\$NeoforgeSetupPlugin"
+		}
+		"mod-setup-forge-via-mdg" {
+			id = "mod-setup-forge-via-mdg"
+			implementationClass = "agency.highlysuspect.modsetup.AbstractLoaderSetupPlugin\$ForgeViaMdgSetupPlugin"
 		}
 		"vanilla-setup" {
 			id = "vanilla-setup"

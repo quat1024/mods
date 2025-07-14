@@ -270,7 +270,7 @@ public class VanillaSetupPlugin implements Plugin<Project> {
 		
 		//consumable configurations containing code for this mod
 		public Dependency dependOnVersionAndModSpecific(VanillaMod mod, String minecraftVersion) {
-			return depOnMyConfiguration(mod.perVersionElements.get(minecraftVersion));
+			return depOnMyConfiguration(mod.getPerVersionElement(minecraftVersion));
 		}
 	}
 }

@@ -1,5 +1,15 @@
 # notebook
 
+## why didn't `MixinExtension` work on neoforge?
+
+Seems to assume one gradle project maps roughly into one jar. You "add mixin configs" *at the top-level*. This is a problem for me, because i have a `quatlib` source-set and a `rebind_narrator` source-set which both contain different mixin config files. but `MixinExtension` assumes each mixin config exists in each compilation task.
+
+## why is manually configuring mixins not working?
+
+the annotation processor is only configured for some of the compilation tasks in the `forge-1.20.1` subproject, so it's only running when those classes get compiled
+
+the stuff in `:vanilla/modXxxxVersion1_20_1` was compiled without any ap
+
 ## ConfigState
 
 * what is `refresh` for? copied it from older projects without thinking too hard
