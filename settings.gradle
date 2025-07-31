@@ -33,5 +33,9 @@ include(
 	//"fabric-1.21.1",
 	
 	//"fabric-1.20.1",
-	"forge-1.20.1"
+	"forge-1.20.1",
+	
+	//How the fuck do annotation processors work
+	"ap-testing",
+	"ap-testing2"
 )
