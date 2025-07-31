@@ -11,7 +11,6 @@ import net.neoforged.moddevgradle.dsl.ModDevExtension;
 import net.neoforged.moddevgradle.dsl.NeoForgeExtension;
 import net.neoforged.moddevgradle.legacyforge.dsl.LegacyForgeExtension;
 import net.neoforged.moddevgradle.legacyforge.dsl.ObfuscationExtension;
-import net.neoforged.moddevgradle.legacyforge.tasks.RemapJar;
 import org.gradle.api.Action;
 import org.gradle.api.NamedDomainObjectContainer;
 import org.gradle.api.Plugin;
@@ -24,7 +23,6 @@ import org.gradle.api.file.DuplicatesStrategy;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.api.tasks.TaskContainer;
-import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.bundling.AbstractArchiveTask;
 import org.gradle.api.tasks.compile.JavaCompile;
 import org.gradle.jvm.tasks.Jar;
@@ -93,6 +91,7 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 		public String ver;
 		public NamedDomainObjectContainer<LoaderMod> mods;
 		
+		@SuppressWarnings("unused")
 		public void go(Action<? super Ext> act) {
 			act.execute(this);
 			doIt();
@@ -108,6 +107,11 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 			//reach across and get vanilla (evaluationDependsOn was set up so this should be ok)
 			Project vanilla = project.project(":vanilla");
 			VanillaSetupPlugin.Ext vanillaExt = vanilla.getExtensions().getByType(VanillaSetupPlugin.Ext.class);
+			
+			LoaderMod quatlib = mods.create("modder_name_lib", it -> {
+				it.vars.put("name", "ModderNameLib");
+				it.vars.put("description", "ModderNameLib for " + loader + " " + ver);
+			});
 			
 			//abbreviations
 			SourceSetContainer sourceSets = project.getExtensions().getByType(SourceSetContainer.class);
@@ -158,35 +162,16 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 			/// SOURCE SET SCAFFOLDING ///
 			project.getLogger().lifecycle("making source sets");
 			
-			//code shared across all mods on this loader
-			SourceSet quatlib = makeSourceSetWithCommonDeps("quatlib");
-			extendSourceSet2(quatlib, main); //contains minecraft + loader code
-			withImplementation(quatlib, vanillaExt.dependOnModAgnostic(ver)); //mod-agnostic code from :vanilla
-			if(loom != null)
-				withImplementation(quatlib, Util.floaderOnlyDep(project));
-			//java version
-			setCompatLevel(quatlib, javaCompatLevel);
-			
-			//quatlib code that gets put in the final quatlib jar...?
-			//this duplicates the other thing, meh
-			Configuration quatlibSplat = project.getConfigurations().create("quatlibSplat");
-			withDeps(quatlibSplat, vanillaExt.dependOnModAgnostic(ver));
-			if(loom != null)
-				withDeps(quatlibSplat, Util.floaderOnlyDep(project));
-			
-			//one source-set per mod
 			for(LoaderMod mod : mods) {
-				project.getLogger().lifecycle("...for {}", mod.modid);
 				mod.set = makeSourceSetWithCommonDeps(mod.modid);
-				
 				extendSourceSet2(mod.set, main);
-				if(mod.quatlib)
-					extendSourceSet2(mod.set, quatlib);
-				
 				setCompatLevel(mod.set, javaCompatLevel);
-				
-				//modXxxxxxImplementation configurations
 				if(loom != null) loom.createRemapConfigurations(mod.set);
+			}
+			
+			for(LoaderMod mod : mods) {
+				if(mod.dependOnQuatlib)
+					extendSourceSet2(mod.set, quatlib.set);
 			}
 			
 			/// DEPENDENCIES ///
@@ -200,6 +185,9 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 				//TODO: whats this do
 				withImplementation(mod.set, mod.splat);
 			}
+			//add :floader-only if i'm quatlib
+			if(loom != null)
+				withImplementation(quatlib.set, Util.floaderOnlyDep(project));
 			
 			/// PROCESS RESOURCES ///
 			project.getLogger().lifecycle("configuring processResources");
@@ -208,18 +196,10 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 				"minecraft_version", ver,
 				"loader", loader
 			));
-			
-			//quatlib
-			configureProcessResources(quatlib, allVars, Map.of(
-				"modid", "modder_name_lib",
-				"name", "ModderNameLib"
-			));
-			
-			//mods
 			for(LoaderMod mod : mods) {
-				configureProcessResources(mod.set, allVars, mod.vars);
+				configureProcessResources(mod.set, Util.plus(allVars, mod.vars));
 				
-				//include the resources from vanilla too
+				//include the resources from things living in :vanilla too
 				tasks.named(mod.set.getProcessResourcesTaskName(), ProcessResources.class, it -> {
 					it.from(
 						mod.versionAgnosticSourceSet.getResources(),
@@ -231,18 +211,8 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 			/// JARS ///
 			project.getLogger().lifecycle("preparing jars");
 			
-			//produce quatlib fatjar
-			TaskProvider<Jar> quatlibFatJar = project.getTasks().register("quatlibFatJar", Jar.class, it -> {
-				it.from(quatlib.getOutput());
-				for(File splat : quatlibSplat) it.from(project.zipTree(splat));
-				
-				it.getArchiveBaseName().set("ModderNameLib-" + ver + "-" + loader);
-				devlibs(it, loom);
-			});
-			tasks.named("jar", it -> it.dependsOn(quatlibFatJar));
-			
 			for(LoaderMod mod : mods) {
-				//contains all mod-specific code, including some splatted from other projects, but none of the quatlib code
+				//contains all mod-specific code, including some splatted from other projects
 				mod.depJar = tasks.register(mod.modid + "DepJar", Jar.class, it -> {
 					it.from(mod.set.getOutput()); //code for this version of this mod
 					for(File splat : mod.splat) it.from(project.zipTree(splat)); //code for all versions of this mod, basically
@@ -250,11 +220,8 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 //						mod.versionAgnosticSourceSet.getResources(),
 //						mod.perVersionSourceSets.get(ver).getResources()
 //					); //already done in processResources
-					
 					it.getArchiveBaseName().set(mod.modid + "-" + ver + "-" + loader);
-					
 					devlibs(it, loom);
-					
 					//TODO: kludge, i'm picking up dupe resources from somewhere...
 					it.setDuplicatesStrategy(DuplicatesStrategy.EXCLUDE);
 				});
@@ -262,35 +229,32 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 			}
 			
 			/// REMAPPED JARS ///
-			
 			if(loom != null) {
 				project.getLogger().lifecycle("preparing loom remapped jars");
 				
-				TaskProvider<RemapJarTask> quatlibFatJarNamedLoom = tasks.register("quatlibFatJarNamed", RemapJarTask.class, it -> {
-					it.getArchiveBaseName().set("ModderNameLib-" + ver + "-" + loader);
-					it.getInputFile().value(quatlibFatJar.flatMap(AbstractArchiveTask::getArchiveFile));
-					it.dependsOn(quatlibFatJar);
-				});
-				tasks.named("jar", it -> it.dependsOn(quatlibFatJarNamedLoom));
-				
+				//do quatlib first
 				for(LoaderMod mod : mods) {
-					TaskProvider<RemapJarTask> depJarNamed = tasks.register(mod.depJar.getName() + "Named", RemapJarTask.class, it -> {
-						it.dependsOn(mod.depJar, quatlibFatJar, quatlibFatJarNamedLoom);
-						
+					mod.depJarNamedLoom = tasks.register(mod.depJar.getName() + "Named", RemapJarTask.class, it -> {
+						it.dependsOn(mod.depJar);
 						it.getArchiveBaseName().set(mod.modid + "-" + ver + "-" + loader);
 						it.getInputFile().set(mod.depJar.flatMap(AbstractArchiveTask::getArchiveFile));
-						
-						if(mod.quatlib) {
-							//put quatlib-fat-dev on the remap classpath so tiny-remapper can see into it
-							it.getClasspath().from(quatlibFatJar.get().getArchiveFile());
+					});
+					tasks.named("jar", it -> it.dependsOn(mod.depJarNamedLoom));
+				}
+				
+				for(LoaderMod mod : mods) {
+					if(mod != quatlib && mod.dependOnQuatlib) {
+						mod.depJarNamedLoom.configure(it -> {
+							it.dependsOn(quatlib.depJar, quatlib.depJarNamedLoom);
+							//put quatlib devjar on the remap classpath so tiny-remapper can see into it
+							it.getClasspath().from(quatlib.depJar.get().getArchiveFile());
 							
 							//for some reason you can JiJ stuff from RemapJarTask?
 							//not sure what that has to do with remapping but ok :thumbs_up: sure
-							it.getNestedJars().from(quatlibFatJarNamedLoom.get().getArchiveFile());
+							it.getNestedJars().from(quatlib.depJarNamedLoom.get().getArchiveFile());
 							it.getAddNestedDependencies().set(true);
-						}
-					});
-					tasks.named("jar", it -> it.dependsOn(depJarNamed));
+						});
+					}
 				}
 			}
 			
@@ -299,7 +263,7 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 				ObfuscationExtension obf = project.getExtensions().getByType(ObfuscationExtension.class);
 				
 				List<SourceSet> quatlibAndModSourceSets =
-					Stream.concat(Stream.of(quatlib), mods.stream().map(it -> it.set)).toList();
+					Stream.concat(Stream.of(quatlib.set), mods.stream().map(it -> it.set)).toList();
 				
 				//the "obf.reobfuscate" function looks these configurations up by name, and they have to exist.
 				//TODO, can i avoid this headache by actually using these configuration names? lol
@@ -312,55 +276,51 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 					//mdg calls withVariantsForConfiguration before addVariantsForConfiguration
 					//and withVars requires the thing to be registered via addVars first, apparently
 					//"Variant for configuration ... does not exist in ..."
+					//I think this qualifies as an mdg bug honestly, TODO repro in a more normal environment
 					AdhocComponentWithVariants umm = (AdhocComponentWithVariants) project.getComponents().getByName("java");
 					umm.addVariantsFromConfiguration(runtimeElements, it -> {});
 					umm.addVariantsFromConfiguration(apiElements, it -> {});
 				});
 				
 				//reobf jar tasks
-				TaskProvider<RemapJar> remapQuatlib = obf.reobfuscate(quatlibFatJar, quatlib, it -> {
-					it.getArchiveBaseName().set("ModderNameLib-" + ver + "-" + loader);
-				});
 				for(LoaderMod mod : mods) {
 					obf.reobfuscate(mod.depJar, mod.set, it -> {
 						it.getArchiveBaseName().set(mod.modid + "-" + ver + "-" + loader);
 					});
 				}
+			}
+			
+			/// REFMAPS ///
+			//TODO: doesn't work
+			if(false && (legacyForge != null || loom != null)) {
+				File scratchDir = project.getLayout().getBuildDirectory().dir("mixin2").get().getAsFile();
+				scratchDir.mkdirs();
 				
-				//add mixin annotation processor (since it isn't added by the other plugins)
-				String ap = "org.spongepowered:mixin:0.8.5:processor";
-				//dependencies.add(quatlib.getAnnotationProcessorConfigurationName(), ap);
+				File mappingsIn;
+				if(legacyForge != null) mappingsIn = project.getExtensions().getByType(ObfuscationExtension.class)
+					.getNamedToSrgMappings().getAsFile().get();
+				//else mappingsIn = loom.getMappingsFile(); //DOESNT WORK
+				else mappingsIn = project.getLayout().getBuildDirectory().file("asawwadwadwad.txt").get().getAsFile(); //TODO
+				//TODO: that will change in loom 11 to loom.getMappingConfiguration().tinyMappings or similar
 				
-				//Manually set up mixin machinery since MixinExtension isn't cutting it
-				//Wires are also getting crossed wrt. inter-source-set dependencies
-				//so just use File objects instead of the fancy gradle stuff
-				//TODO will also need to be set up for quatlib when i get around to it
 				for(LoaderMod mod : mods) {
 					//use mixin AP
-					dependencies.add(mod.set.getAnnotationProcessorConfigurationName(), ap);
+					dependencies.add(mod.set.getAnnotationProcessorConfigurationName(), "org.spongepowered:mixin:0.8.5:processor");
 					
-					//scratch files for mixin to work
-					File scratchDir = project.getLayout().getBuildDirectory().dir("mixin2").get().getAsFile();
-					scratchDir.mkdirs();
-					File mappingsIn = obf.getNamedToSrgMappings().get().getAsFile();
-					File mappingsOut = new File(scratchDir, mod.modid + ".out.tsrg");
+					//forge uses .tsrg, fabric uses .tiny, dont think the extension matters either way
+					File mappingsOut = new File(scratchDir, mod.modid + ".out.txt");
 					File refmapOut = new File(scratchDir, mod.modid + ".refmap.json");
 					
 					//configure mixin AP args
-					List<String> mixinArgs = Util.mixinArgs(mappingsIn, mappingsOut, refmapOut);
-					//SIGHHHHH
+					List<String> mixinArgs;
+					if(legacyForge != null) mixinArgs = Util.legacyForgeMixinArgs(mappingsIn, mappingsOut, refmapOut);
+					else mixinArgs = Util.fabricMixinArgs(mappingsIn, mappingsOut, refmapOut, loom.getMixin().getRefmapTargetNamespace().get());
+					
 					BoringCommandLineArgumentProvider clap = project.getObjects().newInstance(BoringCommandLineArgumentProvider.class);
 					clap.args.set(mixinArgs);
 					
-					project.getTasks().named(mod.set.getCompileJavaTaskName(), JavaCompile.class, it ->
-					{
-						//sigh
-//						ArrayList<String> argz = new ArrayList<>(it.getOptions().getCompilerArgs());
-//						argz.addAll(mixinArgs);
-//						it.getOptions().setCompilerArgs(argz);
-//						project.getLogger().lifecycle(String.join("\n###\n", argz));
+					project.getTasks().named(mod.set.getCompileJavaTaskName(), JavaCompile.class, it -> {
 						it.getOptions().getCompilerArgumentProviders().add(clap);
-						
 						it.getOptions().setVerbose(true);
 					});
 					
@@ -371,18 +331,6 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 					// (via passing it into `extraMixinMappings`)
 					// but for what reason?
 				}
-				
-//				MixinExtension mixin = project.getExtensions().getByType(MixinExtension.class);
-				//mixin.add(quatlib, "moddernamelib.refmap.json");
-				//mixin.config("moddernamelib.mixins.json")
-//				for(LoaderMod mod : mods) {
-//					dependencies.add(mod.set.getAnnotationProcessorConfigurationName(), ap);
-//					mixin.add(mod.set, mod.modid + ".refmap.json");
-//					for(String config : mod.legacyForgeMixinConfigs) {
-//						mixin.config(config);
-//						mod.depJar.configure(jar -> jar.getManifest().attributes(Map.of("MixinConfigs", config)));
-//					}
-//				}
 			}
 			
 			/// RUN CONFIGS ///
@@ -406,14 +354,6 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 					it.client();
 				});
 				
-				//quatlib
-				mdg.getMods().create("modder_name_lib", it -> {
-					it.sourceSet(quatlib);
-					it.sourceSet(vanillaExt.modAnyVersionAny);
-					it.sourceSet(vanillaExt.modAgnosticSourceSets.get(ver));
-				});
-				
-				//each mod
 				for(LoaderMod mod : mods) {
 					mdg.getMods().create(mod.modid, it -> {
 						it.sourceSet(mod.set);

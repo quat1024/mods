@@ -1,5 +1,6 @@
 package agency.highlysuspect.modsetup;
 
+import net.fabricmc.loom.task.RemapJarTask;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.TaskProvider;
@@ -16,7 +17,7 @@ public class LoaderMod extends VanillaMod {
 		
 		versions = new TreeSet<>(base.versions);
 		vars = new HashMap<>(base.vars);
-		quatlib = base.quatlib;
+		dependOnQuatlib = base.dependOnQuatlib;
 		simpleRunMainClass = base.simpleRunMainClass;
 		versionAgnosticSourceSet = base.versionAgnosticSourceSet;
 		perVersionSourceSets = new HashMap<>(base.perVersionSourceSets);
@@ -31,4 +32,5 @@ public class LoaderMod extends VanillaMod {
 	public SourceSet set;
 	public Configuration splat;
 	public TaskProvider<Jar> depJar;
+	public TaskProvider<RemapJarTask> depJarNamedLoom;
 }

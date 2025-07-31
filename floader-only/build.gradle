@@ -13,9 +13,11 @@ repositories {
 	}
 }
 
+evaluationDependsOn(":vanilla")
+
 dependencies {
 	implementation "net.fabricmc:fabric-loader:${project.floaderVersion}"
-	implementation project(path: ":vanilla", configuration: "modAnyVersionAnyElements")
+	implementation project(path: ":vanilla", configuration: "quatlibAnyElements")
 }
 
 configurations {

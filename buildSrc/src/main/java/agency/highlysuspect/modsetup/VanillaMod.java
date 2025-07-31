@@ -7,6 +7,7 @@ import org.gradle.api.artifacts.ConsumableConfiguration;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.jvm.tasks.Jar;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
@@ -20,7 +21,9 @@ public class VanillaMod implements Named {
 		this.modid = modid;
 		
 		vars.put("modid", modid);
-		vars.put("name", StringGroovyMethods.capitalize(modid));
+		vars.put("name", Util.snakeToPretty(modid));
+		
+		dependOnQuatlib = !modid.equals("modder_name_lib");
 	}
 	
 	// IF YOU ADD ANYTHING REMEMBER TO ADD IT TO THE LoaderMod COPY CONSTRUCTOR //
@@ -28,7 +31,7 @@ public class VanillaMod implements Named {
 	String modid;
 	Set<String> versions = new LinkedHashSet<>();
 	Map<String, Object> vars = new HashMap<>();
-	boolean quatlib = true;
+	boolean dependOnQuatlib;
 	
 	@Nullable String simpleRunMainClass;
 	
@@ -36,12 +39,13 @@ public class VanillaMod implements Named {
 	SourceSet versionAgnosticSourceSet;
 	Map<String, SourceSet> perVersionSourceSets = new HashMap<>();
 	
-	Map<String, NamedDomainObjectProvider<ConsumableConfiguration>> perVersionElements = new HashMap<>();
 	TaskProvider<Jar> versionAgnosticJar;
 	Map<String, TaskProvider<Jar>> perVersionJars = new HashMap<>();
 	
+	Map<String, NamedDomainObjectProvider<ConsumableConfiguration>> perVersionElements = new HashMap<>();
+	
 	@Override
-	public String getName() {
+	public @NotNull String getName() {
 		return modid;
 	}
 	

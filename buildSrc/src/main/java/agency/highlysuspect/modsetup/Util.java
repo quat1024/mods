@@ -8,14 +8,23 @@ import org.gradle.api.artifacts.Dependency;
 import java.io.File;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 public class Util {
-	public static String modVersion(String mod, String version) {
-		String mod2 = mod == null ? "Any" : StringGroovyMethods.capitalize(mod);
-		String ver2 = version == null ? "Any" : version.replace('.', '_');
-		return "mod" + mod2 + "Version" + ver2;
+	private static final Pattern underFollowedByLetter = Pattern.compile("_(.)");
+	// my_cool_mod -> myCoolMod
+	public static String snakeToCamel(String a) {
+		return underFollowedByLetter.matcher(a)
+			.replaceAll(r -> r.group(1).toUpperCase(Locale.ROOT));
 	}
+	// my_cool_mod -> My Cool Mod
+	public static String snakeToPretty(String s) {
+		return underFollowedByLetter.matcher(StringGroovyMethods.capitalize(s))
+			.replaceAll(r -> " " + r.group(1).toUpperCase(Locale.ROOT));
+	}
+	
 	
 	public static Dependency floaderOnlyDep(Project project) {
 		return project.getDependencies().project(Map.of(
@@ -42,6 +51,7 @@ public class Util {
 		);
 	}
 	
+	//Right-biased merge
 	@SafeVarargs
 	public static Map<String, Object> plus(Map<String, Object>... maps) {
 		Map<String, Object> result = new HashMap<>();
@@ -61,13 +71,25 @@ public class Util {
 	
 	//Copypasta from ModDefGradle's MixinCompilerArgs private class
 	//but using java File objects instead of the fancy gradle stuff
-	public static List<String> mixinArgs(File inMappings, File outMappings, File refmap) {
+	public static List<String> legacyForgeMixinArgs(File inMappings, File outMappings, File refmap) {
 		return List.of(
 			"-AreobfTsrgFile=" + inMappings.getAbsolutePath(),
 			"-AoutTsrgFile=" + outMappings.getAbsolutePath(),
 			"-AoutRefMapFile=" + refmap.getAbsolutePath(),
+			"-AdefaultObfuscationEnv=searge",
 			"-AmappingTypes=tsrg",
-			"-ApluginVersion=0.7",
-			"-AdefaultObfuscationEnv=searge");
+			"-ApluginVersion=0.7" //just for silencing a warning
+		);
+	}
+	
+	//https://github.com/FabricMC/fabric-loom/blob/c7accc60a49b086655305597d08b4df87317dce6/src/main/java/net/fabricmc/loom/build/mixin/AnnotationProcessorInvoker.java#L105-L111
+	//https://github.com/FabricMC/fabric-loom/blob/c7accc60a49b086655305597d08b4df87317dce6/src/main/java/net/fabricmc/loom/util/Constants.java#L98-L103
+	public static List<String> fabricMixinArgs(File inMappings, File outMappings, File refmap, String defaultObfuscationEnv) {
+		return List.of(
+			"-AinMapFileNamedIntermediary=" + inMappings.getAbsolutePath(),
+			"-AoutMapFileNamedIntermediary=" + outMappings.getAbsolutePath(),
+			"-AoutRefMapFile=" + refmap.getAbsolutePath(),
+			"-AdefaultObfuscationEnv=", "named:" + defaultObfuscationEnv
+		);
 	}
 }

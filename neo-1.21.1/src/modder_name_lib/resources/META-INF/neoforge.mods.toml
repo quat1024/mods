@@ -2,11 +2,13 @@ modLoader = "javafml"
 loaderVersion = "[1,)"
 license = "${license}"
 issueTrackerURL = "${issues}"
-#logoFile = "${modid}_icon.png"
 
 [[mods]]
 modId = "${modid}"
 version = "${version}"
 displayName = "${name}"
-description = "${name} for ${loader} ${minecraft_version}"
+description = "${description}"
 authors = "${author}"
+
+#[[mixins]]
+#config = "rebind_narrator.mixins.json"

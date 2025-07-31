@@ -82,10 +82,7 @@ public abstract class AbstractSetupExtension {
 		else act.accept(obj);
 	}
 	
-	@SafeVarargs
-	public final void configureProcessResources(SourceSet target, Map<String, Object>... varArray) {
-		Map<String, Object> vars = Util.plus(varArray);
-		
+	public final void configureProcessResources(SourceSet target, Map<String, Object> vars) {
 		project.getTasks().named(target.getProcessResourcesTaskName(), ProcessResources.class, it -> {
 			//h't to multiloader-template for this idea, implemented by MrAmericanMike
 			//https://github.com/jaredlll08/MultiLoader-Template/blob/2450032d7e14b296df24c519d072310199a23f75/buildSrc/src/main/groovy/multiloader-common.gradle#L85
