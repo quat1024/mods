@@ -24,10 +24,10 @@ rootProject.name = "mods"
 
 include(
 	"vanilla",
-	"floader-only",
+	//"floader-only",
 	
 	//"neo-1.21.5",
-	"fabric-1.21.5",
+	//"fabric-1.21.5",
 	
 	//"neo-1.21.1",
 	//"fabric-1.21.1",

@@ -13,9 +13,9 @@ tasks.withType(JavaCompile).configureEach {
 }
 
 project.afterEvaluate {
-	logger.lifecycle("ASHJKDASHJKDASJKDOOOOOOOOOOOOOOOOOOOOOOOOO");
-	logger.lifecycle(project(":ap-testing").tasks.jar.outputs.getFiles().iterator().next().toString());
-	logger.lifecycle(sourceSets.main.output.classesDirs.iterator().next().toString());
+	//logger.lifecycle("ASHJKDASHJKDASJKDOOOOOOOOOOOOOOOOOOOOOOOOO");
+	//logger.lifecycle(project(":ap-testing").tasks.jar.outputs.getFiles().iterator().next().toString());
+	//logger.lifecycle(sourceSets.main.output.classesDirs.iterator().next().toString());
 }
 
 tasks.register("aaa_potato", JavaCompile) {
@@ -23,11 +23,10 @@ tasks.register("aaa_potato", JavaCompile) {
 	outputs.upToDateWhen { false }
 	
 	it.classpath = sourceSets.main.output.classesDirs
-	//dummy to stop gradle skipping with NO_SOURCE?
-	//it.source = sourceSets.main.output.classesDirs
+	println("classesDirs:")
+	println(sourceSets.main.output.classesDirs);
 	
 	it.options.compilerArgs = [
-					"-processor", "blah.TestAp",
 					"-proc:only",
 					"-verbose"
 	]

@@ -11,6 +11,7 @@ import net.neoforged.moddevgradle.dsl.ModDevExtension;
 import net.neoforged.moddevgradle.dsl.NeoForgeExtension;
 import net.neoforged.moddevgradle.legacyforge.dsl.LegacyForgeExtension;
 import net.neoforged.moddevgradle.legacyforge.dsl.ObfuscationExtension;
+import org.codehaus.groovy.runtime.StringGroovyMethods;
 import org.gradle.api.Action;
 import org.gradle.api.NamedDomainObjectContainer;
 import org.gradle.api.Plugin;
@@ -20,9 +21,8 @@ import org.gradle.api.artifacts.ConfigurationContainer;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
 import org.gradle.api.component.AdhocComponentWithVariants;
 import org.gradle.api.file.DuplicatesStrategy;
-import org.gradle.api.tasks.SourceSet;
-import org.gradle.api.tasks.SourceSetContainer;
-import org.gradle.api.tasks.TaskContainer;
+import org.gradle.api.file.FileCollection;
+import org.gradle.api.tasks.*;
 import org.gradle.api.tasks.bundling.AbstractArchiveTask;
 import org.gradle.api.tasks.compile.JavaCompile;
 import org.gradle.jvm.tasks.Jar;
@@ -30,6 +30,7 @@ import org.gradle.language.jvm.tasks.ProcessResources;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -292,7 +293,7 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 			
 			/// REFMAPS ///
 			//TODO: doesn't work
-			if(false && (legacyForge != null || loom != null)) {
+			if(legacyForge != null || loom != null) {
 				File scratchDir = project.getLayout().getBuildDirectory().dir("mixin2").get().getAsFile();
 				scratchDir.mkdirs();
 				
@@ -303,12 +304,16 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 				else mappingsIn = project.getLayout().getBuildDirectory().file("asawwadwadwad.txt").get().getAsFile(); //TODO
 				//TODO: that will change in loom 11 to loom.getMappingConfiguration().tinyMappings or similar
 				
+				//grab the mixin ap and slap it in a configuration so i can refer to it later
+				Configuration mixinAp = configurations.maybeCreate("mixinAp");
+				withDeps(mixinAp, "org.spongepowered:mixin:0.8.5:processor");
+				
 				for(LoaderMod mod : mods) {
-					//use mixin AP
-					dependencies.add(mod.set.getAnnotationProcessorConfigurationName(), "org.spongepowered:mixin:0.8.5:processor");
+					File scratch2 = new File(scratchDir, "scratch-" + mod.modid);
+					scratch2.mkdirs();
 					
 					//forge uses .tsrg, fabric uses .tiny, dont think the extension matters either way
-					File mappingsOut = new File(scratchDir, mod.modid + ".out.txt");
+					File mappingsOut = new File(scratchDir, mod.modid + ".out.tsrg");
 					File refmapOut = new File(scratchDir, mod.modid + ".refmap.json");
 					
 					//configure mixin AP args
@@ -316,16 +321,57 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 					if(legacyForge != null) mixinArgs = Util.legacyForgeMixinArgs(mappingsIn, mappingsOut, refmapOut);
 					else mixinArgs = Util.fabricMixinArgs(mappingsIn, mappingsOut, refmapOut, loom.getMixin().getRefmapTargetNamespace().get());
 					
-					BoringCommandLineArgumentProvider clap = project.getObjects().newInstance(BoringCommandLineArgumentProvider.class);
-					clap.args.set(mixinArgs);
+					List<String> allArgs = new ArrayList<>(mixinArgs);
+					allArgs.add("-processor");
+					allArgs.add("org.spongepowered.tools.obfuscation.MixinObfuscationProcessorInjection");
+					allArgs.add("-processor");
+					allArgs.add("org.spongepowered.tools.obfuscation.MixinObfuscationProcessorTargets");
+					allArgs.add("-proc:only"); //don't do any compilation just do APs
 					
-					project.getTasks().named(mod.set.getCompileJavaTaskName(), JavaCompile.class, it -> {
-						it.getOptions().getCompilerArgumentProviders().add(clap);
-						it.getOptions().setVerbose(true);
+					BoringCommandLineArgumentProvider clap = project.getObjects().newInstance(BoringCommandLineArgumentProvider.class);
+					clap.args.set(allArgs);
+					
+					//classpath the ap will work on
+					FileCollection source = mod.set.getAllSource()
+						.plus(mod.perVersionSourceSets.get(ver).getAllSource());
+					FileCollection classpath =
+						mod.set.getCompileClasspath()
+						//.plus(mod.perVersionSourceSets.get(ver).getOutput().getClassesDirs())
+						.plus(mod.perVersionSourceSets.get(ver).getCompileClasspath())
+						//.plus(mod.versionAgnosticSourceSet.getOutput().getClassesDirs())
+						.plus(mod.versionAgnosticSourceSet.getCompileClasspath());
+					project.getLogger().lifecycle("AAASD" + classpath.getAsPath());
+					
+					//classpath for the ap itself
+					FileCollection apPath = mixinAp;
+					
+					TaskProvider<JavaCompile> generateRefmaps = project.getTasks().register("generate" + StringGroovyMethods.capitalize(mod.modid) + "Refmap", JavaCompile.class, it -> {
+						it.setGroup("build");
+						
+						//TODO
+						it.getOutputs().upToDateWhen(zzz -> false);
+						
+						//actually classes tasks, not really jars
+						it.dependsOn(mod.versionAgnosticJar, mod.perVersionJars.get(ver));
+						
+						//it.getOptions().getCompilerArgumentProviders().add(clap);
+						it.setSource(source);
+						it.setClasspath(classpath);
+						it.getOptions().getCompilerArgs().addAll(allArgs);
+						it.getOptions().setAnnotationProcessorPath(apPath);
+						it.getDestinationDirectory().set(scratch2);
+						//it.getOptions().setVerbose(true);
+						
+						it.doFirst(zzzz -> {
+							System.out.println(String.join("\n", ((JavaCompile)zzzz).getOptions().getAllCompilerArgs()));
+						});
 					});
 					
 					//include refmap in jar
-					mod.depJar.configure(it -> it.from(refmapOut));
+					mod.depJar.configure(it -> {
+						it.dependsOn(generateRefmaps);
+						it.from(refmapOut);
+					});
 					
 					//TODO: MixinExtension passes mappingsOut into ObfuscationExtension
 					// (via passing it into `extraMixinMappings`)

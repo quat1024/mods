@@ -78,7 +78,7 @@ public class Util {
 			"-AoutRefMapFile=" + refmap.getAbsolutePath(),
 			"-AdefaultObfuscationEnv=searge",
 			"-AmappingTypes=tsrg",
-			"-ApluginVersion=0.7" //just for silencing a warning
+			"-ApluginVersion=0.9" //just for silencing a warning
 		);
 	}
 	
