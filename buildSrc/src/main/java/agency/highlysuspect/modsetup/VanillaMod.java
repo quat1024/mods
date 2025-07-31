@@ -22,8 +22,6 @@ public class VanillaMod implements Named {
 		
 		vars.put("modid", modid);
 		vars.put("name", Util.snakeToPretty(modid));
-		
-		dependOnQuatlib = !modid.equals("modder_name_lib");
 	}
 	
 	// IF YOU ADD ANYTHING REMEMBER TO ADD IT TO THE LoaderMod COPY CONSTRUCTOR //
@@ -31,7 +29,7 @@ public class VanillaMod implements Named {
 	String modid;
 	Set<String> versions = new LinkedHashSet<>();
 	Map<String, Object> vars = new HashMap<>();
-	boolean dependOnQuatlib;
+	boolean dependOnQuatlib = true;
 	
 	@Nullable String simpleRunMainClass;
 	

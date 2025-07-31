@@ -51,9 +51,11 @@ public class VanillaSetupPlugin implements Plugin<Project> {
 			super(project);
 			this.mods = project.getObjects().domainObjectContainer(VanillaMod.class);
 			
-			//add quatlib!
-			//supported versions will be filled in later.
-			quatlib = this.mods.create("modder_name_lib");
+			//add quatlib! supported mc versions will be filled in later.
+			quatlib = this.mods.create("modder_name_lib", quat -> {
+				//obviously this breaks things, lol
+				quat.dependOnQuatlib = false;
+			});
 		}
 		
 		public final NamedDomainObjectContainer<VanillaMod> mods;
