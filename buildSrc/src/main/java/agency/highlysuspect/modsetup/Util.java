@@ -81,12 +81,12 @@ public class Util {
 	
 	//https://github.com/FabricMC/fabric-loom/blob/c7accc60a49b086655305597d08b4df87317dce6/src/main/java/net/fabricmc/loom/build/mixin/AnnotationProcessorInvoker.java#L105-L111
 	//https://github.com/FabricMC/fabric-loom/blob/c7accc60a49b086655305597d08b4df87317dce6/src/main/java/net/fabricmc/loom/util/Constants.java#L98-L103
-	public static void fabricMixinArgs(List<String> args, File inMappings, File outMappings, File refmap, String defaultObfuscationEnv) {
+	public static void fabricMixinArgs(List<String> args, File inMappings, File outMappings, File refmap) {
 		args.addAll(Arrays.asList(
 			"-AinMapFileNamedIntermediary=" + inMappings.getAbsolutePath(),
 			"-AoutMapFileNamedIntermediary=" + outMappings.getAbsolutePath(),
 			"-AoutRefMapFile=" + refmap.getAbsolutePath(),
-			"-AdefaultObfuscationEnv=", "named:" + defaultObfuscationEnv
+			"-AdefaultObfuscationEnv=named:intermediary"
 		));
 	}
 }

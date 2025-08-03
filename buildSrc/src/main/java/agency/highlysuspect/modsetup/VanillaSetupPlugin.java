@@ -98,12 +98,7 @@ public class VanillaSetupPlugin implements Plugin<Project> {
 			if(minivanExt == null) throw new IllegalStateException("minivanext is null");
 			
 			//dep on sponge (for mixin)
-			repositories.maven(mvn -> {
-				mvn.setUrl("https://repo.spongepowered.org/repository/maven-public/");
-				mvn.content(it ->
-					it.includeGroup("org.spongepowered")
-				);
-			});
+			addSpongeRepo();
 			
 			//we're not using the 'main' source set at all
 			tasks.named("jar", Jar.class, it -> it.setEnabled(false));

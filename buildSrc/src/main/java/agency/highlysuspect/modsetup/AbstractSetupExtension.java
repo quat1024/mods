@@ -31,6 +31,15 @@ public abstract class AbstractSetupExtension {
 	public final Project project;
 	public final SourceSetContainer sourceSets;
 	
+	public void addSpongeRepo() {
+		project.getRepositories().maven(mvn -> {
+			mvn.setUrl("https://repo.spongepowered.org/repository/maven-public/");
+			mvn.content(it ->
+				it.includeGroup("org.spongepowered")
+			);
+		});
+	}
+	
 	public SourceSet makeSourceSetWithCommonDeps(String name) {
 		SourceSet set = sourceSets.create(name);
 		withImplementation(set, Util.broadlyApplicableDeps(project));

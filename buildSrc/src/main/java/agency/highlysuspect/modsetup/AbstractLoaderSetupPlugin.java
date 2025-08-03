@@ -31,6 +31,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -123,6 +124,9 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 			
 			//we don't use the default jar task
 			tasks.named("jar", it -> it.setEnabled(false));
+			
+			//just in case we need mixin
+			addSpongeRepo();
 			
 			//which ecosystem plugin to talk with
 			@Nullable LoomGradleExtensionAPI loom2 = null;
@@ -297,37 +301,23 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 				File scratchDir = project.getLayout().getBuildDirectory().dir("mixin2").get().getAsFile();
 				scratchDir.mkdirs();
 				
-				File mappingsIn;
-				if(legacyForge != null)
-					mappingsIn = project.getExtensions().getByType(ObfuscationExtension.class)
-					.getNamedToSrgMappings().getAsFile().get();
-				//else mappingsIn = loom.getMappingsFile(); //DOESNT WORK, loom isn't initialized yet??
-				else mappingsIn = new File(scratchDir, "askdjaskjdkasd.txt");
+				project.afterEvaluate(__ -> {
+					if(loom != null) project.getLogger().lifecycle("bbbbbbbLOOM MAPPINGS FILE: {}", loom.getMappingsFile());
+				});
 				
 				//grab the mixin ap and slap it in a configuration so i can refer to it later
 				Configuration mixinAp = configurations.maybeCreate("mixinAp");
-				withDeps(mixinAp, "org.spongepowered:mixin:0.8.5:processor");
+				if(neoforge != null) {
+					//mixin ap supports ObfuscationServiceMCP out of the box
+					withDeps(mixinAp, "org.spongepowered:mixin:0.8.5:processor");
+				} else { //loom
+					//this version adds ObfuscationServiceFabric which supports the "named:intermediary" obfuscation type
+					//also it depends on its own copy of the sponge mixin ap, so that gets pulled in
+					withDeps(mixinAp, "net.fabricmc:fabric-mixin-compile-extensions:0.6.0");
+				}
 				
 				for(LoaderMod mod : mods) {
 					File scratch2 = new File(scratchDir, "scratch-" + mod.modid);
-					
-					//forge uses .tsrg, fabric uses .tiny, dont think the extension matters either way
-					//TODO: what actually ends up in this file?
-					// MDG feeds its contents back into ObfuscationExtension, but so far i've only seen empty files
-					File mappingsOut = new File(scratchDir, mod.modid + ".out.tsrg");
-					File refmapOut = new File(scratchDir, mod.modid + ".refmap.json");
-					
-					//configure mixin AP args
-					List<String> mixinArgs = new ArrayList();
-					mixinArgs.add("-proc:only"); //don't do any compilation, just do APs
-					
-					if(legacyForge != null)
-						Util.legacyForgeMixinArgs(mixinArgs, mappingsIn, mappingsOut, refmapOut);
-					else
-						Util.fabricMixinArgs(mixinArgs, mappingsIn, mappingsOut, refmapOut, "intermediary");
-					
-//					BoringCommandLineArgumentProvider clap = project.getObjects().newInstance(BoringCommandLineArgumentProvider.class);
-//					clap.args.set(mixinArgs);
 					
 					//all sources which touch a specific version of minecraft and might contain
 					//mixins which need refmaps
@@ -344,26 +334,22 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 					TaskProvider<JavaCompile> generateRefmaps = project.getTasks().register("generate" + StringGroovyMethods.capitalize(mod.modid) + "Refmap", JavaCompile.class, it -> {
 						it.setGroup("build");
 						
-						//tell gradle this task creates these files
-						it.getOutputs().file(refmapOut);
-						it.getOutputs().file(mappingsOut);
-						
 						//TODO: really we depend on the *classes* tasks, not the jars
 						it.dependsOn(mod.versionAgnosticJar, mod.perVersionJars.get(ver));
 						
 						it.setSource(sources);
 						it.setClasspath(classpath);
 						it.getOptions().setAnnotationProcessorPath(mixinAp);
-						it.getOptions().getCompilerArgs().addAll(mixinArgs);
 						it.getDestinationDirectory().set(scratch2);
-						it.getOptions().setVerbose(true);
+						//it.getOptions().setVerbose(true);
 					});
 					
-					//include refmap in jar
-					mod.depJar.configure(it -> {
-						it.dependsOn(generateRefmaps);
-						it.from(refmapOut);
-					});
+					if(legacyForge != null) {
+						iLoveRefmapArgs(project, scratchDir, legacyForge, loom, mod, generateRefmaps);
+					} else { //loom != null
+						//Has to be done in afterEvaluate so loom.getMappingsFile() will work
+						project.afterEvaluate(__ -> iLoveRefmapArgs(project, scratchDir, legacyForge, loom, mod, generateRefmaps));
+					}
 				}
 			}
 			
@@ -397,5 +383,50 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 				}
 			}
 		}
+	}
+	
+	
+	protected static void iLoveRefmapArgs(Project project, File scratchDir, LegacyForgeExtension legacyForge, LoomGradleExtensionAPI loom, LoaderMod mod, TaskProvider<JavaCompile> generateRefmaps) {
+		File mappingsIn;
+		if(legacyForge != null)
+			mappingsIn = project.getExtensions().getByType(ObfuscationExtension.class).getNamedToSrgMappings().getAsFile().get();
+		else mappingsIn = loom.getMappingsFile();
+		
+		//forge uses .tsrg, fabric uses .tiny, dont think the extension matters either way
+		//TODO: what actually ends up in this file?
+		// MDG feeds its contents back into ObfuscationExtension, but so far i've only seen empty files
+		File mappingsOut = new File(scratchDir, mod.modid + ".out.txt");
+		File refmapOut = new File(scratchDir, mod.modid + ".refmap.json");
+		
+		//configure mixin AP args
+		List<String> mixinArgs = new ArrayList<>();
+		mixinArgs.add("-proc:only"); //don't do any compilation, just do APs
+		
+		if(legacyForge != null)
+			Util.legacyForgeMixinArgs(mixinArgs, mappingsIn, mappingsOut, refmapOut);
+		else
+			Util.fabricMixinArgs(mixinArgs, mappingsIn, mappingsOut, refmapOut);
+		
+		BoringCommandLineArgumentProvider clap = project.getObjects().newInstance(BoringCommandLineArgumentProvider.class);
+		clap.args.set(mixinArgs);
+		
+		project.getLogger().lifecycle("MIXIN AP ARGS:");
+		project.getLogger().lifecycle("{}", mixinArgs);
+		
+		generateRefmaps.configure(it -> {
+			//tell gradle this task creates these files
+			it.getOutputs().file(refmapOut);
+			it.getOutputs().file(mappingsOut);
+			
+			//add mixin args
+			//it.getOptions().getCompilerArgs().addAll(mixinArgs);
+			it.getOptions().getCompilerArgumentProviders().add(clap);
+		});
+		
+		//include refmap in jar
+		mod.depJar.configure(it -> {
+			it.dependsOn(generateRefmaps);
+			it.from(refmapOut);
+		});
 	}
 }
