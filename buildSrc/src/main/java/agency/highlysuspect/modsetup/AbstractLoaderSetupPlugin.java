@@ -292,17 +292,17 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 			}
 			
 			/// REFMAPS ///
-			//TODO: doesn't work
+			//TODO: doesn't work on fabric, untested on legacyforge
 			if(legacyForge != null || loom != null) {
 				File scratchDir = project.getLayout().getBuildDirectory().dir("mixin2").get().getAsFile();
 				scratchDir.mkdirs();
 				
 				File mappingsIn;
-				if(legacyForge != null) mappingsIn = project.getExtensions().getByType(ObfuscationExtension.class)
+				if(legacyForge != null)
+					mappingsIn = project.getExtensions().getByType(ObfuscationExtension.class)
 					.getNamedToSrgMappings().getAsFile().get();
-				//else mappingsIn = loom.getMappingsFile(); //DOESNT WORK
-				else mappingsIn = project.getLayout().getBuildDirectory().file("asawwadwadwad.txt").get().getAsFile(); //TODO
-				//TODO: that will change in loom 11 to loom.getMappingConfiguration().tinyMappings or similar
+				//else mappingsIn = loom.getMappingsFile(); //DOESNT WORK, loom isn't initialized yet??
+				else mappingsIn = new File(scratchDir, "askdjaskjdkasd.txt");
 				
 				//grab the mixin ap and slap it in a configuration so i can refer to it later
 				Configuration mixinAp = configurations.maybeCreate("mixinAp");
@@ -310,61 +310,53 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 				
 				for(LoaderMod mod : mods) {
 					File scratch2 = new File(scratchDir, "scratch-" + mod.modid);
-					scratch2.mkdirs();
 					
 					//forge uses .tsrg, fabric uses .tiny, dont think the extension matters either way
+					//TODO: what actually ends up in this file?
+					// MDG feeds its contents back into ObfuscationExtension, but so far i've only seen empty files
 					File mappingsOut = new File(scratchDir, mod.modid + ".out.tsrg");
 					File refmapOut = new File(scratchDir, mod.modid + ".refmap.json");
 					
 					//configure mixin AP args
-					List<String> mixinArgs;
-					if(legacyForge != null) mixinArgs = Util.legacyForgeMixinArgs(mappingsIn, mappingsOut, refmapOut);
-					else mixinArgs = Util.fabricMixinArgs(mappingsIn, mappingsOut, refmapOut, loom.getMixin().getRefmapTargetNamespace().get());
+					List<String> mixinArgs = new ArrayList();
+					mixinArgs.add("-proc:only"); //don't do any compilation, just do APs
 					
-					List<String> allArgs = new ArrayList<>(mixinArgs);
-					allArgs.add("-processor");
-					allArgs.add("org.spongepowered.tools.obfuscation.MixinObfuscationProcessorInjection");
-					allArgs.add("-processor");
-					allArgs.add("org.spongepowered.tools.obfuscation.MixinObfuscationProcessorTargets");
-					allArgs.add("-proc:only"); //don't do any compilation just do APs
+					if(legacyForge != null)
+						Util.legacyForgeMixinArgs(mixinArgs, mappingsIn, mappingsOut, refmapOut);
+					else
+						Util.fabricMixinArgs(mixinArgs, mappingsIn, mappingsOut, refmapOut, "intermediary");
 					
-					BoringCommandLineArgumentProvider clap = project.getObjects().newInstance(BoringCommandLineArgumentProvider.class);
-					clap.args.set(allArgs);
+//					BoringCommandLineArgumentProvider clap = project.getObjects().newInstance(BoringCommandLineArgumentProvider.class);
+//					clap.args.set(mixinArgs);
 					
-					//classpath the ap will work on
-					FileCollection source = mod.set.getAllSource()
+					//all sources which touch a specific version of minecraft and might contain
+					//mixins which need refmaps
+					FileCollection sources = mod.set.getAllSource()
 						.plus(mod.perVersionSourceSets.get(ver).getAllSource());
-					FileCollection classpath =
-						mod.set.getCompileClasspath()
-						//.plus(mod.perVersionSourceSets.get(ver).getOutput().getClassesDirs())
-						.plus(mod.perVersionSourceSets.get(ver).getCompileClasspath())
-						//.plus(mod.versionAgnosticSourceSet.getOutput().getClassesDirs())
-						.plus(mod.versionAgnosticSourceSet.getCompileClasspath());
-					project.getLogger().lifecycle("AAASD" + classpath.getAsPath());
 					
-					//classpath for the ap itself
-					FileCollection apPath = mixinAp;
+					FileCollection classpath = mod.set.getCompileClasspath()
+						.plus(mod.perVersionSourceSets.get(ver).getCompileClasspath())
+						.plus(mod.versionAgnosticSourceSet.getCompileClasspath());
+					
+					//no need to make a classpath for the mixin AP itself;
+					//it shadows all its dependencies
 					
 					TaskProvider<JavaCompile> generateRefmaps = project.getTasks().register("generate" + StringGroovyMethods.capitalize(mod.modid) + "Refmap", JavaCompile.class, it -> {
 						it.setGroup("build");
 						
-						//TODO
-						it.getOutputs().upToDateWhen(zzz -> false);
+						//tell gradle this task creates these files
+						it.getOutputs().file(refmapOut);
+						it.getOutputs().file(mappingsOut);
 						
-						//actually classes tasks, not really jars
+						//TODO: really we depend on the *classes* tasks, not the jars
 						it.dependsOn(mod.versionAgnosticJar, mod.perVersionJars.get(ver));
 						
-						//it.getOptions().getCompilerArgumentProviders().add(clap);
-						it.setSource(source);
+						it.setSource(sources);
 						it.setClasspath(classpath);
-						it.getOptions().getCompilerArgs().addAll(allArgs);
-						it.getOptions().setAnnotationProcessorPath(apPath);
+						it.getOptions().setAnnotationProcessorPath(mixinAp);
+						it.getOptions().getCompilerArgs().addAll(mixinArgs);
 						it.getDestinationDirectory().set(scratch2);
-						//it.getOptions().setVerbose(true);
-						
-						it.doFirst(zzzz -> {
-							System.out.println(String.join("\n", ((JavaCompile)zzzz).getOptions().getAllCompilerArgs()));
-						});
+						it.getOptions().setVerbose(true);
 					});
 					
 					//include refmap in jar
@@ -372,10 +364,6 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 						it.dependsOn(generateRefmaps);
 						it.from(refmapOut);
 					});
-					
-					//TODO: MixinExtension passes mappingsOut into ObfuscationExtension
-					// (via passing it into `extraMixinMappings`)
-					// but for what reason?
 				}
 			}
 			

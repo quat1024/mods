@@ -6,10 +6,7 @@ import org.gradle.api.Project;
 import org.gradle.api.artifacts.Dependency;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Pattern;
 
 public class Util {
@@ -69,27 +66,27 @@ public class Util {
 		return result;
 	}
 	
-	//Copypasta from ModDefGradle's MixinCompilerArgs private class
+	//Copypasta from ModDevGradle's MixinCompilerArgs private class
 	//but using java File objects instead of the fancy gradle stuff
-	public static List<String> legacyForgeMixinArgs(File inMappings, File outMappings, File refmap) {
-		return List.of(
+	public static void legacyForgeMixinArgs(List<String> args, File inMappings, File outMappings, File refmap) {
+		args.addAll(Arrays.asList(
 			"-AreobfTsrgFile=" + inMappings.getAbsolutePath(),
 			"-AoutTsrgFile=" + outMappings.getAbsolutePath(),
 			"-AoutRefMapFile=" + refmap.getAbsolutePath(),
 			"-AdefaultObfuscationEnv=searge",
 			"-AmappingTypes=tsrg",
 			"-ApluginVersion=0.9" //just for silencing a warning
-		);
+		));
 	}
 	
 	//https://github.com/FabricMC/fabric-loom/blob/c7accc60a49b086655305597d08b4df87317dce6/src/main/java/net/fabricmc/loom/build/mixin/AnnotationProcessorInvoker.java#L105-L111
 	//https://github.com/FabricMC/fabric-loom/blob/c7accc60a49b086655305597d08b4df87317dce6/src/main/java/net/fabricmc/loom/util/Constants.java#L98-L103
-	public static List<String> fabricMixinArgs(File inMappings, File outMappings, File refmap, String defaultObfuscationEnv) {
-		return List.of(
+	public static void fabricMixinArgs(List<String> args, File inMappings, File outMappings, File refmap, String defaultObfuscationEnv) {
+		args.addAll(Arrays.asList(
 			"-AinMapFileNamedIntermediary=" + inMappings.getAbsolutePath(),
 			"-AoutMapFileNamedIntermediary=" + outMappings.getAbsolutePath(),
 			"-AoutRefMapFile=" + refmap.getAbsolutePath(),
 			"-AdefaultObfuscationEnv=", "named:" + defaultObfuscationEnv
-		);
+		));
 	}
 }
