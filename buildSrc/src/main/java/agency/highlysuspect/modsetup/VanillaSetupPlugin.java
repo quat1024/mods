@@ -3,7 +3,6 @@ package agency.highlysuspect.modsetup;
 import agency.highlysuspect.minivan.MinivanExt;
 import agency.highlysuspect.minivan.MinivanPlugin;
 import agency.highlysuspect.minivan.prov.MinecraftProvider;
-import org.codehaus.groovy.runtime.StringGroovyMethods;
 import org.gradle.api.Action;
 import org.gradle.api.NamedDomainObjectContainer;
 import org.gradle.api.NamedDomainObjectProvider;
@@ -11,10 +10,8 @@ import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.ConfigurationContainer;
 import org.gradle.api.artifacts.ConsumableConfiguration;
-import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.artifacts.dsl.ArtifactHandler;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
-import org.gradle.api.artifacts.dsl.RepositoryHandler;
 import org.gradle.api.tasks.JavaExec;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.TaskContainer;
@@ -26,8 +23,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.nio.file.Path;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class VanillaSetupPlugin implements Plugin<Project> {
@@ -46,7 +41,7 @@ public class VanillaSetupPlugin implements Plugin<Project> {
 	}
 	
 	@SuppressWarnings("UnstableApiUsage")
-	public static class Ext extends AbstractSetupExtension {
+	public static class Ext extends Util {
 		public Ext(Project project) {
 			super(project);
 			this.mods = project.getObjects().domainObjectContainer(VanillaMod.class);
@@ -62,7 +57,7 @@ public class VanillaSetupPlugin implements Plugin<Project> {
 		public final VanillaMod quatlib;
 		
 		protected String modVersion(@NotNull String mod, @Nullable String version) {
-			return Util.snakeToCamel(mod) + (version == null ? "Any" : version.replace('.', '_'));
+			return snakeToCamel(mod) + (version == null ? "Any" : version.replace('.', '_'));
 		}
 		
 		protected TaskProvider<Jar> jarTask(String mod, @Nullable String version, SourceSet set) {
@@ -90,7 +85,6 @@ public class VanillaSetupPlugin implements Plugin<Project> {
 		public void doIt() {
 			TaskContainer tasks = project.getTasks();
 			DependencyHandler dependencies = project.getDependencies();
-			RepositoryHandler repositories = project.getRepositories();
 			ConfigurationContainer configurations = project.getConfigurations();
 			ArtifactHandler artifacts = project.getArtifacts();
 			
@@ -131,7 +125,7 @@ public class VanillaSetupPlugin implements Plugin<Project> {
 				//modSomethingVersionAny and such
 				mod.versionAgnosticSourceSet = makeSourceSetWithCommonDeps(modVersion(mod.modid, null));
 				//it should be compiled against the lowest java version used
-				setCompatLevel(mod.versionAgnosticSourceSet, mod.versions.stream().mapToInt(Util::compatLevelForMinecraft).min().orElse(8));
+				setCompatLevel(mod.versionAgnosticSourceSet, mod.versions.stream().mapToInt(minecraftVersion1 -> compatLevelForMinecraft(minecraftVersion1)).min().orElse(8));
 				
 				for(String minecraftVersion : mod.versions) {
 					project.getLogger().lifecycle("...for {}", minecraftVersion);
@@ -141,7 +135,7 @@ public class VanillaSetupPlugin implements Plugin<Project> {
 					//it can see the version-agnostic set
 					extendSourceSet2(modAndVersionSpecificSourceSet, mod.versionAgnosticSourceSet);
 					//it should be compiled against the java version used for this version
-					setCompatLevel(modAndVersionSpecificSourceSet, Util.compatLevelForMinecraft(minecraftVersion));
+					setCompatLevel(modAndVersionSpecificSourceSet, compatLevelForMinecraft(minecraftVersion));
 				}
 			}
 			//connect up quatlib
@@ -169,15 +163,15 @@ public class VanillaSetupPlugin implements Plugin<Project> {
 			/// PROCESS RESOURCES ///
 			project.getLogger().lifecycle("configuring processResources");
 			
-			Map<String, Object> totallyCommonProps = Util.broadlyApplicableProps(project);
+			Map<String, Object> totallyCommonProps = broadlyApplicableProps();
 			Map<String, Map<String, Object>> perVersionProps = new HashMap<>();
 			for(String mcVersion : versionsToMake)
 				perVersionProps.put(mcVersion, Map.of("minecraft_version", mcVersion));
 			
 			for(VanillaMod mod : mods) {
-				configureProcessResources(mod.versionAgnosticSourceSet, Util.plus(totallyCommonProps, mod.vars));
+				configureProcessResources(mod.versionAgnosticSourceSet, plus(totallyCommonProps, mod.vars));
 				mod.perVersionSourceSets.forEach((minecraftVersion, perVersionSourceSet) ->
-					configureProcessResources(perVersionSourceSet, Util.plus(totallyCommonProps, perVersionProps.get(minecraftVersion), mod.vars)));
+					configureProcessResources(perVersionSourceSet, plus(totallyCommonProps, perVersionProps.get(minecraftVersion), mod.vars)));
 			}
 			
 			/// JARS AND CONSUMABLE CONFIGURATIONS ///
@@ -228,17 +222,6 @@ public class VanillaSetupPlugin implements Plugin<Project> {
 		//grab the list of vanillamods
 		public NamedDomainObjectContainer<VanillaMod> getVanillaMods() {
 			return mods;
-		}
-		
-		//consumable configurations containing code for all mods
-		@Deprecated
-		public Dependency dependOnModAgnostic(@NotNull String minecraftVersion) {
-			return dependOnVersionAndModSpecific(quatlib, minecraftVersion);
-		}
-		
-		//consumable configurations containing code for this mod
-		public Dependency dependOnVersionAndModSpecific(VanillaMod mod, @NotNull String minecraftVersion) {
-			return depOnMyConfiguration(mod.getPerVersionElement(minecraftVersion));
 		}
 	}
 }

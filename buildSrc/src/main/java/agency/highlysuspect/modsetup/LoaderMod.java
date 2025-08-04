@@ -26,6 +26,8 @@ public class LoaderMod extends VanillaMod {
 		perVersionJars = new HashMap<>(base.perVersionJars);
 	}
 	
+	//TODO actually use this in the run configs / plug it into meta-inf
+	// wherever it's supposed to end up
 	List<String> legacyForgeMixinConfigs = new ArrayList<>();
 	
 	//"out params"
