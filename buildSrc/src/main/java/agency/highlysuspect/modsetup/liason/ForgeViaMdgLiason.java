@@ -126,6 +126,7 @@ public class ForgeViaMdgLiason extends MdgLiason<LegacyForgeExtension> implement
 	@Override
 	public void configureRefmapTask(TaskProvider<JavaCompile> task) {
 		//createMinecraftArtifacts is what populates the obf.getNamedToSrgMappings() file
+		//TODO: is this still needed now that i hang things off processResources
 		task.configure(it -> it.dependsOn("createMinecraftArtifacts"));
 	}
 }

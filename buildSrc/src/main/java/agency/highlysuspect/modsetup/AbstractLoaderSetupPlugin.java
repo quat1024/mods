@@ -1,6 +1,7 @@
 package agency.highlysuspect.modsetup;
 
 import agency.highlysuspect.modsetup.liason.*;
+import com.google.gson.*;
 import net.fabricmc.loom.LoomGradlePlugin;
 import net.neoforged.moddevgradle.boot.LegacyForgeModDevPlugin;
 import net.neoforged.moddevgradle.boot.ModDevPlugin;
@@ -12,6 +13,7 @@ import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ConfigurationContainer;
 import org.gradle.api.file.Directory;
 import org.gradle.api.file.DuplicatesStrategy;
+import org.gradle.api.logging.Logger;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
@@ -21,7 +23,9 @@ import org.gradle.api.tasks.compile.JavaCompile;
 import org.gradle.jvm.tasks.Jar;
 import org.gradle.language.jvm.tasks.ProcessResources;
 
-import java.io.File;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -256,8 +260,8 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 					for(RefmapJob rj : refmapJobs) {
 						rj.addAp(mixinAp);
 						
-						//must be lazy and not read until loom's afterEvaluate block b/c that's when
-						//it initalizes "loom.getMappingsFile()"
+						//must be lazy, this can't be read until loom's afterEvaluate block
+						//loom initalizes "loom.getMappingsFile()" in afterEvaluate
 						rj.mappingsIn.set(() -> {
 							File mappingsIn = refhelper.refmapGetMappingsIn();
 							project.getLogger().lifecycle("just called getMappingsIn and got {}", mappingsIn);
@@ -275,10 +279,20 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 						TaskProvider<JavaCompile> refmapGenTask = rj.makeTask(project);
 						refhelper.configureRefmapTask(refmapGenTask);
 						
-						//include refmap in jar
-						mod.depJar.configure(it -> {
+						tasks.named(mod.set.getProcessResourcesTaskName(), ProcessResources.class, it -> {
 							it.dependsOn(refmapGenTask);
+							
+							//include refmap in the jar's resources
 							it.from(rj.refmapOut);
+							
+							//amend the mixin json with a "refmap" field. just overwrite the mixin json from doLast.
+							//n.b. there's no path-math, just assumes refmap is in the root of the jar.
+							List<String> inputMixinJsons = rj.inputMixinJsons.get();
+							String refmapFilename = rj.refmapOut.getLocationOnly().get().getAsFile().getName();
+							it.doLast(t -> {
+								for(String mixinJson : inputMixinJsons)
+									amendMixinJson(t.getLogger(), new File(it.getDestinationDir(), mixinJson), refmapFilename);
+							});
 						});
 						
 						mod.refmapJobs.add(rj);
@@ -308,6 +322,33 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 			/// RUN CONFIGS ///
 			project.getLogger().lifecycle("setting up run configs");
 			liason.setupRuns();
+		}
+	}
+	
+	private static final Gson GSON = new GsonBuilder()
+		.disableHtmlEscaping()
+		.setFormattingStyle(FormattingStyle.PRETTY.withIndent("\t"))
+		.create();
+	
+	private static void amendMixinJson(Logger log, File mixinJsonFile, String refmapName) {
+		try {
+			if(mixinJsonFile.exists()) {
+				log.lifecycle("Amending mixin json at {} to contain refmap {}", mixinJsonFile, refmapName);
+				
+				JsonObject mixinJson;
+				try(InputStreamReader in = new InputStreamReader(new FileInputStream(mixinJsonFile))) {
+					mixinJson = GSON.fromJson(in, JsonObject.class);
+				}
+				
+				mixinJson.addProperty("refmap", refmapName);
+				
+				try(OutputStreamWriter out = new OutputStreamWriter(new FileOutputStream(mixinJsonFile), StandardCharsets.UTF_8)) {
+					out.append(GSON.toJson(mixinJson));
+					out.flush();
+				}
+			}
+		} catch (Exception e) {
+			throw new RuntimeException("Failed to amend mixin json at " + mixinJsonFile, e);
 		}
 	}
 }

@@ -16,7 +16,6 @@ documentation here got outdated. look in buildSrc or ask me
 
 Refmap problems:
 
-* The `"refmap"` key isn't automatically added to mixin jsons, would be nice to do
 * Not doing anything with the extra mappings yet, i didn't know what they were for. One place they might show up is when doing `@Shadow`.
   * This means refmapping has to come BEFORE remapping so the extra mapping files can be fed into the process
 
