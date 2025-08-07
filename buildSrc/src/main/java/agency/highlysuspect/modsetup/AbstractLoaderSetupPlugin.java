@@ -295,6 +295,9 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 							});
 						});
 						
+						//add the discovered mappings to remapping tasks
+						refhelper.addExtraMixinMapping(rj.mappingsOut);
+						
 						mod.refmapJobs.add(rj);
 					}
 				}

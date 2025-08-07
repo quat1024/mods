@@ -76,6 +76,7 @@ public abstract class Liason extends Util {
 		
 		File refmapGetMappingsIn();
 		List<String> refmapArgs(RegularFileProperty mappingsIn, RegularFileProperty mappingsOut, RegularFileProperty refmapOut);
+		void addExtraMixinMapping(RegularFileProperty mappingsOut);
 		void configureRefmapTask(TaskProvider<JavaCompile> task);
 	}
 }

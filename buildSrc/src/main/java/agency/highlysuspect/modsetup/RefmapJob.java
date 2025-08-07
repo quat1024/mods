@@ -14,6 +14,7 @@ import org.gradle.api.tasks.compile.JavaCompile;
 import org.jetbrains.annotations.NotNull;
 
 import javax.inject.Inject;
+import java.nio.file.Files;
 
 public abstract class RefmapJob implements Named {
 	@Inject
@@ -48,6 +49,11 @@ public abstract class RefmapJob implements Named {
 	public TaskProvider<JavaCompile> makeTask(Project project) {
 		//Nothing will be written here due to -proc:only, but Gradle requies you to pass a directory anyway.
 		Provider<Directory> tmpDir = project.getLayout().getBuildDirectory().dir("mixin2/work");
+		try {
+			Files.createDirectories(tmpDir.get().getAsFile().toPath());
+		} catch (Exception e) {
+			throw new RuntimeException("failed mkdirs", e);
+		}
 		
 		return task = project.getTasks().register("generateRefmaps" + StringGroovyMethods.capitalize(name), JavaCompile.class, it -> {
 			it.setSource(sources);
