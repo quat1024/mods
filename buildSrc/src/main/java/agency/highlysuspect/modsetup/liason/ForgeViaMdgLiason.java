@@ -92,8 +92,8 @@ public class ForgeViaMdgLiason extends MdgLiason<LegacyForgeExtension> implement
 	
 	@Override
 	public void remapMods() {
-		//the "obf.reobfuscate" function looks these configurations up by name, and they have to exist.
-		//TODO, can i avoid this headache by actually using these configuration names? lol
+		//the "obf.reobfuscate" function looks these configurations up by name and they have to exist.
+		//TODO, can i avoid this headache by actually using these configurations? lol
 		for(LoaderMod mod : mods) {
 			SourceSet set = mod.set;
 			
@@ -114,11 +114,11 @@ public class ForgeViaMdgLiason extends MdgLiason<LegacyForgeExtension> implement
 		
 		for(LoaderMod mod : mods) {
 			mod.depJarNamed = obf.reobfuscate(mod.depJar, mod.set, it -> {
-				it.getArchiveBaseName().set(mod.modid + "-" + ver + "-" + loader);
-				//forge is inheriting the classifier from the depJar task so remove the -dev suffix lol
+				//They inherit the classifier from ^ that task, remove it to avoid a -dev suffix lol
 				it.getArchiveClassifier().set("");
+				it.getArchiveBaseName().set(mod.modid + "-" + ver + "-" + loader);
 				
-				//add refmap mappingsout
+				//Add the mixin AP output to the list of mappings files to use
 				for(RefmapJob job : mod.refmapJobs) {
 					it.dependsOn(job.task);
 					it.mustRunAfter(job.task);

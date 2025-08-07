@@ -49,7 +49,7 @@ public class FabricLiason extends Liason implements Liason.RemapLiason, Liason.R
 		try {
 			Field mixinApExtensionField = LoomGradleExtensionImpl.class.getDeclaredField("mixinApExtension");
 			MixinExtension fake = project.getObjects().newInstance(FakeLoomMixinExtension.class, project);
-			NothingToSeeHere.stomp(loom, mixinApExtensionField, fake);
+			NothingToSeeHere.theFinalModifierIsAMereSuggestion(loom, mixinApExtensionField, fake);
 		} catch (Exception e) {
 			throw new RuntimeException("Can't nuke Loom mixin", e);
 		}
@@ -68,15 +68,14 @@ public class FabricLiason extends Liason implements Liason.RemapLiason, Liason.R
 	
 	@Override
 	public void refmapAddMixinAp(Configuration mixinAp) {
-		//this version adds ObfuscationServiceFabric which supports the "named:intermediary" obfuscation type
-		//also it depends on its own copy of the sponge mixin ap, so that gets pulled in.
+		//this AP has ObfuscationServiceFabric which supports the "named:intermediary" obfuscation type.
 		//It's available on the Fabric maven which is already added to repositories() by Loom.
 		withDeps(mixinAp, "net.fabricmc:fabric-mixin-compile-extensions:0.6.0");
 	}
 	
 	@Override
 	public File refmapGetMappingsIn() {
-		return loom.getMappingsFile(); //NOTE: Kabooms if this is called before fabric-loom afterEvaluate
+		return loom.getMappingsFile(); //NOTE: Kabooms if this is called before Loom afterEvaluate
 	}
 	
 	@Override
@@ -118,19 +117,14 @@ public class FabricLiason extends Liason implements Liason.RemapLiason, Liason.R
 					it.dependsOn(job.task);
 					it.getMixinApExtraMappings_QUAT().from(job.mappingsOut);
 				}
-			});
-		}
-		
-		LoaderMod quatlib = mods.getByName("modder_name_lib");
-		
-		for(LoaderMod mod : mods) {
-			if(mod.dependOnQuatlib) {
-				mod.depJarNamed.configure(it -> {
+				
+				if(mod.dependOnQuatlib) {
+					LoaderMod quatlib = mods.getByName("modder_name_lib");
 					it.dependsOn(quatlib.depJar);
 					//put quatlib devjar on the remap classpath so tiny-remapper can see into it
-					((RemapJarTask) it).getClasspath().from(quatlib.depJar.get().getArchiveFile());
-				});
-			}
+					it.getClasspath().from(quatlib.depJar.get().getArchiveFile());
+				}
+			});
 		}
 	}
 	

@@ -18,7 +18,7 @@ public class NothingToSeeHere {
 	}
 	
 	@SuppressWarnings("deprecation") //WORKS ON MY MACHINE
-	public static void stomp(Object inst, Field field, Object newValue) {
+	public static void theFinalModifierIsAMereSuggestion(Object inst, Field field, Object newValue) {
 		long off;
 		if(inst == null) {
 			inst = unsafe.staticFieldBase(field);

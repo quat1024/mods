@@ -19,7 +19,6 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.util.List;
 
-//TODO: rm AbstractSetupExtension, push methods down into here
 public abstract class Liason extends Util {
 	public Liason(Project project, String ver, NamedDomainObjectContainer<LoaderMod> mods) {
 		super(project);
