@@ -1,16 +1,17 @@
 package agency.highlysuspect.modsetup;
 
-import net.fabricmc.loom.extension.MixinExtension;
-import net.fabricmc.loom.extension.MixinExtensionApiImpl;
+import agency.highlysuspect.modsetup.liason.FabricLiason;
 import net.fabricmc.loom.extension.MixinExtensionImpl;
 import org.gradle.api.Project;
-import org.gradle.api.provider.Property;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.util.PatternSet;
 
 import javax.inject.Inject;
 
+/**
+ * @see FabricLiason#disableUnusedDefaultTasks()
+ */
 public class FakeLoomMixinExtension extends MixinExtensionImpl {
 	@Inject
 	public FakeLoomMixinExtension(Project project) {
