@@ -1,7 +1,7 @@
 package agency.highlysuspect.modsetup.liason;
 
-import agency.highlysuspect.modsetup.Util;
 import agency.highlysuspect.modsetup.LoaderMod;
+import agency.highlysuspect.modsetup.Util;
 import org.gradle.api.NamedDomainObjectContainer;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;

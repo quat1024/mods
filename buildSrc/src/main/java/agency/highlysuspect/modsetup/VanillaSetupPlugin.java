@@ -3,11 +3,7 @@ package agency.highlysuspect.modsetup;
 import agency.highlysuspect.minivan.MinivanExt;
 import agency.highlysuspect.minivan.MinivanPlugin;
 import agency.highlysuspect.minivan.prov.MinecraftProvider;
-import org.gradle.api.Action;
-import org.gradle.api.NamedDomainObjectContainer;
-import org.gradle.api.NamedDomainObjectProvider;
-import org.gradle.api.Plugin;
-import org.gradle.api.Project;
+import org.gradle.api.*;
 import org.gradle.api.artifacts.ConfigurationContainer;
 import org.gradle.api.artifacts.ConsumableConfiguration;
 import org.gradle.api.artifacts.dsl.ArtifactHandler;
@@ -22,7 +18,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.nio.file.Path;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 public class VanillaSetupPlugin implements Plugin<Project> {

@@ -4,10 +4,6 @@ import agency.highlysuspect.modsetup.LoaderMod;
 import net.neoforged.moddevgradle.dsl.NeoForgeExtension;
 import org.gradle.api.NamedDomainObjectContainer;
 import org.gradle.api.Project;
-import org.gradle.api.tasks.SourceSet;
-import org.gradle.api.tasks.bundling.AbstractArchiveTask;
-
-import java.util.function.Consumer;
 
 public class NeoforgeLiason extends MdgLiason<NeoForgeExtension> {
 	public NeoforgeLiason(Project project, String ver, NamedDomainObjectContainer<LoaderMod> mods) {
