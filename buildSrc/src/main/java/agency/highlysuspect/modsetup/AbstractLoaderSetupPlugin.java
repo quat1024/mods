@@ -1,7 +1,13 @@
 package agency.highlysuspect.modsetup;
 
-import agency.highlysuspect.modsetup.liason.*;
-import com.google.gson.*;
+import agency.highlysuspect.modsetup.liason.FabricLiason;
+import agency.highlysuspect.modsetup.liason.ForgeViaMdgLiason;
+import agency.highlysuspect.modsetup.liason.Liason;
+import agency.highlysuspect.modsetup.liason.NeoforgeLiason;
+import com.google.gson.FormattingStyle;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
 import net.fabricmc.loom.LoomGradlePlugin;
 import net.neoforged.moddevgradle.boot.LegacyForgeModDevPlugin;
 import net.neoforged.moddevgradle.boot.ModDevPlugin;
@@ -25,7 +31,6 @@ import org.gradle.language.jvm.tasks.ProcessResources;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -119,10 +124,9 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 			
 			//liason
 			this.liason = plugin.createLiason(project, ver, mods);
+			this.loader = liason.loader;
 			Liason.RefmapLiason refmapHelper = liason.getRefmapLiason();
 			Liason.RemapLiason remapHelper = liason.getRemapLiason();
-			
-			this.loader = liason.getLoaderIdentifier();
 			
 			LoaderMod quatlib = mods.create("modder_name_lib", it -> {
 				it.vars.put("name", "ModderNameLib");

@@ -1,6 +1,5 @@
 package agency.highlysuspect.modsetup;
 
-import net.fabricmc.loom.task.RemapJarTask;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.TaskProvider;

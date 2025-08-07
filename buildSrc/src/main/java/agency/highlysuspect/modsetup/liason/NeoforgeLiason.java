@@ -8,17 +8,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class NeoforgeLiason extends MdgLiason<NeoForgeExtension> {
 	public NeoforgeLiason(Project project, String ver, NamedDomainObjectContainer<LoaderMod> mods) {
-		super(project, ver, mods);
-	}
-	
-	@Override
-	public String getLoaderIdentifier() {
-		return "neoforge";
-	}
-	
-	@Override
-	protected Class<NeoForgeExtension> extClass() {
-		return NeoForgeExtension.class;
+		super(project, ver, "neoforge", mods, NeoForgeExtension.class);
 	}
 	
 	@Override

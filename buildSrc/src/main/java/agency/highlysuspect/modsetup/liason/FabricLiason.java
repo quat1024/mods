@@ -23,27 +23,22 @@ import java.util.List;
 
 public class FabricLiason extends Liason implements Liason.RemapLiason, Liason.RefmapLiason {
 	public FabricLiason(Project project, String ver, NamedDomainObjectContainer<LoaderMod> mods) {
-		super(project, ver, mods);
-		this.loom = extensions.getByType(LoomGradleExtensionAPI.class);
+		super(project, ver, "fabric", mods);
+		this.loom = project.getExtensions().getByType(LoomGradleExtensionAPI.class);
 	}
 	
 	protected final LoomGradleExtensionAPI loom;
 	
 	@Override
-	public String getLoaderIdentifier() {
-		return "fabric";
-	}
-	
-	@Override
 	public void setupOfficialNames() {
-		dependencies.add("minecraft", "com.mojang:minecraft:" + ver);
-		dependencies.add("mappings", loom.officialMojangMappings());
+		project.getDependencies().add("minecraft", "com.mojang:minecraft:" + ver);
+		project.getDependencies().add("mappings", loom.officialMojangMappings());
 	}
 	
 	@Override
 	public void disableUnusedDefaultTasks() {
 		//we don't use the "jar" task, so disable this task too
-		tasks.named("remapJar", it -> it.setEnabled(false));
+		project.getTasks().named("remapJar", it -> it.setEnabled(false));
 		
 		//Orbital nuke Loom's builtin refmap handling since there's no way to turn it off
 		try {
@@ -108,7 +103,7 @@ public class FabricLiason extends Liason implements Liason.RemapLiason, Liason.R
 	public void remapMods() {
 		//make all the remap tasks
 		for(LoaderMod mod : mods) {
-			mod.depJarNamed = tasks.register(mod.depJar.getName() + "Named", RemapJarTaskWithExtraMixinMappings.class, it -> {
+			mod.depJarNamed = project.getTasks().register(mod.depJar.getName() + "Named", RemapJarTaskWithExtraMixinMappings.class, it -> {
 				it.dependsOn(mod.depJar);
 				it.getArchiveBaseName().set(mod.modid + "-" + ver + "-" + loader);
 				it.getInputFile().set(mod.depJar.flatMap(AbstractArchiveTask::getArchiveFile));
@@ -152,7 +147,7 @@ public class FabricLiason extends Liason implements Liason.RemapLiason, Liason.R
 		client.setIdeConfigGenerated(true);
 		
 		//put all mods on the runtime classpath
-		tasks.withType(AbstractRunTask.class).configureEach(it -> {
+		project.getTasks().withType(AbstractRunTask.class).configureEach(it -> {
 			for(LoaderMod mod : mods) {
 				it.classpath(mod.set.getRuntimeClasspath());
 			}

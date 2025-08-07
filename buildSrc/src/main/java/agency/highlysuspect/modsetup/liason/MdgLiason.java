@@ -7,14 +7,12 @@ import org.gradle.api.Project;
 import org.gradle.api.tasks.SourceSet;
 
 public abstract class MdgLiason<EXT extends ModDevExtension> extends Liason {
-	public MdgLiason(Project project, String ver, NamedDomainObjectContainer<LoaderMod> mods) {
-		super(project, ver, mods);
-		ext = extensions.getByType(extClass());
+	public MdgLiason(Project project, String ver, String loader, NamedDomainObjectContainer<LoaderMod> mods, Class<EXT> extClass) {
+		super(project, ver, loader, mods);
+		ext = project.getExtensions().getByType(extClass);
 	}
 	
 	protected final EXT ext;
-	
-	protected abstract Class<EXT> extClass();
 	
 	@Override
 	public void setupOfficialNames() {

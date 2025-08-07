@@ -19,25 +19,15 @@ import java.util.List;
 
 public class ForgeViaMdgLiason extends MdgLiason<LegacyForgeExtension> implements Liason.RemapLiason, Liason.RefmapLiason {
 	public ForgeViaMdgLiason(Project project, String ver, NamedDomainObjectContainer<LoaderMod> mods) {
-		super(project, ver, mods);
-		this.obf = extensions.getByType(ObfuscationExtension.class);
+		super(project, ver, "forge", mods, LegacyForgeExtension.class);
+		this.obf = project.getExtensions().getByType(ObfuscationExtension.class);
 	}
 	
 	protected final ObfuscationExtension obf;
 	
 	@Override
-	public String getLoaderIdentifier() {
-		return "forge";
-	}
-	
-	@Override
-	protected Class<LegacyForgeExtension> extClass() {
-		return LegacyForgeExtension.class;
-	}
-	
-	@Override
 	public void disableUnusedDefaultTasks() {
-		tasks.named("reobfJar", it -> it.setEnabled(false));
+		project.getTasks().named("reobfJar", it -> it.setEnabled(false));
 	}
 	
 	/// REFMAPS ///
@@ -85,7 +75,7 @@ public class ForgeViaMdgLiason extends MdgLiason<LegacyForgeExtension> implement
 	
 	@Override
 	public void createIncomingRemapConfigurations(LoaderMod mod) {
-		Configuration remappedIn = configurations.resolvable(snakeToCamel(mod.modid) + "Implementation").get();
+		Configuration remappedIn = project.getConfigurations().resolvable(snakeToCamel(mod.modid) + "Implementation").get();
 		withImplementation(mod.set, remappedIn);
 		obf.createRemappingConfiguration(remappedIn);
 	}
@@ -97,8 +87,8 @@ public class ForgeViaMdgLiason extends MdgLiason<LegacyForgeExtension> implement
 		for(LoaderMod mod : mods) {
 			SourceSet set = mod.set;
 			
-			Configuration runtimeElements = configurations.maybeCreate(set.getRuntimeElementsConfigurationName());
-			Configuration apiElements = configurations.maybeCreate(set.getApiElementsConfigurationName());
+			Configuration runtimeElements = project.getConfigurations().maybeCreate(set.getRuntimeElementsConfigurationName());
+			Configuration apiElements = project.getConfigurations().maybeCreate(set.getApiElementsConfigurationName());
 			withDeps(runtimeElements, set.getOutput());
 			withDeps(apiElements, set.getOutput());
 			
