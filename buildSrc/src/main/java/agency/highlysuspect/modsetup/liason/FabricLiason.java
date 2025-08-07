@@ -1,8 +1,6 @@
 package agency.highlysuspect.modsetup.liason;
 
-import agency.highlysuspect.modsetup.FakeLoomMixinExtension;
-import agency.highlysuspect.modsetup.LoaderMod;
-import agency.highlysuspect.modsetup.NothingToSeeHere;
+import agency.highlysuspect.modsetup.*;
 import net.fabricmc.loom.api.LoomGradleExtensionAPI;
 import net.fabricmc.loom.configuration.ide.RunConfigSettings;
 import net.fabricmc.loom.extension.LoomGradleExtensionImpl;
@@ -10,15 +8,10 @@ import net.fabricmc.loom.extension.MixinExtension;
 import net.fabricmc.loom.task.AbstractRunTask;
 import net.fabricmc.loom.task.RemapJarTask;
 import net.fabricmc.loom.task.service.MappingsService;
-import net.fabricmc.loom.task.service.MixinAPMappingService;
-import net.fabricmc.loom.task.service.TinyRemapperService;
 import org.gradle.api.NamedDomainObjectContainer;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.file.RegularFileProperty;
-import org.gradle.api.internal.provider.DefaultProperty;
-import org.gradle.api.logging.Logger;
-import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.bundling.AbstractArchiveTask;
@@ -26,7 +19,6 @@ import org.gradle.api.tasks.compile.JavaCompile;
 
 import java.io.File;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -84,10 +76,15 @@ public class FabricLiason extends Liason implements Liason.RemapLiason, Liason.R
 	public void remapMods() {
 		//make all the remap tasks
 		for(LoaderMod mod : mods) {
-			mod.depJarNamed = tasks.register(mod.depJar.getName() + "Named", RemapJarTask.class, it -> {
+			mod.depJarNamed = tasks.register(mod.depJar.getName() + "Named", RemapJarTaskWithExtraMixinMappings.class, it -> {
 				it.dependsOn(mod.depJar);
 				it.getArchiveBaseName().set(mod.modid + "-" + ver + "-" + loader);
 				it.getInputFile().set(mod.depJar.flatMap(AbstractArchiveTask::getArchiveFile));
+				
+				for(RefmapJob job : mod.refmapJobs) {
+					it.dependsOn(job.task);
+					it.getMixinApExtraMappings_QUAT().from(job.mappingsOut);
+				}
 			});
 			tasks.named("jar", it -> it.dependsOn(mod.depJarNamed));
 		}
@@ -147,23 +144,6 @@ public class FabricLiason extends Liason implements Liason.RemapLiason, Liason.R
 			"-AoutRefMapFile=" + refmapOut.get().getAsFile().getAbsolutePath(),
 			"-AdefaultObfuscationEnv=named:intermediary"
 		);
-	}
-	
-	@Override
-	public void addExtraMixinMapping(RegularFileProperty mappingsOut) {
-//		Logger l = project.getLogger();
-//		project.afterEvaluate(__ -> {
-//			tasks.withType(RemapJarTask.class).configureEach(it -> {
-//				l.lifecycle("dffff GOT RemapJarTask name {}", it.getName());
-//				TinyRemapperService.Options remapperOptions = it.getTinyRemapperServiceOptions().get();
-//				remapperOptions.getMappings().add(
-//					MappingsService.TYPE.create(project, aaa -> {
-//						l.lifecycle("dffffffffffff ADDING {}", mappingsOut);
-//						aaa.getMappingsFile().set(mappingsOut);
-//					})
-//				);
-//			});
-//		});
 	}
 	
 	@Override

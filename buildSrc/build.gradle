@@ -17,7 +17,7 @@ repositories {
 
 dependencies {
 	// https://maven.fabricmc.net/fabric-loom/fabric-loom.gradle.plugin/
-	implementation "fabric-loom:fabric-loom.gradle.plugin:1.10.5"
+	implementation "fabric-loom:fabric-loom.gradle.plugin:1.11.5"
 	
 	// https://projects.neoforged.net/neoforged/ModDevGradle
 	def mdgVersion = "2.0.95"

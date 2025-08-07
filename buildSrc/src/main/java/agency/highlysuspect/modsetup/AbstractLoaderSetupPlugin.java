@@ -206,6 +206,7 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 				project.getLogger().lifecycle("preparing refmaps");
 				
 				Provider<Directory> scratchDir2 = project.getLayout().getBuildDirectory().dir("mixin2");
+				scratchDir2.get().getAsFile().mkdirs();
 				
 				//the annotation processor used to generate refmaps
 				Configuration mixinAp = configurations.maybeCreate("mixinAp");
@@ -294,9 +295,6 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 									amendMixinJson(t.getLogger(), new File(it.getDestinationDir(), mixinJson), refmapFilename);
 							});
 						});
-						
-						//add the discovered mappings to remapping tasks
-						refhelper.addExtraMixinMapping(rj.mappingsOut);
 						
 						mod.refmapJobs.add(rj);
 					}

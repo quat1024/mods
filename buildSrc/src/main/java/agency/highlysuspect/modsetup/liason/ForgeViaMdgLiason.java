@@ -102,14 +102,16 @@ public class ForgeViaMdgLiason extends MdgLiason<LegacyForgeExtension> implement
 				it.getArchiveBaseName().set(mod.modid + "-" + ver + "-" + loader);
 				//forge is inheriting the classifier from the depJar task so remove the -dev suffix lol
 				it.getArchiveClassifier().set("");
+				
+				//add refmap mappingsout
+				for(RefmapJob job : mod.refmapJobs) {
+					it.dependsOn(job.task);
+					it.mustRunAfter(job.task);
+					it.getRemapOperation().getMappings().from(job.mappingsOut);
+				}
 			});
 			//hang off vanilla task
 			tasks.named("jar").configure(it -> it.dependsOn(mod.depJarNamed));
-			
-			//make sure ALL the relevant refmapping tasks are done first (kind of a hack!!!!!)
-			for(LoaderMod otherMod : mods)
-				for(RefmapJob job : otherMod.refmapJobs)
-					mod.depJarNamed.configure(it -> it.mustRunAfter(job.task));
 		}
 	}
 	
@@ -143,19 +145,6 @@ public class ForgeViaMdgLiason extends MdgLiason<LegacyForgeExtension> implement
 			"-AmappingTypes=tsrg",
 			"-ApluginVersion=0.9" //just for silencing a warning(?)
 		);
-	}
-	
-	@Override
-	public void addExtraMixinMapping(RegularFileProperty mappingsOut) {
-		extraMixinMappings.from(mappingsOut);
-//		try {
-//			FileCollection f = (FileCollection) extraMixinMappingsField.get(obf);
-//			FileCollection amended = f.plus(project.files(mappingsOut));
-//			NothingToSeeHere.stomp(obf, extraMixinMappingsField, amended);
-//
-//		} catch (Exception e) {
-//			throw new RuntimeException("aawaga", e);
-//		}
 	}
 	
 	@Override
