@@ -3,13 +3,15 @@ package agency.highlysuspect.modsetup.liason;
 import agency.highlysuspect.modsetup.LoaderMod;
 import net.neoforged.moddevgradle.legacyforge.dsl.LegacyForgeExtension;
 import net.neoforged.moddevgradle.legacyforge.dsl.ObfuscationExtension;
+import net.neoforged.moddevgradle.legacyforge.tasks.RemapJar;
 import org.gradle.api.NamedDomainObjectContainer;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.component.AdhocComponentWithVariants;
 import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.tasks.SourceSet;
-import org.gradle.api.tasks.bundling.AbstractArchiveTask;
+import org.gradle.api.tasks.TaskProvider;
+import org.gradle.api.tasks.compile.JavaCompile;
 
 import java.io.File;
 import java.util.List;
@@ -45,8 +47,15 @@ public class ForgeViaMdgLiason extends MdgLiason<LegacyForgeExtension> implement
 	}
 	
 	@Override
-	public void createIncomingRemapConfigurations(SourceSet set) {
-		//TODO? (stuff like "modXxxxxImplementation")
+	public void createIncomingRemapConfigurations(LoaderMod mod) {
+		//creates 'modidImplementation' which will contain modid's deps remapped
+		Configuration remappedIn = configurations.resolvable(snakeToCamel(mod.modid) + "Implementation").get();
+		
+		//put this configuration on the compile classpath of the regular source set (?)
+		withImplementation(mod.set, remappedIn);
+		
+		//tell mdg to create modModidImplementation and remap its contents into regular modidImplementation
+		obf.createRemappingConfiguration(remappedIn);
 	}
 	
 	@Override
@@ -72,15 +81,14 @@ public class ForgeViaMdgLiason extends MdgLiason<LegacyForgeExtension> implement
 		
 		//reobf jar tasks
 		for(LoaderMod mod : mods) {
-			obf.reobfuscate(mod.depJar, mod.set, it -> {
+			TaskProvider<RemapJar> reobfTask = obf.reobfuscate(mod.depJar, mod.set, it -> {
 				it.getArchiveBaseName().set(mod.modid + "-" + ver + "-" + loader);
+				//forge is inheriting the classifier from the depJar task so remove the -dev suffix lol
+				it.getArchiveClassifier().set("");
 			});
+			//hang off vanilla task
+			tasks.named("jar").configure(it -> it.dependsOn(reobfTask));
 		}
-	}
-	
-	@Override
-	public void producesUnobfuscatedResults(AbstractArchiveTask task) {
-		//TODO? (put in a devlibs folder like fabric)
 	}
 	
 	/// REFMAPS ///
@@ -113,5 +121,11 @@ public class ForgeViaMdgLiason extends MdgLiason<LegacyForgeExtension> implement
 			"-AmappingTypes=tsrg",
 			"-ApluginVersion=0.9" //just for silencing a warning(?)
 		);
+	}
+	
+	@Override
+	public void configureRefmapTask(TaskProvider<JavaCompile> task) {
+		//createMinecraftArtifacts is what populates the obf.getNamedToSrgMappings() file
+		task.configure(it -> it.dependsOn("createMinecraftArtifacts"));
 	}
 }

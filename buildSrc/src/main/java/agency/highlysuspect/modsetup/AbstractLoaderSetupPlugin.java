@@ -1,9 +1,6 @@
 package agency.highlysuspect.modsetup;
 
-import agency.highlysuspect.modsetup.liason.FabricLiason;
-import agency.highlysuspect.modsetup.liason.ForgeViaMdgLiason;
-import agency.highlysuspect.modsetup.liason.Liason;
-import agency.highlysuspect.modsetup.liason.NeoforgeLiason;
+import agency.highlysuspect.modsetup.liason.*;
 import net.fabricmc.loom.LoomGradlePlugin;
 import net.neoforged.moddevgradle.boot.LegacyForgeModDevPlugin;
 import net.neoforged.moddevgradle.boot.ModDevPlugin;
@@ -160,6 +157,10 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 			}
 			liason.addFloaderOnlyDep(quatlib.set);
 			
+			liason.remaps(remaphelper -> {
+				for(LoaderMod mod : mods) remaphelper.createIncomingRemapConfigurations(mod);
+			});
+			
 			/// PROCESS RESOURCES ///
 			project.getLogger().lifecycle("configuring processResources");
 			Map<String, Object> allVars = plus(broadlyApplicableProps(), Map.of(
@@ -196,21 +197,6 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 				tasks.named("jar", it -> it.dependsOn(mod.depJar));
 			}
 			
-			/// REMAPPED JARS ///
-			liason.remaps(remhelper -> {
-				project.getLogger().lifecycle("preparing remapped jars");
-				
-				for(LoaderMod mod : mods) {
-					//stuff like modXxxxxImplementation
-					remhelper.createIncomingRemapConfigurations(mod.set);
-					
-					//put the regular jar task in devlibs
-					mod.depJar.configure(remhelper::producesUnobfuscatedResults);
-				}
-				
-				remhelper.remapMods();
-			});
-			
 			/// REFMAPS ///
 			liason.refmaps(refhelper -> {
 				project.getLogger().lifecycle("preparing refmaps");
@@ -231,10 +217,11 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 					String loaderMixinsJsonName = mod.modid + "." + liason.loader + ".mixins.json";
 					String loaderRefmapJsonName = mod.modid + "." + liason.loader + ".refmap.json";
 					
+					RefmapJob loaderRefmap = null;
 					if(Util.hasResource(mod.set, loaderMixinsJsonName)) {
 						project.getLogger().lifecycle("Found mixin json {} in {}", loaderMixinsJsonName, mod.modid);
 						
-						RefmapJob loaderRefmap = project.getObjects().newInstance(RefmapJob.class, mod.modid + "." + liason.loader);
+						loaderRefmap = project.getObjects().newInstance(RefmapJob.class, mod.modid + "." + liason.loader);
 						loaderRefmap.addSources(mod.set.getAllSource());
 						loaderRefmap.addClasspath(mod.set.getCompileClasspath()
 							.plus(mod.perVersionSourceSets.get(ver).getCompileClasspath())
@@ -250,10 +237,11 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 					String vanillaMixinsJsonName = mod.modid + ".mixins.json";
 					String vanillaRefmapJsonName = mod.modid + ".refmap.json";
 					
+					RefmapJob vanillaRefmap = null;
 					if(Util.hasResource(mod.perVersionSourceSets.get(ver), vanillaMixinsJsonName)) {
 						project.getLogger().lifecycle("Found mixin json {} in {} (vanilla project)", vanillaMixinsJsonName, mod.modid);
 						
-						RefmapJob vanillaRefmap = project.getObjects().newInstance(RefmapJob.class, mod.modid);
+						vanillaRefmap = project.getObjects().newInstance(RefmapJob.class, mod.modid);
 						vanillaRefmap.addSources(mod.perVersionSourceSets.get(ver).getAllSource());
 						vanillaRefmap.addClasspath(mod.perVersionSourceSets.get(ver).getCompileClasspath()
 							.plus(mod.versionAgnosticSourceSet.getCompileClasspath()));
@@ -285,15 +273,33 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 						});
 						
 						TaskProvider<JavaCompile> refmapGenTask = rj.makeTask(project);
+						refhelper.configureRefmapTask(refmapGenTask);
 						
 						//include refmap in jar
-						//TODO: wrong! refmapping needs to happen before remapping, not the other way around!
 						mod.depJar.configure(it -> {
 							it.dependsOn(refmapGenTask);
 							it.from(rj.refmapOut);
 						});
+						
+						mod.refmapJobs.add(rj);
 					}
 				}
+			});
+			
+			/// REMAPPED JARS ///
+			liason.remaps(remhelper -> {
+				project.getLogger().lifecycle("preparing remapped jars");
+				
+				for(LoaderMod mod : mods) {
+					//move the devjar out of the way
+					Provider<Directory> devlibs = project.getLayout().getBuildDirectory().dir("devlibs");
+					mod.depJar.configure(it -> {
+						it.getArchiveClassifier().set("dev");
+						it.getDestinationDirectory().set(devlibs);
+					});
+				}
+				
+				remhelper.remapMods();
 			});
 			
 			/// JIJ ///

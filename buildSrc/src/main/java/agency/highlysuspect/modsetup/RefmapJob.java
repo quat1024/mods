@@ -23,18 +23,20 @@ public abstract class RefmapJob implements Named {
 	
 	public final String name;
 	
-	ListProperty<String> inputMixinJsons = getObjects().listProperty(String.class);
+	public ListProperty<String> inputMixinJsons = getObjects().listProperty(String.class);
 	
-	FileCollection sources = getObjects().fileCollection();
-	FileCollection classpath = getObjects().fileCollection();
-	FileCollection apPath = getObjects().fileCollection();
+	public FileCollection sources = getObjects().fileCollection();
+	public FileCollection classpath = getObjects().fileCollection();
+	public FileCollection apPath = getObjects().fileCollection();
 	
-	RegularFileProperty mappingsIn = getObjects().fileProperty();
-	RegularFileProperty refmapOut = getObjects().fileProperty();
-	RegularFileProperty mappingsOut = getObjects().fileProperty();
+	public RegularFileProperty mappingsIn = getObjects().fileProperty();
+	public RegularFileProperty refmapOut = getObjects().fileProperty();
+	public RegularFileProperty mappingsOut = getObjects().fileProperty();
 	
 	//todo: compute from mappingsIn, refmapOut, mappingsOut, and a loader enum instead?
-	ListProperty<String> args = getObjects().listProperty(String.class);
+	public ListProperty<String> args = getObjects().listProperty(String.class);
+	
+	public TaskProvider<JavaCompile> task;
 	
 	{
 		mappingsIn.finalizeValueOnRead();
@@ -47,7 +49,7 @@ public abstract class RefmapJob implements Named {
 		//Nothing will be written here due to -proc:only, but Gradle requies you to pass a directory anyway.
 		Provider<Directory> tmpDir = project.getLayout().getBuildDirectory().dir("mixin2/work");
 		
-		return project.getTasks().register("generateRefmaps" + StringGroovyMethods.capitalize(name), JavaCompile.class, it -> {
+		return task = project.getTasks().register("generateRefmaps" + StringGroovyMethods.capitalize(name), JavaCompile.class, it -> {
 			it.setSource(sources);
 			it.setClasspath(classpath);
 			it.getOptions().setAnnotationProcessorPath(apPath);

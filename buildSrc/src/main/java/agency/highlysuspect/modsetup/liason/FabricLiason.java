@@ -13,10 +13,11 @@ import org.gradle.api.NamedDomainObjectContainer;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.file.RegularFileProperty;
+import org.gradle.api.logging.Logger;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.bundling.AbstractArchiveTask;
-import org.gradle.jvm.tasks.Jar;
+import org.gradle.api.tasks.compile.JavaCompile;
 
 import java.io.File;
 import java.lang.reflect.Field;
@@ -69,43 +70,33 @@ public class FabricLiason extends Liason implements Liason.RemapLiason, Liason.R
 	}
 	
 	@Override
-	public void createIncomingRemapConfigurations(SourceSet set) {
-		loom.createRemapConfigurations(set);
+	public void createIncomingRemapConfigurations(LoaderMod mod) {
+		loom.createRemapConfigurations(mod.set);
 	}
 	
 	@Override
 	public void remapMods() {
 		//make all the remap tasks
 		for(LoaderMod mod : mods) {
-			mod.depJarNamedLoom = tasks.register(mod.depJar.getName() + "Named", RemapJarTask.class, it -> {
+			mod.depJarNamed = tasks.register(mod.depJar.getName() + "Named", RemapJarTask.class, it -> {
 				it.dependsOn(mod.depJar);
 				it.getArchiveBaseName().set(mod.modid + "-" + ver + "-" + loader);
 				it.getInputFile().set(mod.depJar.flatMap(AbstractArchiveTask::getArchiveFile));
 			});
-			tasks.named("jar", it -> it.dependsOn(mod.depJarNamedLoom));
+			tasks.named("jar", it -> it.dependsOn(mod.depJarNamed));
 		}
 		
 		LoaderMod quatlib = mods.getByName("modder_name_lib");
 		
 		for(LoaderMod mod : mods) {
-			if(mod != quatlib && mod.dependOnQuatlib) {
-				mod.depJarNamedLoom.configure(it -> {
+			if(mod.dependOnQuatlib) {
+				mod.depJarNamed.configure(it -> {
 					it.dependsOn(quatlib.depJar);
 					//put quatlib devjar on the remap classpath so tiny-remapper can see into it
-					//TODO: is this still needed?
-					it.getClasspath().from(quatlib.depJar.get().getArchiveFile());
+					((RemapJarTask) it).getClasspath().from(quatlib.depJar.get().getArchiveFile());
 				});
 			}
 		}
-	}
-	
-	@Override
-	public void producesUnobfuscatedResults(AbstractArchiveTask task) {
-		//loom changes `jar`'s dest dir to ./build/devlibs, and uses a separate RemapJarTask to create
-		//the jar in ./build/libs
-		TaskProvider<Jar> mainJarTask = project.getTasks().named("jar", Jar.class);
-		task.getDestinationDirectory().set(mainJarTask.flatMap(AbstractArchiveTask::getDestinationDirectory));
-		task.getArchiveClassifier().set("dev");
 	}
 	
 	@Override
@@ -113,13 +104,13 @@ public class FabricLiason extends Liason implements Liason.RemapLiason, Liason.R
 		LoaderMod quatlib = mods.getByName("modder_name_lib");
 		
 		for(LoaderMod mod : mods) {
-			if(mod != quatlib && mod.dependOnQuatlib) {
-				mod.depJarNamedLoom.configure(it -> {
+			if(mod != quatlib && mod.dependOnQuatlib && mod.depJarNamed != null) {
+				mod.depJarNamed.configure(it -> {
 					//for some reason you can JiJ stuff from RemapJarTask?
 					//not sure what that has to do with remapping but ok :thumbs_up: sure
-					it.dependsOn(quatlib.depJarNamedLoom);
-					it.getNestedJars().from(quatlib.depJarNamedLoom.get().getArchiveFile());
-					it.getAddNestedDependencies().set(true);
+					it.dependsOn(quatlib.depJarNamed);
+					((RemapJarTask) it).getNestedJars().from(((RemapJarTask) quatlib.depJarNamed.get()).getArchiveFile());
+					((RemapJarTask) it).getAddNestedDependencies().set(true);
 				});
 			}
 		}
@@ -150,6 +141,11 @@ public class FabricLiason extends Liason implements Liason.RemapLiason, Liason.R
 			"-AoutRefMapFile=" + refmapOut.get().getAsFile().getAbsolutePath(),
 			"-AdefaultObfuscationEnv=named:intermediary"
 		);
+	}
+	
+	@Override
+	public void configureRefmapTask(TaskProvider<JavaCompile> task) {
+		//nothing else to do
 	}
 	
 	@Override

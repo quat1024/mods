@@ -12,7 +12,8 @@ import org.gradle.api.plugins.ExtensionContainer;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.api.tasks.TaskContainer;
-import org.gradle.api.tasks.bundling.AbstractArchiveTask;
+import org.gradle.api.tasks.TaskProvider;
+import org.gradle.api.tasks.compile.JavaCompile;
 
 import java.io.File;
 import java.util.List;
@@ -61,9 +62,8 @@ public abstract class Liason extends Util {
 	}
 	
 	public interface RemapLiason {
-		void createIncomingRemapConfigurations(SourceSet set);
+		void createIncomingRemapConfigurations(LoaderMod mod);
 		void remapMods();
-		void producesUnobfuscatedResults(AbstractArchiveTask task);
 	}
 	
 	//refmaps
@@ -76,5 +76,6 @@ public abstract class Liason extends Util {
 		
 		File refmapGetMappingsIn();
 		List<String> refmapArgs(RegularFileProperty mappingsIn, RegularFileProperty mappingsOut, RegularFileProperty refmapOut);
+		void configureRefmapTask(TaskProvider<JavaCompile> task);
 	}
 }
