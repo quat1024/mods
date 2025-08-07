@@ -14,10 +14,10 @@ import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.api.tasks.TaskContainer;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.compile.JavaCompile;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.List;
-import java.util.function.Consumer;
 
 //TODO: rm AbstractSetupExtension, push methods down into here
 public abstract class Liason extends Util {
@@ -56,19 +56,12 @@ public abstract class Liason extends Util {
 	public abstract void addFloaderOnlyDep(SourceSet quatlib);
 	public abstract void setupRuns();
 	
-	//remaps
-	public void remaps(Consumer<RemapLiason> remaps) {
-		//no-op by default
-	}
+	public abstract @Nullable RefmapLiason getRefmapLiason();
+	public abstract @Nullable RemapLiason getRemapLiason();
 	
 	public interface RemapLiason {
 		void createIncomingRemapConfigurations(LoaderMod mod);
 		void remapMods();
-	}
-	
-	//refmaps
-	public void refmaps(Consumer<RefmapLiason> refmaps) {
-		//no-op by default
 	}
 	
 	public interface RefmapLiason {

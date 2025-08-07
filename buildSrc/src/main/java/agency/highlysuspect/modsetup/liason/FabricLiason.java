@@ -7,7 +7,6 @@ import net.fabricmc.loom.extension.LoomGradleExtensionImpl;
 import net.fabricmc.loom.extension.MixinExtension;
 import net.fabricmc.loom.task.AbstractRunTask;
 import net.fabricmc.loom.task.RemapJarTask;
-import net.fabricmc.loom.task.service.MappingsService;
 import org.gradle.api.NamedDomainObjectContainer;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
@@ -16,11 +15,11 @@ import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.bundling.AbstractArchiveTask;
 import org.gradle.api.tasks.compile.JavaCompile;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.lang.reflect.Field;
 import java.util.List;
-import java.util.function.Consumer;
 
 public class FabricLiason extends Liason implements Liason.RemapLiason, Liason.RefmapLiason {
 	public FabricLiason(Project project, String ver, NamedDomainObjectContainer<LoaderMod> mods) {
@@ -61,10 +60,44 @@ public class FabricLiason extends Liason implements Liason.RemapLiason, Liason.R
 		withImplementation(quatlib, floaderOnlyDep());
 	}
 	
-	/// remaps ///
+	/// REFMAPS ///
 	@Override
-	public void remaps(Consumer<RemapLiason> remaps) {
-		remaps.accept(this);
+	public @Nullable RefmapLiason getRefmapLiason() {
+		return this;
+	}
+	
+	@Override
+	public void refmapAddMixinAp(Configuration mixinAp) {
+		//this version adds ObfuscationServiceFabric which supports the "named:intermediary" obfuscation type
+		//also it depends on its own copy of the sponge mixin ap, so that gets pulled in.
+		//It's available on the Fabric maven which is already added to repositories() by Loom.
+		withDeps(mixinAp, "net.fabricmc:fabric-mixin-compile-extensions:0.6.0");
+	}
+	
+	@Override
+	public File refmapGetMappingsIn() {
+		return loom.getMappingsFile(); //NOTE: Kabooms if this is called before fabric-loom afterEvaluate
+	}
+	
+	@Override
+	public List<String> refmapArgs(RegularFileProperty mappingsIn, RegularFileProperty mappingsOut, RegularFileProperty refmapOut) {
+		return List.of(
+			"-AinMapFileNamedIntermediary=" + mappingsIn.get().getAsFile().getAbsolutePath(),
+			"-AoutMapFileNamedIntermediary=" + mappingsOut.get().getAsFile().getAbsolutePath(),
+			"-AoutRefMapFile=" + refmapOut.get().getAsFile().getAbsolutePath(),
+			"-AdefaultObfuscationEnv=named:intermediary"
+		);
+	}
+	
+	@Override
+	public void configureRefmapTask(TaskProvider<JavaCompile> task) {
+		//nothing else to do
+	}
+	
+	/// REMAPS ///
+	@Override
+	public @Nullable RemapLiason getRemapLiason() {
+		return this;
 	}
 	
 	@Override
@@ -86,7 +119,6 @@ public class FabricLiason extends Liason implements Liason.RemapLiason, Liason.R
 					it.getMixinApExtraMappings_QUAT().from(job.mappingsOut);
 				}
 			});
-			tasks.named("jar", it -> it.dependsOn(mod.depJarNamed));
 		}
 		
 		LoaderMod quatlib = mods.getByName("modder_name_lib");
@@ -117,38 +149,6 @@ public class FabricLiason extends Liason implements Liason.RemapLiason, Liason.R
 				});
 			}
 		}
-	}
-	
-	@Override
-	public void refmaps(Consumer<RefmapLiason> refmaps) {
-		refmaps.accept(this);
-	}
-	
-	@Override
-	public void refmapAddMixinAp(Configuration mixinAp) {
-		//this version adds ObfuscationServiceFabric which supports the "named:intermediary" obfuscation type
-		//also it depends on its own copy of the sponge mixin ap, so that gets pulled in
-		withDeps(mixinAp, "net.fabricmc:fabric-mixin-compile-extensions:0.6.0");
-	}
-	
-	@Override
-	public File refmapGetMappingsIn() {
-		return loom.getMappingsFile(); //Kabooms if this is called before fabric-loom inits some stuff
-	}
-	
-	@Override
-	public List<String> refmapArgs(RegularFileProperty mappingsIn, RegularFileProperty mappingsOut, RegularFileProperty refmapOut) {
-		return List.of(
-			"-AinMapFileNamedIntermediary=" + mappingsIn.get().getAsFile().getAbsolutePath(),
-			"-AoutMapFileNamedIntermediary=" + mappingsOut.get().getAsFile().getAbsolutePath(),
-			"-AoutRefMapFile=" + refmapOut.get().getAsFile().getAbsolutePath(),
-			"-AdefaultObfuscationEnv=named:intermediary"
-		);
-	}
-	
-	@Override
-	public void configureRefmapTask(TaskProvider<JavaCompile> task) {
-		//nothing else to do
 	}
 	
 	@Override

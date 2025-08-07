@@ -119,6 +119,9 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 			
 			//liason
 			this.liason = plugin.createLiason(project, ver, mods);
+			Liason.RefmapLiason refmapHelper = liason.getRefmapLiason();
+			Liason.RemapLiason remapHelper = liason.getRemapLiason();
+			
 			this.loader = liason.getLoaderIdentifier();
 			
 			LoaderMod quatlib = mods.create("modder_name_lib", it -> {
@@ -161,9 +164,8 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 			}
 			liason.addFloaderOnlyDep(quatlib.set);
 			
-			liason.remaps(remaphelper -> {
-				for(LoaderMod mod : mods) remaphelper.createIncomingRemapConfigurations(mod);
-			});
+			//"modXxxxxxImplementation"-style configurations, for depending on mapped artifacts
+			if(remapHelper != null) for(LoaderMod mod : mods) remapHelper.createIncomingRemapConfigurations(mod);
 			
 			/// PROCESS RESOURCES ///
 			project.getLogger().lifecycle("configuring processResources");
@@ -198,11 +200,10 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 					//TODO: kludge, i'm picking up dupe resources from somewhere...
 					it.setDuplicatesStrategy(DuplicatesStrategy.EXCLUDE);
 				});
-				tasks.named("jar", it -> it.dependsOn(mod.depJar));
 			}
 			
 			/// REFMAPS ///
-			liason.refmaps(refhelper -> {
+			if(refmapHelper != null) {
 				project.getLogger().lifecycle("preparing refmaps");
 				
 				Provider<Directory> scratchDir2 = project.getLayout().getBuildDirectory().dir("mixin2");
@@ -210,7 +211,7 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 				
 				//the annotation processor used to generate refmaps
 				Configuration mixinAp = configurations.maybeCreate("mixinAp");
-				refhelper.refmapAddMixinAp(mixinAp);
+				refmapHelper.refmapAddMixinAp(mixinAp);
 				
 				for(LoaderMod mod : mods) {
 					//n.b. this only produces refmaps with the correct name because of the naming convention.
@@ -264,7 +265,7 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 						//must be lazy, this can't be read until loom's afterEvaluate block
 						//loom initalizes "loom.getMappingsFile()" in afterEvaluate
 						rj.mappingsIn.set(() -> {
-							File mappingsIn = refhelper.refmapGetMappingsIn();
+							File mappingsIn = refmapHelper.refmapGetMappingsIn();
 							project.getLogger().lifecycle("just called getMappingsIn and got {}", mappingsIn);
 							return mappingsIn;
 						});
@@ -272,13 +273,13 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 						rj.refmapOut.set(scratchDir2.map(d -> d.file(rj.name + ".refmap.json")));
 						//same laziness concerns here
 						rj.args.addAll(() -> {
-							List<String> args = refhelper.refmapArgs(rj.mappingsIn, rj.mappingsOut, rj.refmapOut);
+							List<String> args = refmapHelper.refmapArgs(rj.mappingsIn, rj.mappingsOut, rj.refmapOut);
 							project.getLogger().lifecycle("GOT ARGS: {}", args);
 							return args.iterator();
 						});
 						
 						TaskProvider<JavaCompile> refmapGenTask = rj.makeTask(project);
-						refhelper.configureRefmapTask(refmapGenTask);
+						refmapHelper.configureRefmapTask(refmapGenTask);
 						
 						tasks.named(mod.set.getProcessResourcesTaskName(), ProcessResources.class, it -> {
 							it.dependsOn(refmapGenTask);
@@ -299,14 +300,14 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 						mod.refmapJobs.add(rj);
 					}
 				}
-			});
+			};
 			
 			/// REMAPPED JARS ///
-			liason.remaps(remhelper -> {
+			if(remapHelper != null) {
 				project.getLogger().lifecycle("preparing remapped jars");
 				
 				for(LoaderMod mod : mods) {
-					//move the devjar out of the way
+					//reclassify the original build output as a dev jar
 					Provider<Directory> devlibs = project.getLayout().getBuildDirectory().dir("devlibs");
 					mod.depJar.configure(it -> {
 						it.getArchiveClassifier().set("dev");
@@ -314,8 +315,17 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 					});
 				}
 				
-				remhelper.remapMods();
-			});
+				remapHelper.remapMods();
+			} else {
+				//remapHelper == null -> no remapping is needed
+				for(LoaderMod mod : mods) {
+					mod.depJarNamed = mod.depJar; //the mod is already named correctly
+				}
+			}
+			
+			//hang these tasks off a default gradle task so it's easy to build every mod
+			TaskProvider<?> jar = tasks.named("jar");
+			for(LoaderMod mod : mods) jar.configure(it -> it.dependsOn(mod.depJarNamed));
 			
 			/// JIJ ///
 			liason.jijQuatlib();
