@@ -1,19 +1,27 @@
 package agency.highlysuspect.modsetup.liason;
 
+import agency.highlysuspect.modsetup.FakeLoomMixinExtension;
 import agency.highlysuspect.modsetup.LoaderMod;
+import agency.highlysuspect.modsetup.NothingToSeeHere;
 import net.fabricmc.loom.api.LoomGradleExtensionAPI;
+import net.fabricmc.loom.api.MixinExtensionAPI;
 import net.fabricmc.loom.configuration.ide.RunConfigSettings;
+import net.fabricmc.loom.extension.LoomGradleExtensionApiImpl;
+import net.fabricmc.loom.extension.LoomGradleExtensionImpl;
+import net.fabricmc.loom.extension.MixinExtension;
 import net.fabricmc.loom.task.AbstractRunTask;
 import net.fabricmc.loom.task.RemapJarTask;
 import org.gradle.api.NamedDomainObjectContainer;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
+import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.bundling.AbstractArchiveTask;
 import org.gradle.jvm.tasks.Jar;
 
 import java.io.File;
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -40,6 +48,15 @@ public class FabricLiason extends Liason implements Liason.RemapLiason, Liason.R
 	public void disableUnusedDefaultTasks() {
 		//we don't use the "jar" task, so disable this task too
 		tasks.named("remapJar", it -> it.setEnabled(false));
+		
+		//Orbital nuke Loom's builtin refmap handling since there's no way to turn it off
+		try {
+			Field mixinApExtensionField = LoomGradleExtensionImpl.class.getDeclaredField("mixinApExtension");
+			MixinExtension fake = project.getObjects().newInstance(FakeLoomMixinExtension.class, project);
+			NothingToSeeHere.stomp(loom, mixinApExtensionField, fake);
+		} catch (Exception e) {
+			throw new RuntimeException("Can't nuke Loom mixin", e);
+		}
 	}
 	
 	@Override
@@ -123,21 +140,16 @@ public class FabricLiason extends Liason implements Liason.RemapLiason, Liason.R
 	}
 	
 	@Override
-	public void refmapAddArgsNowOrLater(Runnable r) {
-		project.afterEvaluate(__ -> r.run()); //has to be done after fabric-loom inits some stuff
-	}
-	
-	@Override
 	public File refmapGetMappingsIn() {
 		return loom.getMappingsFile(); //Kabooms if this is called before fabric-loom inits some stuff
 	}
 	
 	@Override
-	public List<String> refmapArgs(File mappingsIn, File mappingsOut, File refmapOut) {
+	public List<String> refmapArgs(RegularFileProperty mappingsIn, RegularFileProperty mappingsOut, RegularFileProperty refmapOut) {
 		return List.of(
-			"-AinMapFileNamedIntermediary=" + mappingsIn.getAbsolutePath(),
-			"-AoutMapFileNamedIntermediary=" + mappingsOut.getAbsolutePath(),
-			"-AoutRefMapFile=" + refmapOut.getAbsolutePath(),
+			"-AinMapFileNamedIntermediary=" + mappingsIn.get().getAsFile().getAbsolutePath(),
+			"-AoutMapFileNamedIntermediary=" + mappingsOut.get().getAsFile().getAbsolutePath(),
+			"-AoutRefMapFile=" + refmapOut.get().getAsFile().getAbsolutePath(),
 			"-AdefaultObfuscationEnv=named:intermediary"
 		);
 	}

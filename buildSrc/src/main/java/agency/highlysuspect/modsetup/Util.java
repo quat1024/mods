@@ -11,6 +11,7 @@ import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.api.tasks.compile.JavaCompile;
 import org.gradle.language.jvm.tasks.ProcessResources;
 
+import java.io.File;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
@@ -160,5 +161,12 @@ public abstract class Util {
 	public static String snakeToTitle(String s) {
 		return underFollowedByLetter.matcher(StringGroovyMethods.capitalize(s))
 			.replaceAll(r -> " " + r.group(1).toUpperCase(Locale.ROOT));
+	}
+	
+	public static boolean hasResource(SourceSet set, String filename) {
+		for(File root : set.getResources().getSourceDirectories()) {
+			if(new File(root, filename).exists()) return true;
+		}
+		return false;
 	}
 }

@@ -7,6 +7,7 @@ import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ConfigurationContainer;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
+import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.plugins.ExtensionContainer;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
@@ -73,8 +74,7 @@ public abstract class Liason extends Util {
 	public interface RefmapLiason {
 		void refmapAddMixinAp(Configuration mixinAp);
 		
-		void refmapAddArgsNowOrLater(Runnable r);
 		File refmapGetMappingsIn();
-		List<String> refmapArgs(File mappingsIn, File mappingsOut, File refmapOut);
+		List<String> refmapArgs(RegularFileProperty mappingsIn, RegularFileProperty mappingsOut, RegularFileProperty refmapOut);
 	}
 }

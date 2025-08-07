@@ -7,15 +7,15 @@ import agency.highlysuspect.modsetup.liason.NeoforgeLiason;
 import net.fabricmc.loom.LoomGradlePlugin;
 import net.neoforged.moddevgradle.boot.LegacyForgeModDevPlugin;
 import net.neoforged.moddevgradle.boot.ModDevPlugin;
-import org.codehaus.groovy.runtime.StringGroovyMethods;
 import org.gradle.api.Action;
 import org.gradle.api.NamedDomainObjectContainer;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ConfigurationContainer;
+import org.gradle.api.file.Directory;
 import org.gradle.api.file.DuplicatesStrategy;
-import org.gradle.api.file.FileCollection;
+import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.*;
 import org.gradle.api.tasks.compile.JavaCompile;
 import org.gradle.jvm.tasks.Jar;
@@ -211,72 +211,85 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 			/// REFMAPS ///
 			liason.refmaps(refhelper -> {
 				project.getLogger().lifecycle("preparing refmaps");
-				File scratchDir = project.getLayout().getBuildDirectory().dir("mixin2").get().getAsFile();
-				scratchDir.mkdirs();
+				
+				Provider<Directory> scratchDir2 = project.getLayout().getBuildDirectory().dir("mixin2");
 				
 				//the annotation processor used to generate refmaps
 				Configuration mixinAp = configurations.maybeCreate("mixinAp");
 				refhelper.refmapAddMixinAp(mixinAp);
 				
 				for(LoaderMod mod : mods) {
-					File scratch2 = new File(scratchDir, "scratch-" + mod.modid);
+					//n.b. this only produces refmaps with the correct name because of the naming convention.
+					//it would be nice to iterate through, look for mixin jsons, and write refmaps with the same name
+					//with "mixins.json" replaced with "refmap.json"
 					
-					//all sources which touch a specific version of minecraft, and might contain
-					//mixins which need refmaps
-					FileCollection sources = mod.set.getAllSource()
-						.plus(mod.perVersionSourceSets.get(ver).getAllSource());
+					List<RefmapJob> refmapJobs = new ArrayList<>();
 					
-					FileCollection classpath = mod.set.getCompileClasspath()
-						.plus(mod.perVersionSourceSets.get(ver).getCompileClasspath())
-						.plus(mod.versionAgnosticSourceSet.getCompileClasspath());
+					String loaderMixinsJsonName = mod.modid + "." + liason.loader + ".mixins.json";
+					String loaderRefmapJsonName = mod.modid + "." + liason.loader + ".refmap.json";
 					
-					//no need to make a classpath for the mixin AP itself;
-					//it shadows all its dependencies(?)
+					if(Util.hasResource(mod.set, loaderMixinsJsonName)) {
+						project.getLogger().lifecycle("Found mixin json {} in {}", loaderMixinsJsonName, mod.modid);
+						
+						RefmapJob loaderRefmap = project.getObjects().newInstance(RefmapJob.class, mod.modid + "." + liason.loader);
+						loaderRefmap.addSources(mod.set.getAllSource());
+						loaderRefmap.addClasspath(mod.set.getCompileClasspath()
+							.plus(mod.perVersionSourceSets.get(ver).getCompileClasspath())
+							.plus(mod.versionAgnosticSourceSet.getCompileClasspath()));
+						
+						loaderRefmap.inputMixinJsons.add(loaderMixinsJsonName);
+						//it's slapped in the output jar with just "jar.from" stuff, so it keeps the filename
+						loaderRefmap.refmapOut.set(scratchDir2.map(d -> d.file(loaderRefmapJsonName)));
+						
+						refmapJobs.add(loaderRefmap);
+					}
 					
-					TaskProvider<JavaCompile> generateRefmaps = project.getTasks().register("generate" + StringGroovyMethods.capitalize(mod.modid) + "Refmap", JavaCompile.class, it -> {
-						it.setGroup("build");
-						
-						//TODO: really we depend on the *classes* tasks, not the jars
-						it.dependsOn(mod.versionAgnosticJar, mod.perVersionJars.get(ver));
-						
-						it.setSource(sources);
-						it.setClasspath(classpath);
-						it.getOptions().setAnnotationProcessorPath(mixinAp);
-						it.getDestinationDirectory().set(scratch2);
-						//it.getOptions().setVerbose(true);
-					});
+					String vanillaMixinsJsonName = mod.modid + ".mixins.json";
+					String vanillaRefmapJsonName = mod.modid + ".refmap.json";
 					
-					//fabric needs refmaps aregs to be added later, since loom.getMappingsFile can
-					//only be called after loom evaluation
-					refhelper.refmapAddArgsNowOrLater(() -> {
-						File mappingsIn = refhelper.refmapGetMappingsIn();
-						File mappingsOut = new File(scratchDir, mod.modid + ".out.txt");
-						File refmapOut = new File(scratchDir, mod.modid + ".refmap.json");
-						//TODO: what actually ends up in mappingsOut?
-						// MDG feeds its contents back into ObfuscationExtension, but so far i've only seen empty files
+					if(Util.hasResource(mod.perVersionSourceSets.get(ver), vanillaMixinsJsonName)) {
+						project.getLogger().lifecycle("Found mixin json {} in {} (vanilla project)", vanillaMixinsJsonName, mod.modid);
 						
-						//configure mixin AP args
-						List<String> mixinArgs = new ArrayList<>(refhelper.refmapArgs(mappingsIn, mappingsOut, refmapOut));
-						mixinArgs.add("-proc:only"); //don't do any compilation, just do APs
+						RefmapJob vanillaRefmap = project.getObjects().newInstance(RefmapJob.class, mod.modid);
+						vanillaRefmap.addSources(mod.perVersionSourceSets.get(ver).getAllSource());
+						vanillaRefmap.addClasspath(mod.perVersionSourceSets.get(ver).getCompileClasspath()
+							.plus(mod.versionAgnosticSourceSet.getCompileClasspath()));
 						
-						BoringCommandLineArgumentProvider clap = project.getObjects().newInstance(BoringCommandLineArgumentProvider.class);
-						clap.args.set(mixinArgs);
+						vanillaRefmap.inputMixinJsons.add(vanillaMixinsJsonName);
+						vanillaRefmap.refmapOut.set(scratchDir2.map(d -> d.file(vanillaRefmapJsonName)));
 						
-						generateRefmaps.configure(it -> {
-							//tell gradle this task creates these files
-							it.getOutputs().file(refmapOut);
-							it.getOutputs().file(mappingsOut);
-							
-							//add mixin args
-							it.getOptions().getCompilerArgumentProviders().add(clap);
+						refmapJobs.add(vanillaRefmap);
+					}
+					
+					//they are otherwise configured the same way
+					for(RefmapJob rj : refmapJobs) {
+						rj.addAp(mixinAp);
+						
+						//must be lazy and not read until loom's afterEvaluate block b/c that's when
+						//it initalizes "loom.getMappingsFile()"
+						rj.mappingsIn.set(() -> {
+							File mappingsIn = refhelper.refmapGetMappingsIn();
+							project.getLogger().lifecycle("just called getMappingsIn and got {}", mappingsIn);
+							return mappingsIn;
 						});
+						rj.mappingsOut.set(scratchDir2.map(d -> d.file(rj.name + "_mappings-out.txt")));
+						rj.refmapOut.set(scratchDir2.map(d -> d.file(rj.name + ".refmap.json")));
+						//same laziness concerns here
+						rj.args.addAll(() -> {
+							List<String> args = refhelper.refmapArgs(rj.mappingsIn, rj.mappingsOut, rj.refmapOut);
+							project.getLogger().lifecycle("GOT ARGS: {}", args);
+							return args.iterator();
+						});
+						
+						TaskProvider<JavaCompile> refmapGenTask = rj.makeTask(project);
 						
 						//include refmap in jar
+						//TODO: wrong! refmapping needs to happen before remapping, not the other way around!
 						mod.depJar.configure(it -> {
-							it.dependsOn(generateRefmaps);
-							it.from(refmapOut);
+							it.dependsOn(refmapGenTask);
+							it.from(rj.refmapOut);
 						});
-					});
+					}
 				}
 			});
 			

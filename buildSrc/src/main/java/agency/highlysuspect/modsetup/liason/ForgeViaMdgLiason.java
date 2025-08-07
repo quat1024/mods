@@ -7,6 +7,7 @@ import org.gradle.api.NamedDomainObjectContainer;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.component.AdhocComponentWithVariants;
+import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.bundling.AbstractArchiveTask;
 
@@ -96,11 +97,6 @@ public class ForgeViaMdgLiason extends MdgLiason<LegacyForgeExtension> implement
 		withDeps(mixinAp, "org.spongepowered:mixin:0.8.5:processor");
 	}
 	
-	@Override
-	public void refmapAddArgsNowOrLater(Runnable r) {
-		r.run(); //now
-	}
-	
 	@SuppressWarnings("UnstableApiUsage")
 	@Override
 	public File refmapGetMappingsIn() {
@@ -108,11 +104,11 @@ public class ForgeViaMdgLiason extends MdgLiason<LegacyForgeExtension> implement
 	}
 	
 	@Override
-	public List<String> refmapArgs(File mappingsIn, File mappingsOut, File refmapOut) {
+	public List<String> refmapArgs(RegularFileProperty mappingsIn, RegularFileProperty mappingsOut, RegularFileProperty refmapOut) {
 		return List.of(
-			"-AreobfTsrgFile=" + mappingsIn.getAbsolutePath(),
-			"-AoutTsrgFile=" + mappingsOut.getAbsolutePath(),
-			"-AoutRefMapFile=" + refmapOut.getAbsolutePath(),
+			"-AreobfTsrgFile=" + mappingsIn.get().getAsFile().getAbsolutePath(),
+			"-AoutTsrgFile=" + mappingsOut.get().getAsFile().getAbsolutePath(),
+			"-AoutRefMapFile=" + refmapOut.get().getAsFile().getAbsolutePath(),
 			"-AdefaultObfuscationEnv=searge",
 			"-AmappingTypes=tsrg",
 			"-ApluginVersion=0.9" //just for silencing a warning(?)
