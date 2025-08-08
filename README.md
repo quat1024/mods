@@ -4,19 +4,33 @@ Monorepo. An attempt at implementing ["project sanity"](https://notes.highlysusp
 
 ## shape
 
-documentation here got outdated. look in buildSrc or ask me
+It's multi-version development *and* [multi-loader](https://github.com/jaredlll08/multiloader-template) development in the same repo.
+
+The list of mods and supported Minecraft versions for each mod is defined in `vanilla/build.gradle`. Some common variables can be set from there too. A version-independent source set is created for each mod (`modidAny`), and for each supported version a version-specific source set is created (`modid1_21_1`). The version-dependent set can compile against the version-independent set, and unless `quatlib = false` in build.gradle, it can additionally compile against the corresponding `modderNameLib___` sets. Minecraft classes are provided with a builtin copy of [`minivan`](https://github.com/CrackedPolishedBlackstoneBricksMC/minivan). See `VanillaSetupPlugin` in `buildSrc`.
+
+`:vanilla` emcompasses *all* code which doesn't depend on a modloader in the same Gradle subproject, specifically and only because modloader ecosystem plugins are not as flexible; you can't install two different versions of neoforge in the same gradle project (and I don't want to know what happens if you try to apply Loom as well). Those loader subprojects depend on the artifacts built in `:vanilla` and add more classes of their own. A `modidSplat` configuration contains all items from `:vanilla` which should be copied-and-pasted unchanged into the unmapped jar. Mapping is skipped on Neoforge because it's not needed, everything else feeds the jar through the remapping implementation provided by the ecosystem plugin, although mixin refmaps are manually compiled (again, because loader-specific gradle plugins are not flexible enough and I had to reimplement it). See `AbstractLoaderSetupPlugin` in `buildSrc`.
+
+In the top-level `build.gradle`, the global version number is set based off the current date. Plugin versions are defined in `buildSrc/build.gradle`.
 
 ## status
 
-~~contains no actual content mods lol~~ Contains the world's most complicated implementation of "rebind narrator" for 1.21.1 and 1.21.5 and crowmap.
+~~contains no actual content mods lol~~ Contains the world's most complicated implementation of "rebind narrator" and crowmap.
 
-* Need some crossroaded source-sets in :vanilla
-* No quatlib jar-in-jar on legacyforge or neoforge. (need to write my own task)
-* No datagen or anything (hmm)
+Wishlist:
+
+* Automatically jar-in-jar moddernamelib on legacyforge and neoforge. (Will probably need to write my own task for this, the jij stuff in MDG seems tricky to use.)
+* Could do with some [crossroaded](https://github.com/CrackedPolishedBlackstoneBricksMC/crossroad) compile stubs in :vanilla
+* Datagen system
+* Make moddernamelib/quatlib less "special" throughout the ecosystem. E.g. i should be able to make a second quatlib for my mods on very old versions
+* Automated publishing
+
+## Note
 
 Loom prints 10000 warnings about its inability to find refmap files when building a jar. This is expected; I had to forcibly tear out Loom's built-in mixin handling code, some later part of the code is unable to find those refmaps it's supposed to write.
 
-Why rip out Loom's mixin code? [This API](https://github.com/FabricMC/fabric-loom/blob/b37c4d3474fccd30f69beb25a20cc84da94f0574/src/main/java/net/fabricmc/loom/api/MixinExtensionAPI.java#L61) *looks* nice:
+<details><summary>Why rip out Loom's mixin code?</summary>
+
+[This API](https://github.com/FabricMC/fabric-loom/blob/b37c4d3474fccd30f69beb25a20cc84da94f0574/src/main/java/net/fabricmc/loom/api/MixinExtensionAPI.java#L61) *looks* nice:
 
 ```java
 for(LoaderMod mod : mods) {
@@ -28,3 +42,5 @@ for(LoaderMod mod : mods) {
 ```
 
 but for some reason it wasn't working for me. (the per-verison source set in `:vanilla`, destined for `modid.refmap.json` in the built jar, was just not getting created. Only the loader-specific refmap ended up in the jar.)
+
+</details>

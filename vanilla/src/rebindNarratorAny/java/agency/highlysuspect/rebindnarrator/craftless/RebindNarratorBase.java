@@ -1,9 +1,12 @@
 package agency.highlysuspect.rebindnarrator.craftless;
 
+import agency.highlysuspect.quatlib.craftless.Slf4jLogFacade;
 import agency.highlysuspect.quatlib.craftless.config.ConfigSection;
 import agency.highlysuspect.quatlib.craftless.config.DefaultConfig;
 import agency.highlysuspect.quatlib.craftless.config.WritableConfig;
+import agency.highlysuspect.quatlib.craftless.failure.FailureLogger;
 import agency.highlysuspect.quatlib.craftless.failure.FailureRoot;
+import agency.highlysuspect.quatlib.craftless.util.LogFacade;
 import org.jetbrains.annotations.Nullable;
 
 public abstract class RebindNarratorBase {
@@ -13,9 +16,10 @@ public abstract class RebindNarratorBase {
 	
 	public static final String MODID = "rebind_narrator";
 	public static final String NAME = "Rebind Narrator";
+	public static final LogFacade LOG = new Slf4jLogFacade(NAME);
 	protected static RebindNarratorBase INST;
 	
-	public FailureRoot failures = new FailureRoot(NAME);
+	public FailureRoot failures = new FailureRoot(NAME).addListener(new FailureLogger(LOG));
 	public ConfigSection configSchema;
 	public WritableConfig config;
 	

@@ -16,9 +16,20 @@ vanillaSetup.go {
 }
 
 sourceSets {
-    compileStubs
+	compileStubs
 }
 
-dependencies {
-    modderNameLibAnyCompileOnly sourceSets.compileStubs.output
+//TODO: less janky way to do this, maybe
+// (it adds compile-only deps to all the xxxxxAny source sets)
+vanillaSetup.mods.forEach { mod ->
+	String cmpOnly = mod.versionAgnosticSourceSet.getCompileOnlyConfigurationName()
+	
+	//some kinda-old versions of libraries used by all the minecraft versions i support
+	//when extending support to an older version check that it still uses a compatible
+	//version of the library!
+	project.dependencies.add(cmpOnly, "org.slf4j:slf4j-api:2.0.0")
+	project.dependencies.add(cmpOnly, "com.google.code.gson:gson:2.10")
+	
+	//can only put things in here with exactly the same mojang name across all versions!
+	project.dependencies.add(cmpOnly, sourceSets.compileStubs.output)
 }

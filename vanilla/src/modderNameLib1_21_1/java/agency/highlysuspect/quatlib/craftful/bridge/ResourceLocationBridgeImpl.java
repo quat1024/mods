@@ -1,14 +1,12 @@
 package agency.highlysuspect.quatlib.craftful.bridge;
 
-import agency.highlysuspect.quatlib.craftless.bridge.IdBridge;
+import agency.highlysuspect.quatlib.craftless.bridge.ResourceLocationBridge;
 import net.minecraft.resources.ResourceLocation;
 
-public class IdBridgeImpl implements IdBridge<ResourceLocation> {
-	public static final IdBridgeImpl INSTANCE = new IdBridgeImpl();
-	
+public class ResourceLocationBridgeImpl implements ResourceLocationBridge {
 	@Override
 	public ResourceLocation id(String namespace, String path) {
-		return new ResourceLocation(namespace, path);
+		return ResourceLocation.fromNamespaceAndPath(namespace, path);
 	}
 	
 	@Override

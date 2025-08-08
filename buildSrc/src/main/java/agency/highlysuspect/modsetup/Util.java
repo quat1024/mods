@@ -16,7 +16,7 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
-//many of these are for working with Proejcts, which is why this is an abstract class, just to
+//many of these are for working with Projects, which is why this is an abstract class, just to
 //avoid manually passing the Project argument around everywhere. there are some static ones at
 //the bottom which don't work on a specific project
 public abstract class Util {
