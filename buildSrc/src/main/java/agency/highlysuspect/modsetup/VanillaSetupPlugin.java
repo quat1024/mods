@@ -55,6 +55,8 @@ public class VanillaSetupPlugin implements Plugin<Project> {
 		public final NamedDomainObjectContainer<VanillaMod> mods;
 		public final VanillaMod quatlib;
 		
+		private Map<String, MinecraftProvider.Result> minecrafts;
+		
 		protected String modVersion(@NotNull String mod, @Nullable String version) {
 			return snakeToCamel(mod) + (version == null ? "Any" : version.replace('.', '_'));
 		}
@@ -104,7 +106,7 @@ public class VanillaSetupPlugin implements Plugin<Project> {
 			for(VanillaMod mod : mods) versionsToMake.addAll(mod.versions);
 			
 			//build all the minecrafts (in parallel, why not)
-			Map<String, MinecraftProvider.Result> minecrafts = versionsToMake.parallelStream().map(minecraftVersion -> {
+			minecrafts = versionsToMake.parallelStream().map(minecraftVersion -> {
 				//TODO: fabric access wideners can go here...
 				MinecraftProvider.Result result = minivanExt.minecraftBuilder()
 					.version(minecraftVersion)
@@ -232,9 +234,15 @@ public class VanillaSetupPlugin implements Plugin<Project> {
 		
 		/// for calling from loader setup plugins ///
 		
-		//grab the list of vanillamods
 		public NamedDomainObjectContainer<VanillaMod> getVanillaMods() {
 			return mods;
+		}
+		
+		/// for calling from buildscripts
+		
+		public Map<String, MinecraftProvider.Result> getMinecrafts() {
+			if(minecrafts == null) throw new IllegalStateException("minecrafts == null, has it been set up yet?");
+			return minecrafts;
 		}
 	}
 }

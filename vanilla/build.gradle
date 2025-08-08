@@ -1,5 +1,9 @@
+import agency.highlysuspect.minivan.prov.MinecraftProvider
+import com.unascribed.flexver.FlexVerComparator
+
 plugins {
 	id "vanilla-setup"
+	id "agency.highlysuspect.crossroad"
 }
 
 vanillaSetup.go {
@@ -15,21 +19,25 @@ vanillaSetup.go {
 	}
 }
 
-sourceSets {
+List<Map.Entry<String, MinecraftProvider.Result>> sortedcrafts = vanillaSetup.getMinecrafts().entrySet().stream()
+	.sorted((a, b) -> FlexVerComparator.compare(a.key, b.key))
+	.toList()
+
+def mergedCraft = crossroad.merge(sortedcrafts.stream().map({it -> it.value.minecraft}).toArray());
+logger.lifecycle("MERGEDCRAFT: {}", mergedCraft)
+
+def oldcraft = sortedcrafts.get(0).value;
+
+configurations {
 	compileStubs
+	
+	modderNameLibAnyCompileOnly.extendsFrom compileStubs
+	crowmapAnyCompileOnly.extendsFrom compileStubs
+	rebindNarratorAnyCompileOnly.extendsFrom compileStubs
 }
 
-//TODO: less janky way to do this, maybe
-// (it adds compile-only deps to all the xxxxxAny source sets)
-vanillaSetup.mods.forEach { mod ->
-	String cmpOnly = mod.versionAgnosticSourceSet.getCompileOnlyConfigurationName()
-	
-	//some kinda-old versions of libraries used by all the minecraft versions i support
-	//when extending support to an older version check that it still uses a compatible
-	//version of the library!
-	project.dependencies.add(cmpOnly, "org.slf4j:slf4j-api:2.0.0")
-	project.dependencies.add(cmpOnly, "com.google.code.gson:gson:2.10")
-	
-	//can only put things in here with exactly the same mojang name across all versions!
-	project.dependencies.add(cmpOnly, sourceSets.compileStubs.output)
+dependencies {
+	compileStubs project.files(mergedCraft)
+	oldcraft.dependencies.each { compileStubs it }
 }
+

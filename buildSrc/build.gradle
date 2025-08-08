@@ -8,6 +8,7 @@ repositories {
 		content {
 			includeGroup "agency.highlysuspect"
 			includeGroup "agency.highlysuspect.minivan" //this is a certified plugins dsl moment
+			includeGroup "agency.highlysuspect.crossroad"
 		}
 	}
 	gradlePluginPortal()
@@ -27,11 +28,15 @@ dependencies {
 	// https://github.com/CrackedPolishedBlackstoneBricksMC/minivan/releases
 	implementation "agency.highlysuspect.minivan:agency.highlysuspect.minivan.gradle.plugin:0.5"
 	
+	// https://github.com/CrackedPolishedBlackstoneBricksMC/crossroad/releases
+	// Not actually used in buildSrc but i want it available to :vanilla
+	implementation "agency.highlysuspect.crossroad:agency.highlysuspect.crossroad.gradle.plugin:0.3"
+	
 	// https://github.com/unascribed/FlexVer/tree/trunk/java
 	implementation "com.unascribed:flexver-java:1.1.1"
 
-    // https://mvnrepository.com/artifact/com.google.code.gson/gson
-    implementation "com.google.code.gson:gson:2.13.1"
+  // https://mvnrepository.com/artifact/com.google.code.gson/gson
+	implementation "com.google.code.gson:gson:2.13.1"
 }
 
 gradlePlugin {
