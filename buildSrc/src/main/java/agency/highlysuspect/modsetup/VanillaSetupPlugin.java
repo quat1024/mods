@@ -124,40 +124,54 @@ public class VanillaSetupPlugin implements Plugin<Project> {
 				//modSomethingVersionAny and such
 				mod.versionAgnosticSourceSet = makeSourceSetWithCommonDeps(modVersion(mod.modid, null));
 				//it should be compiled against the lowest java version used
-				setCompatLevel(mod.versionAgnosticSourceSet, mod.versions.stream().mapToInt(minecraftVersion1 -> compatLevelForMinecraft(minecraftVersion1)).min().orElse(8));
+				setCompatLevel(mod.versionAgnosticSourceSet, mod.versions.stream().mapToInt(Util::compatLevelForMinecraft).min().orElse(8));
 				
 				for(String minecraftVersion : mod.versions) {
 					project.getLogger().lifecycle("...for {}", minecraftVersion);
 					//modSomethingVersion1_21_1 and such
 					SourceSet modAndVersionSpecificSourceSet = makeSourceSetWithCommonDeps(modVersion(mod.modid, minecraftVersion));
 					mod.perVersionSourceSets.put(minecraftVersion, modAndVersionSpecificSourceSet);
-					//it can see the version-agnostic set
-					extendSourceSet2(modAndVersionSpecificSourceSet, mod.versionAgnosticSourceSet);
+					
 					//it should be compiled against the java version used for this version
 					setCompatLevel(modAndVersionSpecificSourceSet, compatLevelForMinecraft(minecraftVersion));
+					
+					//dep on the version-agnostic source set for this mod, using implementation
+					dependencies.add(
+						modAndVersionSpecificSourceSet.getImplementationConfigurationName(),
+						mod.versionAgnosticSourceSet.getOutput()
+					);
 				}
 			}
-			//connect up quatlib
+			//put quatlib on compilation classpath of mods that use it
 			for(VanillaMod mod : mods) {
-				if(mod.dependOnQuatlib) {
-					extendSourceSet2(mod.versionAgnosticSourceSet, quatlib.versionAgnosticSourceSet);
-					mod.perVersionSourceSets.forEach((mcVer, perVersionSrc) ->
-						extendSourceSet2(perVersionSrc, quatlib.versionAgnosticSourceSet, quatlib.getPerVersionSourceSet(mcVer)));
-				}
+				if (!mod.dependOnQuatlib) continue;
+				
+				//the version-agnostic source set can compile against version-agnostic quatlib
+				withCompileOnly(mod.versionAgnosticSourceSet, quatlib.versionAgnosticSourceSet.getOutput());
+				
+				//the version-specific source sets can compile against version-specific and version-agnostic quatlib
+				//TODO: we have transitive deps at home
+				mod.perVersionSourceSets.forEach((mcVer, perVersionSrc) ->
+					withCompileOnly(mod.getPerVersionSourceSet(mcVer),
+						quatlib.getPerVersionSourceSet(mcVer).getOutput(),
+						quatlib.versionAgnosticSourceSet.getOutput()));
 			}
 			
 			/// DEPENDENCIES ///
 			project.getLogger().lifecycle("preparing deps");
 			
-			//put minecraft in all the mod-agnostic but version-specific sets
-			minecrafts.forEach((minecraftVersion, mc) -> {
-				withImplementation(quatlib.getPerVersionSourceSet(minecraftVersion),
-					project.files(mc.minecraft), //minecraft itself
-					mc.dependencies.stream().map(dependencies::create).toList(), //all the mc deps
-					"com.mojang:logging:1.1.1", //TODO, why isn't this one showing up? minivan bug?
-					"org.spongepowered:mixin:0.8.5"
-				);
-			});
+			//put minecraft in all version-specific source sets
+			for(VanillaMod mod : mods) {
+				mod.perVersionSourceSets.forEach((minecraftVer, perVersionSourceSet) -> {
+					MinecraftProvider.Result mc = minecrafts.get(minecraftVer);
+					withCompileOnly(perVersionSourceSet,
+						project.files(mc.minecraft), //minecraft itself
+						mc.dependencies.stream().map(dependencies::create).toList(), //all the mc deps
+						"com.mojang:logging:1.1.1", //TODO, why isn't this one showing up? minivan bug?
+						"org.spongepowered:mixin:0.8.5"
+					);
+				});
+			}
 			
 			/// PROCESS RESOURCES ///
 			project.getLogger().lifecycle("configuring processResources");

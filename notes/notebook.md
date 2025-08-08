@@ -10,6 +10,10 @@ the annotation processor is only configured for some of the compilation tasks in
 
 the stuff in `:vanilla/modXxxxVersion1_20_1` was compiled without any ap
 
+### this was fixed:
+
+i learned how the mixin annotation procesor works and run it in a dedicated javacompile task, instead of trying to add it as an annotation processor while compiling the rest of the mod
+
 ## ConfigState
 
 * what is `refresh` for? copied it from older projects without thinking too hard

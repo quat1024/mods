@@ -150,30 +150,40 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 			project.getLogger().lifecycle("making source sets");
 			for(LoaderMod mod : mods) {
 				mod.set = makeSourceSetWithCommonDeps(mod.modid);
-				extendSourceSet2(mod.set, main);
 				setCompatLevel(mod.set, javaCompatLevel);
+				
+				//ecosystem plugins install minecraft to the "main" source-set, so pull down main's entire compilation classpath
+				mod.set.setCompileClasspath(mod.set.getCompileClasspath().plus(main.getCompileClasspath()));
 			}
 			for(LoaderMod mod : mods) {
 				if(mod.dependOnQuatlib)
-					extendSourceSet2(mod.set, quatlib.set);
+					withCompileOnly(mod.set, quatlib.set.getOutput());
 			}
 			
 			/// DEPENDENCIES ///
 			project.getLogger().lifecycle("preparing deps");
 			for(LoaderMod mod : mods) {
-				//configuration containing code splatted into the mod jar
+				//this mod's code in :vanilla
+				withImplementation(mod.set, mod.getSplattedDep(project, ver));
+				
+				//if quatlib is used, put it on the compilation classpath
+				if(mod.dependOnQuatlib) {
+					withCompileOnly(mod.set,
+						quatlib.set.getOutput(), //MNL for this version/loader
+						quatlib.getSplattedDep(project, ver)
+					);
+					//additionally on fabric put this little library on the compilation classpath too
+					if(liason instanceof FabricLiason) withCompileOnly(mod.set, floaderOnlyDep());
+				}
+				
+				if(liason instanceof FabricLiason && mod == quatlib) {
+					withImplementation(mod.set, floaderOnlyDep());
+				}
+				
+				//configuration holding things to splat into the jar
 				mod.splat = project.getConfigurations().create(mod.modid + "Splat");
 				withDeps(mod.splat, mod.getSplattedDep(project, ver));
-				
-				//TODO leaky abstraction
 				if(mod == quatlib && liason instanceof FabricLiason) withDeps(mod.splat, floaderOnlyDep());
-				
-				withImplementation(mod.set, mod.splat);
-				
-				//Intellij is dumdum and can't resolve intra-IDEA module dependencies when they're behind a configuration.
-				//Ideally I would only tell IDEA about this dependency edge, Gradle works fine without it, but idk how to do that
-				withCompileOnly(mod.set, mod.getSplattedDep(project, ver));
-				if(mod == quatlib && liason instanceof FabricLiason) withCompileOnly(mod.set, floaderOnlyDep());
 			}
 			
 			//"modXxxxxxImplementation"-style configurations, for depending on mapped artifacts
@@ -189,12 +199,12 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 				configureProcessResources(mod.set, plus(allVars, mod.vars));
 				
 				//include the resources from things living in :vanilla too
-				tasks.named(mod.set.getProcessResourcesTaskName(), ProcessResources.class, it -> {
-					it.from(
-						mod.versionAgnosticSourceSet.getResources(),
-						mod.getPerVersionSourceSet(ver).getResources()
-					);
-				});
+//				tasks.named(mod.set.getProcessResourcesTaskName(), ProcessResources.class, it -> {
+//					it.from(
+//						mod.versionAgnosticSourceSet.getResources(),
+//						mod.getPerVersionSourceSet(ver).getResources()
+//					);
+//				});
 			}
 			
 			/// JARS ///
@@ -202,15 +212,23 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 			for(LoaderMod mod : mods) {
 				//contains all mod-specific code, including some splatted from other projects
 				mod.depJar = tasks.register(mod.modid + "DepJar", Jar.class, it -> {
-					it.from(mod.set.getOutput()); //code for this version of this mod
-					for(File splat : mod.splat) it.from(project.zipTree(splat)); //code for all versions of this mod, basically
+					it.dependsOn(mod.splat);
+					
+					it.from(mod.set.getOutput());
+					
+					//splat stuff directly into the jar
+					for(File splat : mod.splat) {
+						it.getLogger().lifecycle("yyttttt SPLATTING FILE: {}", splat);
+						if(splat.isDirectory()) it.from(splat);
+						else it.from(project.zipTree(splat)); //look through the zip, treat it like a directory
+					}
+					
+					//this was already include in processResources (TODO: better here or there?)
 //					it.from(
 //						mod.versionAgnosticSourceSet.getResources(),
 //						mod.perVersionSourceSets.get(ver).getResources()
-//					); //already done in processResources
+//					);
 					it.getArchiveBaseName().set(mod.modid + "-" + ver + "-" + loader);
-					//TODO: kludge, i'm picking up dupe resources from somewhere...
-					it.setDuplicatesStrategy(DuplicatesStrategy.EXCLUDE);
 				});
 			}
 			

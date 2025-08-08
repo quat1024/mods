@@ -62,21 +62,6 @@ public abstract class Util {
 		return set;
 	}
 	
-	public void extendSourceSet2(SourceSet target, SourceSet... bases) {
-		for(SourceSet base : bases) {
-			target.setCompileClasspath(target.getCompileClasspath().plus(base.getCompileClasspath()));
-			target.setRuntimeClasspath(target.getRuntimeClasspath().plus(base.getRuntimeClasspath()));
-		}
-		
-		//and add the outputs of these sets to the source-set's implementation config
-		//this makes IDEs pick up on it? i think? forgot what this is for
-		project.getConfigurations().named(target.getImplementationConfigurationName(), cfg ->
-			cfg.withDependencies(it -> {
-				for(SourceSet base : bases)
-					it.add(project.getDependencies().create(base.getOutput()));
-			}));
-	}
-	
 	//forgive my stupid dsl please
 	//basically you can pass anything and/or arrays of anything and/or collections of anything into `deps`,
 	//and it will flatten it all, feed it through project.dependencies.create, and add it to the configuration

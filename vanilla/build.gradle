@@ -14,3 +14,11 @@ vanillaSetup.go {
 		}
 	}
 }
+
+sourceSets {
+    compileStubs
+}
+
+dependencies {
+    modderNameLibAnyCompileOnly sourceSets.compileStubs.output
+}
