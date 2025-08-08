@@ -5,9 +5,6 @@
 	"mixins": [
 		"MapItemMixin"
 	],
-	"client": [
-		"client.ItemStackHoverTextMixin"
-	],
 	"injectors": {
 		"defaultRequire": 1
 	}

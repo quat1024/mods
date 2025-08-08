@@ -7,6 +7,8 @@ import agency.highlysuspect.quatlib.craftless.failure.FailureLogger;
 import agency.highlysuspect.quatlib.craftless.failure.FailureRoot;
 import agency.highlysuspect.quatlib.craftless.util.LogFacade;
 
+import java.util.Objects;
+
 public abstract class CrowmapBase {
 	public CrowmapBase() {
 		INST = this;
@@ -15,16 +17,10 @@ public abstract class CrowmapBase {
 	public static final String MODID = "crowmap";
 	public static final String NAME = "Crowmap";
 	public static final LogFacade LOG = new Slf4jLogFacade(NAME);
-	protected static CrowmapBase INST;
 	
 	public FailureRoot failures = new FailureRoot(NAME).addListener(new FailureLogger(LOG));
 	public ConfigSection configSchema;
 	public WritableConfig config;
-	
-	public static CrowmapBase inst() {
-		return INST;
-	}
-	
 	public void init() {
 		configSchema = visitConfigSchema(new ConfigSection(NAME, "Options for Crowmap."));
 		config = makeConfig(configSchema);
@@ -35,4 +31,9 @@ public abstract class CrowmapBase {
 	}
 	
 	public abstract WritableConfig makeConfig(ConfigSection schema);
+	
+	protected static CrowmapBase INST;
+	public static CrowmapBase inst() {
+		return Objects.requireNonNull(INST, "CrowmapBase not constructed yet");
+	}
 }

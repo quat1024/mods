@@ -21,7 +21,6 @@ In the top-level `build.gradle`, the global version number is set based off the 
 Wishlist:
 
 * Automatically jar-in-jar moddernamelib on legacyforge and neoforge. (Will probably need to write my own task for this, the jij stuff in MDG seems tricky to use.)
-* Could do with some [crossroaded](https://github.com/CrackedPolishedBlackstoneBricksMC/crossroad) compile stubs in :vanilla
 * Datagen system
 * Make moddernamelib/quatlib less "special" throughout the ecosystem. E.g. i should be able to make a second quatlib for my mods on very old versions
 * Automated publishing

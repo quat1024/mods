@@ -18,13 +18,18 @@
 	"entrypoints": {
 		"modder_name_lib:after": [
 			"agency.highlysuspect.crowmap.craftful.fab.CrowmapFabric"
+		],
+		"modder_name_lib:after_client": [
+			"agency.highlysuspect.crowmap.craftful.fab.CrowmapFabricClient"
 		]
 	},
 	"mixins": [
 		"${modid}.mixins.json"
 	],
 	"depends": {
-		"minecraft": ">=${minecraft_version}",
-		"modder_name_lib": "*"
+		"fabricloader": "*",
+		"fabric-api": "*",
+		"modder_name_lib": "*",
+		"minecraft": ">=${minecraft_version}"
 	}
 }
