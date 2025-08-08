@@ -164,9 +164,12 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 				//configuration containing code splatted into the mod jar
 				mod.splat = project.getConfigurations().create(mod.modid + "Splat");
 				withDeps(mod.splat, mod.getSplattedDep(project, ver));
-				withImplementation(mod.set, mod.splat); //TODO: whats this do again
+				
+				//TODO leaky abstraction
+				if(mod == quatlib && liason instanceof FabricLiason) withDeps(mod.splat, floaderOnlyDep());
+				
+				withImplementation(mod.set, mod.splat);
 			}
-			liason.addFloaderOnlyDep(quatlib.set);
 			
 			//"modXxxxxxImplementation"-style configurations, for depending on mapped artifacts
 			if(remapHelper != null) for(LoaderMod mod : mods) remapHelper.createIncomingRemapConfigurations(mod);

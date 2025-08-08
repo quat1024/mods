@@ -11,7 +11,6 @@ import org.gradle.api.NamedDomainObjectContainer;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.file.RegularFileProperty;
-import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.bundling.AbstractArchiveTask;
 import org.gradle.api.tasks.compile.JavaCompile;
@@ -48,11 +47,6 @@ public class FabricLiason extends Liason implements Liason.RemapLiason, Liason.R
 		} catch (Exception e) {
 			throw new RuntimeException("Can't nuke Loom mixin", e);
 		}
-	}
-	
-	@Override
-	public void addFloaderOnlyDep(SourceSet quatlib) {
-		withImplementation(quatlib, floaderOnlyDep());
 	}
 	
 	/// REFMAPS ///

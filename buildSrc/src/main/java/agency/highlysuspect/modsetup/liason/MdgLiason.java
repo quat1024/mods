@@ -4,7 +4,6 @@ import agency.highlysuspect.modsetup.LoaderMod;
 import net.neoforged.moddevgradle.dsl.ModDevExtension;
 import org.gradle.api.NamedDomainObjectContainer;
 import org.gradle.api.Project;
-import org.gradle.api.tasks.SourceSet;
 
 public abstract class MdgLiason<EXT extends ModDevExtension> extends Liason {
 	public MdgLiason(Project project, String ver, String loader, NamedDomainObjectContainer<LoaderMod> mods, Class<EXT> extClass) {
@@ -17,11 +16,6 @@ public abstract class MdgLiason<EXT extends ModDevExtension> extends Liason {
 	@Override
 	public void setupOfficialNames() {
 		//MDG already uses official names.
-	}
-	
-	@Override
-	public void addFloaderOnlyDep(SourceSet quatlib) {
-		//no-op (only for Fabric)
 	}
 	
 	@Override

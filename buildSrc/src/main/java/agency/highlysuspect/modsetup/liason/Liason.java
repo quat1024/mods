@@ -6,7 +6,6 @@ import org.gradle.api.NamedDomainObjectContainer;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.file.RegularFileProperty;
-import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.compile.JavaCompile;
 import org.jetbrains.annotations.Nullable;
@@ -34,7 +33,6 @@ public abstract class Liason extends Util {
 	public abstract void setupOfficialNames();
 	public abstract void disableUnusedDefaultTasks();
 	public abstract void jijQuatlib();
-	public abstract void addFloaderOnlyDep(SourceSet quatlib);
 	public abstract void setupRuns();
 	
 	public abstract @Nullable RefmapLiason getRefmapLiason();
