@@ -176,9 +176,8 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 					if(liason instanceof FabricLiason) withCompileOnly(mod.set, floaderOnlyDep());
 				}
 				
-				if(liason instanceof FabricLiason && mod == quatlib) {
-					withImplementation(mod.set, floaderOnlyDep());
-				}
+				//and make sure to include floader-only in quatlib....
+				if(liason instanceof FabricLiason && mod == quatlib) withImplementation(mod.set, floaderOnlyDep());
 				
 				//configuration holding things to splat into the jar
 				mod.splat = project.getConfigurations().create(mod.modid + "Splat");
@@ -197,14 +196,6 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 			));
 			for(LoaderMod mod : mods) {
 				configureProcessResources(mod.set, plus(allVars, mod.vars));
-				
-				//include the resources from things living in :vanilla too
-//				tasks.named(mod.set.getProcessResourcesTaskName(), ProcessResources.class, it -> {
-//					it.from(
-//						mod.versionAgnosticSourceSet.getResources(),
-//						mod.getPerVersionSourceSet(ver).getResources()
-//					);
-//				});
 			}
 			
 			/// JARS ///
@@ -223,11 +214,6 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 						else it.from(project.zipTree(splat)); //look through the zip, treat it like a directory
 					}
 					
-					//this was already include in processResources (TODO: better here or there?)
-//					it.from(
-//						mod.versionAgnosticSourceSet.getResources(),
-//						mod.perVersionSourceSets.get(ver).getResources()
-//					);
 					it.getArchiveBaseName().set(mod.modid + "-" + ver + "-" + loader);
 				});
 			}

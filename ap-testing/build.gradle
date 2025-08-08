@@ -1,7 +1,0 @@
-plugins {
-	id "java"
-}
-
-tasks.withType(JavaCompile).configureEach {
-	it.options.verbose = true
-}
