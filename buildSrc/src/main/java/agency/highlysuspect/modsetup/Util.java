@@ -95,6 +95,10 @@ public abstract class Util {
 		withDeps(set.getImplementationConfigurationName(), deps);
 	}
 	
+	public void withCompileOnly(SourceSet set, Object... deps) {
+		withDeps(set.getCompileOnlyConfigurationName(), deps);
+	}
+	
 	protected void flatten(Object obj, Consumer<Object> act) {
 		if(obj instanceof Object[] arr) for(Object elem : arr) flatten(elem, act);
 		else if(obj instanceof Collection<?> c) for(Object elem : c) flatten(elem, act);

@@ -5,34 +5,3 @@ String ver = "${now.year}.${now.monthValue}.${now.dayOfMonth}${versionDisambig}"
 allprojects {
 	it.version = ver
 }
-
-//n.b. this needs the configuration cache turned off
-//tasks.register("AaaaaAaabb", Task) {
-//	doLast {
-//		println("BbbbBbbbbbbbbbbbbbbbbbbbbbbb")
-//
-//		println "digraph A {"
-//
-//		for(Project p : allprojects) {
-//			String pName = "\":${p.name}\""
-//
-//			println "${pName} [shape=box,color=red];"
-//
-//			if(p.configurations == null) continue
-//
-//			for(Configuration configuration : p.configurations) {
-//				String cName = "\":${p.name}/${configuration.name}\""
-//				println "${cName} [shape=box,color=orange];"
-//				println "${pName} -> ${cName};"
-//
-//				for(Dependency dep : configuration.dependencies) {
-//					String depName = "\"${dep.name}\""
-//					println "${depName} [shape=box,color=blue];"
-//					println "${depName} -> ${cName};"
-//				}
-//			}
-//		}
-//
-//		println "}"
-//	}
-//}

@@ -169,6 +169,11 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 				if(mod == quatlib && liason instanceof FabricLiason) withDeps(mod.splat, floaderOnlyDep());
 				
 				withImplementation(mod.set, mod.splat);
+				
+				//Intellij is dumdum and can't resolve intra-IDEA module dependencies when they're behind a configuration.
+				//Ideally I would only tell IDEA about this dependency edge, Gradle works fine without it, but idk how to do that
+				withCompileOnly(mod.set, mod.getSplattedDep(project, ver));
+				if(mod == quatlib && liason instanceof FabricLiason) withCompileOnly(mod.set, floaderOnlyDep());
 			}
 			
 			//"modXxxxxxImplementation"-style configurations, for depending on mapped artifacts
