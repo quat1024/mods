@@ -209,6 +209,18 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 				});
 			}
 			
+			///legacy forge mixin configs go in META-INF with this key. From neoforge discord:
+			//[5:13 PM] IMB11: if i have multiple mixin files, is the MixinConfigs attribute comma separated? (legacy moddevgradle)
+			//[5:46 PM] Bawnorton: yes
+			for(LoaderMod mod : mods) {
+				if(mod.legacyForgeMixinConfigs.isEmpty()) continue;
+				mod.depJar.configure(jar -> {
+					jar.manifest(man -> {
+						man.attributes(Map.of("MixinConfigs", String.join(",", mod.legacyForgeMixinConfigs)));
+					});
+				});
+			}
+			
 			/// REFMAPS ///
 			if(refmapHelper != null) {
 				project.getLogger().lifecycle("preparing refmaps");
