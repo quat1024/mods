@@ -15,6 +15,7 @@ import org.gradle.api.tasks.compile.JavaCompile;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ForgeViaMdgLiason extends MdgLiason<LegacyForgeExtension> implements Liason.RemapLiason, Liason.RefmapLiason {
@@ -116,5 +117,24 @@ public class ForgeViaMdgLiason extends MdgLiason<LegacyForgeExtension> implement
 				}
 			});
 		}
+	}
+	
+	@Override
+	public void setupRuns() {
+		super.setupRuns();
+		
+		ext.getRuns().configureEach(run -> {
+			//https://github.com/neoforged/ModDevGradle/blob/feb8afa7672da0bd01e293cfe2be69db0fd47668/src/legacy/java/net/neoforged/moddevgradle/legacyforge/internal/LegacyForgeModDevPlugin.java#L183
+			
+			List<String> mixinConfigArgs = new ArrayList<>();
+			for(LoaderMod mod : mods) {
+				for (String legacyMixinConfig : mod.legacyForgeMixinConfigs) {
+					mixinConfigArgs.add("--mixin.config");
+					mixinConfigArgs.add(legacyMixinConfig);
+				}
+			}
+			
+			run.getProgramArguments().addAll(mixinConfigArgs);
+		});
 	}
 }

@@ -27,7 +27,7 @@ public class LoaderMod extends VanillaMod {
 	
 	//TODO actually use this in the run configs / plug it into meta-inf
 	// wherever it's supposed to end up
-	List<String> legacyForgeMixinConfigs = new ArrayList<>();
+	public List<String> legacyForgeMixinConfigs = new ArrayList<>();
 	
 	//"out params"
 	public SourceSet set;
