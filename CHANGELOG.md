@@ -6,7 +6,8 @@ This is a test release of mods created with my new modding pipeline. Please repo
 
 * Rewrite the mod.
 * There is now a config file for the tooltip behavior.
-  * You can disable the "this tooltip will now hide itself" feature, or remove the tooltip entirely.
+  * If you don't like the tooltip, you can turn it off. 
+  * You can disable the "this tooltip will now hide itself" feature.
 * 1.21.5: Remove a horrible mixin used to display the tooltip, in favor of a standard modloader tooltip event.
 * *Fabric:* Now depends on Fabric API.
 

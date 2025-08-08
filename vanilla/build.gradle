@@ -13,7 +13,7 @@ vanillaSetup.go {
 			vars.description = "Adds a keybind to options for the narrator."
 		}
 		crowmap {
-			versions += ["1.21.5"]
+			versions += ["1.21.1", "1.21.5"]
 			vars.description = "Maps update anywhere in your inventory."
 		}
 	}

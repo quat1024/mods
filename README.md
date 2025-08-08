@@ -18,6 +18,11 @@ In the top-level `build.gradle`, the global version number is set based off the 
 
 ~~contains no actual content mods lol~~ Contains the world's most complicated implementation of "rebind narrator" and crowmap.
 
+Run config problems:
+
+* Totally bizarre bug where Neoforge run configurations open the wrong version of the game. `neo-1.21.1 - Client` starts 1.21.5 (with 1.21.1 mods). What?
+* Back to assets not loading on Loom run configs
+
 Wishlist:
 
 * Automatically jar-in-jar moddernamelib on legacyforge and neoforge. (Will probably need to write my own task for this, the jij stuff in MDG seems tricky to use.)

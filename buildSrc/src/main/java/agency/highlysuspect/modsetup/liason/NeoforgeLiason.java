@@ -12,11 +12,6 @@ public class NeoforgeLiason extends MdgLiason<NeoForgeExtension> {
 	}
 	
 	@Override
-	public void disableUnusedDefaultTasks() {
-		//no-op
-	}
-	
-	@Override
 	public @Nullable RefmapLiason getRefmapLiason() {
 		//No need to work with refmaps on neoforge
 		return null;

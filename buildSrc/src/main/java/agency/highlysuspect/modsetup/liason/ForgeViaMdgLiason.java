@@ -28,6 +28,7 @@ public class ForgeViaMdgLiason extends MdgLiason<LegacyForgeExtension> implement
 	
 	@Override
 	public void disableUnusedDefaultTasks() {
+		super.disableUnusedDefaultTasks();
 		project.getTasks().named("reobfJar", it -> it.setEnabled(false));
 	}
 	

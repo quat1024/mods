@@ -2,6 +2,7 @@ package agency.highlysuspect.modsetup.liason;
 
 import agency.highlysuspect.modsetup.LoaderMod;
 import net.neoforged.moddevgradle.dsl.ModDevExtension;
+import net.neoforged.moddevgradle.internal.RunGameTask;
 import org.gradle.api.NamedDomainObjectContainer;
 import org.gradle.api.Project;
 
@@ -12,6 +13,13 @@ public abstract class MdgLiason<EXT extends ModDevExtension> extends Liason {
 	}
 	
 	protected final EXT ext;
+	
+	@Override
+	public void disableUnusedDefaultTasks() {
+		//todo needed on mdg or are these from fabric
+		//project.getTasks().named("runClient").configure(it -> it.setEnabled(false));
+		//project.getTasks().named("runServer").configure(it -> it.setEnabled(false));
+	}
 	
 	@Override
 	public void setupOfficialNames() {
@@ -25,7 +33,9 @@ public abstract class MdgLiason<EXT extends ModDevExtension> extends Liason {
 	
 	@Override
 	public void setupRuns() {
-		ext.getRuns().create("client", it -> {
+		ext.getRuns().clear();
+		
+		ext.getRuns().create("client-" + loader + "-" + ver.replace('.', '_'), it -> {
 			it.client();
 		});
 		
@@ -36,5 +46,7 @@ public abstract class MdgLiason<EXT extends ModDevExtension> extends Liason {
 				it.sourceSet(mod.getPerVersionSourceSet(ver));
 			});
 		}
+		
+		project.getTasks().withType(RunGameTask.class, it -> it.setGroup("runs"));
 	}
 }

@@ -11,6 +11,7 @@ import org.gradle.api.NamedDomainObjectContainer;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.file.RegularFileProperty;
+import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.bundling.AbstractArchiveTask;
 import org.gradle.api.tasks.compile.JavaCompile;
@@ -38,6 +39,10 @@ public class FabricLiason extends Liason implements Liason.RemapLiason, Liason.R
 	public void disableUnusedDefaultTasks() {
 		//we don't use the "jar" task, so disable this task too
 		project.getTasks().named("remapJar", it -> it.setEnabled(false));
+		
+		//make my own run configs
+		project.getTasks().named("runClient").configure(it -> it.setEnabled(false));
+		project.getTasks().named("runServer").configure(it -> it.setEnabled(false));
 		
 		//Orbital nuke Loom's builtin refmap handling since there's no way to turn it off
 		try {
@@ -136,15 +141,29 @@ public class FabricLiason extends Liason implements Liason.RemapLiason, Liason.R
 	
 	@Override
 	public void setupRuns() {
-		RunConfigSettings client = loom.getRuns().maybeCreate("client");
+		loom.getRuns().clear();
+		
+		RunConfigSettings client = loom.getRuns().maybeCreate("client-" + loader + "-" + ver.replace('.', '_'));
 		client.client(); //client client
-		client.setIdeConfigGenerated(true);
+		client.setIdeConfigGenerated(false); //Doesn't work anyway since i have to amend the classpath
 		
 		//put all mods on the runtime classpath
 		project.getTasks().withType(AbstractRunTask.class).configureEach(it -> {
 			for(LoaderMod mod : mods) {
-				it.classpath(mod.set.getRuntimeClasspath());
+				//PLEASE WORK
+				it.classpath(mod.set.getOutput());
+				it.classpath(mod.getPerVersionSourceSet(ver).getOutput());
+				it.classpath(mod.versionAgnosticSourceSet.getOutput());
 			}
+			//TODO kludge
+			it.classpath(project.project(":floader-only").getExtensions().getByType(SourceSetContainer.class).getByName("main").getOutput());
+			
+			it.setGroup("runs");
+			
+			it.doFirst(__ -> {
+				System.out.println("pppppppppppppppppppppppp");
+				System.out.println(it.getClasspath().getFiles());
+			});
 		});
 	}
 }
