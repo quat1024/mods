@@ -51,3 +51,7 @@ bin/
 
 ### Mac OS ###
 .DS_Store
+
+
+##### built jars
+collect/

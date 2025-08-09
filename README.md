@@ -4,7 +4,7 @@ Monorepo. An attempt at implementing ["project sanity"](https://notes.highlysusp
 
 ## shape
 
-It's multi-version development *and* [multi-loader](https://github.com/jaredlll08/multiloader-template) development in the same repo.
+It's multi-version development, multi-mod development, *and* [multi-loader](https://github.com/jaredlll08/multiloader-template) development in the same repo.
 
 The list of mods and supported Minecraft versions for each mod is defined in `vanilla/build.gradle`. Some common variables can be set from there too. A version-independent source set is created for each mod (`modidAny`), and for each supported version a version-specific source set is created (`modid1_21_1`). The version-dependent set can compile against the version-independent set, and unless `quatlib = false` in build.gradle, it can additionally compile against the corresponding `modderNameLib___` sets. Minecraft classes are provided with a builtin copy of [`minivan`](https://github.com/CrackedPolishedBlackstoneBricksMC/minivan). See `VanillaSetupPlugin` in `buildSrc`.
 
