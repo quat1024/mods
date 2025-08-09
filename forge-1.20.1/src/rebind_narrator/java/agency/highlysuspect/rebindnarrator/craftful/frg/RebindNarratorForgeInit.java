@@ -16,8 +16,6 @@ public class RebindNarratorForgeInit extends RebindNarratorMc {
 		super.initConfig();
 		super.init();
 		
-		LOG.info("Hello from RebindNarratorForgeInit");
-		
 		IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
 		
 		modBus.addListener(this::onRegisterKeyMappings);
@@ -32,20 +30,17 @@ public class RebindNarratorForgeInit extends RebindNarratorMc {
 	);
 	
 	public void onRegisterKeyMappings(RegisterKeyMappingsEvent e) {
-		LOG.info("Hello from onRegisterKeyMappings");
 		e.register(NARRATOR_KEY);
 	}
 	
 	@Override
 	public NarratorKeyPredicate makeKeyPredicate() {
-		LOG.info("Hello from makeKeyPredicate");
 		return new ForgeNarratorKeyPredicate();
 	}
 	
 	public class ForgeNarratorKeyPredicate extends VanillaNarratorKeyPredicate {
 		@Override
 		public boolean isCorrectKey(int glfwKeyToken) {
-			LOG.info("Hello from isCorrectKey");
 			return glfwKeyToken != -1 && glfwKeyToken == NARRATOR_KEY.getKey().getValue();
 		}
 		
