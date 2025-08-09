@@ -77,8 +77,9 @@ public class ForgeViaMdgLiason extends MdgLiason<LegacyForgeExtension> implement
 	
 	@Override
 	public void createIncomingRemapConfigurations(LoaderMod mod) {
-		Configuration remappedIn = project.getConfigurations().resolvable(snakeToCamel(mod.modid) + "Implementation").get();
-		withImplementation(mod.set, remappedIn);
+		Configuration remappedIn = project.getConfigurations().maybeCreate(mod.set.getImplementationConfigurationName());
+		remappedIn.setCanBeResolved(true); //TODO kludge
+		//withImplementation(mod.set);
 		obf.createRemappingConfiguration(remappedIn);
 	}
 	
