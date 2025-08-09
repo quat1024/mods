@@ -142,7 +142,7 @@ public class FabricLiason extends Liason implements Liason.RemapLiason, Liason.R
 	public void setupRuns() {
 		loom.getRuns().clear();
 		
-		RunConfigSettings client = loom.getRuns().maybeCreate("client-" + loader + "-" + ver.replace('.', '_'));
+		RunConfigSettings client = loom.getRuns().maybeCreate("client-" + ver.replace('.', '-') + "-" + loader);
 		client.client(); //client client
 		client.setIdeConfigGenerated(false); //Doesn't work anyway since i have to amend the classpath
 		

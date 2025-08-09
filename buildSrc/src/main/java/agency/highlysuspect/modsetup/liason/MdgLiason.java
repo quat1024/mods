@@ -35,7 +35,7 @@ public abstract class MdgLiason<EXT extends ModDevExtension> extends Liason {
 	public void setupRuns() {
 		ext.getRuns().clear();
 		
-		ext.getRuns().create("client-" + loader + "-" + ver.replace('.', '_'), it -> {
+		ext.getRuns().create("client-" + ver.replace('.', '-') + "-" + loader, it -> {
 			it.client();
 		});
 		

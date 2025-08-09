@@ -20,8 +20,8 @@ In the top-level `build.gradle`, the global version number is set based off the 
 
 Run config problems:
 
-* Totally bizarre bug where Neoforge run configurations open the wrong version of the game. `neo-1.21.1 - Client` starts 1.21.5 (with 1.21.1 mods). What?
-* ~~Back to assets not loading on Loom run configs~~ Fixed by loading the built jars instead of loading out of classes/resources dirs lol
+* ~~Totally bizarre bug where Neoforge run configurations open the wrong version of the game. `neo-1.21.1 - Client` starts 1.21.5 (with 1.21.1 mods). What?~~ Just using the wrong version of neoforge LOL
+* ~~Back to assets not loading on Loom run configs~~ Fixed by loading the built jars instead of loading out of classes/resources dirs. Janky but seems to work
 
 Wishlist:
 
