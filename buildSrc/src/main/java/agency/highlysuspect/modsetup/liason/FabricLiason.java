@@ -11,7 +11,6 @@ import org.gradle.api.NamedDomainObjectContainer;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.file.RegularFileProperty;
-import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.bundling.AbstractArchiveTask;
 import org.gradle.api.tasks.compile.JavaCompile;
@@ -151,19 +150,23 @@ public class FabricLiason extends Liason implements Liason.RemapLiason, Liason.R
 		project.getTasks().withType(AbstractRunTask.class).configureEach(it -> {
 			for(LoaderMod mod : mods) {
 				//PLEASE WORK
-				it.classpath(mod.set.getOutput());
-				it.classpath(mod.getPerVersionSourceSet(ver).getOutput());
-				it.classpath(mod.versionAgnosticSourceSet.getOutput());
+				//it.classpath(mod.set.getOutput());
+				//it.classpath(mod.getPerVersionSourceSet(ver).getOutput());
+				//it.classpath(mod.versionAgnosticSourceSet.getOutput());
+				//(ommitted 50 other things i tried)
+				//OK WHATEVER RESOURCES DONT WANNA LOAD just load the fuckin Jar then, sure whatever.
+				it.classpath(mod.depJar.flatMap(AbstractArchiveTask::getArchiveFile));
 			}
-			//TODO kludge
-			it.classpath(project.project(":floader-only").getExtensions().getByType(SourceSetContainer.class).getByName("main").getOutput());
 			
-			it.setGroup("runs");
+			//Not sure how to get rid of the default runClient/runServer tasks so i'll at least leave them in the default folder
+			if(it.getName().contains("-")) {
+				it.setGroup("runs");
+			}
 			
-			it.doFirst(__ -> {
-				System.out.println("pppppppppppppppppppppppp");
-				System.out.println(it.getClasspath().getFiles());
-			});
+//			it.doFirst(__ -> {
+//				System.out.println("pppppppppppppppppppppppp");
+//				System.out.println(it.getClasspath().getFiles());
+//			});
 		});
 	}
 }
