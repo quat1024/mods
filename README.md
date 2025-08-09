@@ -18,6 +18,10 @@ In the top-level `build.gradle`, the global version number is set based off the 
 
 ~~contains no actual content mods lol~~ Contains the world's most complicated implementation of "rebind narrator" and crowmap.
 
+Yet more refmap problems:
+
+* missing refmaps for non-loader-specific mixins, i think the problem is util.hasresource checks one source-set but amendMixinJson checks another, revealed as a problem because i no longer collate resources
+
 Run config problems:
 
 * ~~Totally bizarre bug where Neoforge run configurations open the wrong version of the game. `neo-1.21.1 - Client` starts 1.21.5 (with 1.21.1 mods). What?~~ Just using the wrong version of neoforge LOL

@@ -4,9 +4,6 @@ import agency.highlysuspect.modsetup.liason.FabricLiason;
 import agency.highlysuspect.modsetup.liason.ForgeViaMdgLiason;
 import agency.highlysuspect.modsetup.liason.Liason;
 import agency.highlysuspect.modsetup.liason.NeoforgeLiason;
-import com.google.gson.FormattingStyle;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import net.fabricmc.loom.LoomGradlePlugin;
 import net.neoforged.moddevgradle.boot.LegacyForgeModDevPlugin;
@@ -18,7 +15,6 @@ import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ConfigurationContainer;
 import org.gradle.api.file.Directory;
-import org.gradle.api.file.DuplicatesStrategy;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.SourceSet;
@@ -351,12 +347,23 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 				}
 			}
 			
+			/// JIJ ///
+			liason.jijQuatlib();
+			
+			//TODO: just cut-pasted the mixin handling shit to this jar, not sure why it's not sticking
+			for(LoaderMod mod : mods) {
+				if(mod.legacyForgeMixinConfigs.isEmpty()) continue;
+				mod.depJarNamed.configure(jar -> {
+					jar.manifest(man -> {
+						man.attributes(Map.of("MixinConfigs", String.join(",", mod.legacyForgeMixinConfigs)));
+					});
+				});
+			}
+			
+			
 			//hang these tasks off a default gradle task so it's easy to build every mod
 			TaskProvider<?> jar = tasks.named("jar");
 			for(LoaderMod mod : mods) jar.configure(it -> it.dependsOn(mod.depJarNamed));
-			
-			/// JIJ ///
-			liason.jijQuatlib();
 			
 			/// RUN CONFIGS ///
 			project.getLogger().lifecycle("setting up run configs");
@@ -364,25 +371,18 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 		}
 	}
 	
-	private static final Gson GSON = new GsonBuilder()
-		.disableHtmlEscaping()
-		.setFormattingStyle(FormattingStyle.PRETTY.withIndent("\t"))
-		.create();
-	
 	private static void amendMixinJson(Logger log, File mixinJsonFile, String refmapName) {
 		try {
+			log.lifecycle("LOOKING FOR {}", mixinJsonFile);
 			if(mixinJsonFile.exists()) {
 				log.lifecycle("Amending mixin json at {} to contain refmap {}", mixinJsonFile, refmapName);
-				
 				JsonObject mixinJson;
 				try(InputStreamReader in = new InputStreamReader(new FileInputStream(mixinJsonFile))) {
-					mixinJson = GSON.fromJson(in, JsonObject.class);
+					mixinJson = Util.GSON.fromJson(in, JsonObject.class);
 				}
-				
 				mixinJson.addProperty("refmap", refmapName);
-				
 				try(OutputStreamWriter out = new OutputStreamWriter(new FileOutputStream(mixinJsonFile), StandardCharsets.UTF_8)) {
-					out.append(GSON.toJson(mixinJson));
+					out.append(Util.GSON.toJson(mixinJson));
 					out.flush();
 				}
 			}

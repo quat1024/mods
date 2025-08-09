@@ -1,5 +1,8 @@
 package agency.highlysuspect.modsetup;
 
+import com.google.gson.FormattingStyle;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.unascribed.flexver.FlexVerComparator;
 import org.codehaus.groovy.runtime.StringGroovyMethods;
 import org.gradle.api.Project;
@@ -158,4 +161,9 @@ public abstract class Util {
 		}
 		return false;
 	}
+	
+	public static final Gson GSON = new GsonBuilder()
+		.disableHtmlEscaping()
+		.setFormattingStyle(FormattingStyle.PRETTY.withIndent("\t"))
+		.create();
 }
