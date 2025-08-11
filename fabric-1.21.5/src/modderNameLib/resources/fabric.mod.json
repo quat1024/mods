@@ -26,5 +26,15 @@
 		"minecraft": ">=${minecraft_version}",
 		"fabricloader": "*",
 		"fabric-api": "*"
+	},
+	"custom": {
+		"modmenu": {
+			"badges": [
+				"library"
+			],
+			"links": {
+				"modmenu.discord": "https://highlysuspect.agency/discord"
+			}
+		}
 	}
 }

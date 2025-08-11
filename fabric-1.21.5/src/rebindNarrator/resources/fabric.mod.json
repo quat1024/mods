@@ -31,5 +31,12 @@
 	},
 	"suggests": {
 		"amecs-reborn": "*"
+	},
+	"custom": {
+		"modmenu": {
+			"links": {
+				"modmenu.discord": "https://highlysuspect.agency/discord"
+			}
+		}
 	}
 }

@@ -31,5 +31,12 @@
 		"fabric-api": "*",
 		"modder_name_lib": "*",
 		"minecraft": ">=${minecraft_version}"
+	},
+	"custom": {
+		"modmenu": {
+			"links": {
+				"modmenu.discord": "https://highlysuspect.agency/discord"
+			}
+		}
 	}
 }
