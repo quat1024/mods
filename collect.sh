@@ -7,3 +7,5 @@ mkdir collect
 cp ./*1.*/build/libs/*.jar collect
 
 #mv ./collect/*sources*.jar collect/sources
+
+echo "Yay all done"
