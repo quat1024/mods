@@ -3,24 +3,27 @@ package agency.highlysuspect.packages.craftful.fab.client;
 import agency.highlysuspect.packages.craftful.Packages;
 import agency.highlysuspect.packages.craftful.client.PClientBlockEventHandlers;
 import agency.highlysuspect.packages.craftful.client.PackagesClient;
-import agency.highlysuspect.packages.craftful.config.ConfigSchema;
-import agency.highlysuspect.packages.craftful.net.ActionPacket;
-import agency.highlysuspect.packages.craftful.platform.RegistryHandle;
-import agency.highlysuspect.packages.craftful.platform.client.MyScreenConstructor;
-import agency.highlysuspect.packages.craftful.fab.CrummyConfig;
 import agency.highlysuspect.packages.craftful.fab.client.model.FrapiMeshPackageMakerModel;
 import agency.highlysuspect.packages.craftful.fab.client.model.FrapiMeshPackageModel;
 import agency.highlysuspect.packages.craftful.fab.compat.frex.FrexCompat;
+import agency.highlysuspect.packages.craftful.net.ActionPacket;
+import agency.highlysuspect.packages.craftful.platform.RegistryHandle;
+import agency.highlysuspect.packages.craftful.platform.client.MyScreenConstructor;
+import agency.highlysuspect.packages.craftless.PackagesBase;
+import agency.highlysuspect.packages.craftless.client.PackagesBaseClient;
+import agency.highlysuspect.quatlib.craftless.config.ConfigSection;
+import agency.highlysuspect.quatlib.craftless.config.WritableConfig;
+import agency.highlysuspect.quatlib.craftless.config.hdc.HalfDecentConfigFile;
 import agency.highlysuspect.quatlib.craftless.fab.AfterQuatlibClientInitializer;
+import agency.highlysuspect.quatlib.craftless.util.Season1CrummyConfigUpgrader;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
 import net.fabricmc.fabric.api.client.model.ModelLoadingRegistry;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
-import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
-import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.Util;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.MenuAccess;
@@ -31,44 +34,24 @@ import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.client.resources.model.UnbakedModel;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.PackType;
-import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 
+import java.nio.file.Path;
+
 public class FabricClientInit extends PackagesClient implements AfterQuatlibClientInitializer {
-	public static FabricClientInit instanceFabric;
-	
 	private final UnbakedModel packageModel = new FrapiMeshPackageModel();
 	private final UnbakedModel packageMakerModel = new FrapiMeshPackageMakerModel();
-	
-	public FabricClientInit() {
-		if(instanceFabric != null) throw new IllegalStateException("Packages FabricClientInit instantiated twice!");
-		instanceFabric = this;
-	}
 	
 	@Override
 	public void onInitializeClient() {
 		earlySetup();
 		
-		//load config once now
-		refreshConfig();
-		
-		//and load it again on resource reload
-		ResourceManagerHelper.get(PackType.CLIENT_RESOURCES).registerReloadListener(new SimpleSynchronousResourceReloadListener() {
-			@Override
-			public ResourceLocation getFabricId() {
-				return Packages.id("fabric-config-reload");
-			}
-			
-			@Override
-			public void onResourceManagerReload(ResourceManager resourceManager) {
-				refreshConfig();
-			}
-		});
+		//TODO: is this needed?
+		onConfigReload(config);
 		
 		FrexCompat.onInitializeClient();
 		
@@ -138,7 +121,24 @@ public class FabricClientInit extends PackagesClient implements AfterQuatlibClie
 	//config
 	
 	@Override
-	public ConfigSchema.Bakery clientConfigBakery() {
-		return new CrummyConfig.Bakery(FabricLoader.getInstance().getConfigDir().resolve("packages-client.cfg"));
+	public WritableConfig makeClientConfig(ConfigSection schema) {
+		Path configDir = FabricLoader.getInstance().getConfigDir();
+		Path season1ConfigFile = configDir.resolve("packages-client.cfg");
+		Path season2ConfigFile = configDir.resolve("packages-client.txt");
+		
+		new Season1CrummyConfigUpgrader(Packages.LOG, Packages.inst().failures.context())
+			.configureForPackages()
+			.upgrade(season1ConfigFile, season2ConfigFile);
+		
+		return HalfDecentConfigFile.make(
+			failures.context(),
+			schema,
+			season2ConfigFile,
+			PackagesBase.LOG, Util.ioPool()
+		).addReloadHook(this::onConfigReload); // <-------- TODO this reload hook API is crap
+	}
+	
+	public static FabricClientInit inst() {
+		return (FabricClientInit) PackagesBaseClient.INST;
 	}
 }

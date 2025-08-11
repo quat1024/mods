@@ -79,7 +79,7 @@ public class PackageItem extends BlockItem {
 			}
 		}
 		
-		if(Packages.instance.proxy.hasShiftDownForTooltip()) {
+		if(Packages.inst().proxy.hasShiftDownForTooltip()) {
 			PackageStyle style = PackageStyle.fromItemStack(stack);
 			Block frameBlock = style.frameBlock();
 			Block innerBlock = style.innerBlock();
@@ -124,13 +124,13 @@ public class PackageItem extends BlockItem {
 	public int getBarColor(ItemStack stack) {
 		PackageContainer container = PackageContainer.fromItemStack(stack, true);
 		if(container == null) return 0xFF00FF; //Shouldn't be viewable lol
-		else if(Packages.instance.proxy.useRedBarWhenFull() && container.isFull()) return 0xD5636A; //Nice tomato-ey red color
+		else if(Packages.inst().proxy.useRedBarWhenFull() && container.isFull()) return 0xD5636A; //Nice tomato-ey red color
 		else return 0x6666FF; //Same color as the bundle's bar
 	}
 	
 	@Override
 	public boolean overrideStackedOnOther(ItemStack me, Slot slot, ClickAction clickAction, Player player) {
-		if(clickAction != ClickAction.SECONDARY || !Packages.instance.config.get(PropsCommon.INVENTORY_INTERACTIONS)) {
+		if(clickAction != ClickAction.SECONDARY || !Packages.inst().config.get(PropsCommon.INVENTORY_INTERACTIONS)) {
 			return super.overrideStackedOnOther(me, slot, clickAction, player);
 		}
 		
@@ -165,7 +165,7 @@ public class PackageItem extends BlockItem {
 	
 	@Override
 	public boolean overrideOtherStackedOnMe(ItemStack me, ItemStack other, Slot slot, ClickAction clickAction, Player player, SlotAccess slotAccess) {
-		if(clickAction != ClickAction.SECONDARY || !Packages.instance.config.get(PropsCommon.INVENTORY_INTERACTIONS)) {
+		if(clickAction != ClickAction.SECONDARY || !Packages.inst().config.get(PropsCommon.INVENTORY_INTERACTIONS)) {
 			return super.overrideOtherStackedOnMe(me, other, slot, clickAction, player, slotAccess);
 		}
 		
@@ -212,7 +212,7 @@ public class PackageItem extends BlockItem {
 		
 		if(!insertionLeftover.isEmpty()) {
 			//TODO: what happens if `insert` returns nonempty stack? what cases might this come up in?
-			Packages.LOGGER.warn("Non-empty stack (" + insertionLeftover + ") appeared in absorbFromSlot action from player " + player.getScoreboardName() + ". Can you file an issue about what caused this?");
+			Packages.LOG.warn("Non-empty stack (" + insertionLeftover + ") appeared in absorbFromSlot action from player " + player.getScoreboardName() + ". Can you file an issue about what caused this?");
 		}
 		
 		player.playSound(SoundEvents.BUNDLE_INSERT, 0.8f, 0.8f + player.level().getRandom().nextFloat() * 0.4f);
@@ -240,7 +240,7 @@ public class PackageItem extends BlockItem {
 			
 			if(!slotInsertionLeftover.isEmpty()) {
 				//TODO: what happens if `safeInsert` returns nonempty stack? what cases might this come up in?
-				Packages.LOGGER.warn("Non-empty stack (" + slotInsertionLeftover + ") appeared in dropIntoSlot action from player " + player.getScoreboardName() + ". Can you file an issue about what caused this? Thanks.");
+				Packages.LOG.warn("Non-empty stack (" + slotInsertionLeftover + ") appeared in dropIntoSlot action from player " + player.getScoreboardName() + ". Can you file an issue about what caused this? Thanks.");
 			}
 			
 			player.playSound(SoundEvents.BUNDLE_REMOVE_ONE, 0.8f, 0.8f + player.level().getRandom().nextFloat() * 0.4f);

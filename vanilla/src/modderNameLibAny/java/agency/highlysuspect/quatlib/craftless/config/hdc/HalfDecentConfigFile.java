@@ -1,11 +1,7 @@
 package agency.highlysuspect.quatlib.craftless.config.hdc;
 
 import agency.highlysuspect.quatlib.craftless.QuatlibBase;
-import agency.highlysuspect.quatlib.craftless.config.ConfigOpt;
-import agency.highlysuspect.quatlib.craftless.config.ConfigSection;
-import agency.highlysuspect.quatlib.craftless.config.MatchedUnparsedConfig;
-import agency.highlysuspect.quatlib.craftless.config.MutableMapConfig;
-import agency.highlysuspect.quatlib.craftless.config.ValidatedConfig;
+import agency.highlysuspect.quatlib.craftless.config.*;
 import agency.highlysuspect.quatlib.craftless.config.sn.Sn;
 import agency.highlysuspect.quatlib.craftless.config.sn.SnParser;
 import agency.highlysuspect.quatlib.craftless.failure.CtxChain;
@@ -16,7 +12,9 @@ import agency.highlysuspect.quatlib.craftless.util.SharedConfigFileWatcher;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
@@ -35,6 +33,9 @@ public class HalfDecentConfigFile extends MutableMapConfig {
 	private final Path path;
 	private final LogFacade log;
 	private final Executor background;
+	
+	//reload hooks
+	private List<Consumer<ReadableConfig>> reloadHooks = new ArrayList<>(1);
 	
 	//filewatcher debouncing. we can get multiple events from the OS.
 	long filewatcherDebounce = 0;
@@ -122,6 +123,9 @@ public class HalfDecentConfigFile extends MutableMapConfig {
 		state = new IdentityHashMap<>(validated.toMap());
 		log.info("Loaded {} options.", state.size());
 		
+		//run reload hooks
+		for(Consumer<ReadableConfig> hook : reloadHooks) hook.accept(this);
+		
 		//schedule a saveback
 		saveLater();
 	}
@@ -150,6 +154,11 @@ public class HalfDecentConfigFile extends MutableMapConfig {
 				load();
 			}
 		});
+	}
+	
+	public HalfDecentConfigFile addReloadHook(Consumer<ReadableConfig> hook) {
+		reloadHooks.add(hook);
+		return this;
 	}
 	
 	public static HalfDecentConfigFile make(CtxChain ctx, ConfigSection schema, Path path, LogFacade log, Executor background) {

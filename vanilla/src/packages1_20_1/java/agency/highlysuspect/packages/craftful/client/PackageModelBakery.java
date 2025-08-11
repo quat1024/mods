@@ -93,7 +93,7 @@ public interface PackageModelBakery<MODEL> {
 		TextureAtlasSprite specialInnerSprite = textureGetter.apply(SPECIAL_INNER);
 		
 		PackageModelBakery<X> bakery = maker.make(baseModel, specialFrameSprite, specialInnerSprite);
-		if(PackagesClient.instance.config.get(PropsClient.CACHE_MESHES)) bakery = new Caching<>(bakery);
+		if(PackagesClient.inst().config.get(PropsClient.CACHE_MESHES)) bakery = new Caching<>(bakery);
 		return bakery;
 	}
 }

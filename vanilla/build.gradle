@@ -52,6 +52,7 @@ configurations {
 	modderNameLibAnyCompileOnly.extendsFrom compileStubs
 	crowmapAnyCompileOnly.extendsFrom compileStubs
 	rebindNarratorAnyCompileOnly.extendsFrom compileStubs
+	packagesAnyCompileOnly.extendsFrom compileStubs
 }
 
 dependencies {

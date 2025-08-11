@@ -1,23 +1,23 @@
 package agency.highlysuspect.packages.craftful.fab;
 
 import agency.highlysuspect.packages.craftful.Packages;
-import agency.highlysuspect.packages.craftful.config.ConfigSchema;
 import agency.highlysuspect.packages.craftful.net.ActionPacket;
 import agency.highlysuspect.packages.craftful.platform.BlockEntityFactory;
 import agency.highlysuspect.packages.craftful.platform.MyMenuSupplier;
 import agency.highlysuspect.packages.craftful.platform.RegistryHandle;
+import agency.highlysuspect.quatlib.craftless.config.ConfigSection;
+import agency.highlysuspect.quatlib.craftless.config.WritableConfig;
+import agency.highlysuspect.quatlib.craftless.config.hdc.HalfDecentConfigFile;
 import agency.highlysuspect.quatlib.craftless.fab.AfterQuatlibInitializer;
+import agency.highlysuspect.quatlib.craftless.util.Season1CrummyConfigUpgrader;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
-import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
-import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.Util;
 import net.minecraft.core.Registry;
 import net.minecraft.core.dispenser.DispenseItemBehavior;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.PackType;
-import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
@@ -28,28 +28,13 @@ import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 
+import java.nio.file.Path;
 import java.util.function.Supplier;
 
 public class FabricInit extends Packages implements AfterQuatlibInitializer {
 	@Override
 	public void onInitialize() {
 		earlySetup();
-		
-		//load config once now
-		refreshConfig();
-		
-		//and again on resource load
-		ResourceManagerHelper.get(PackType.SERVER_DATA).registerReloadListener(new SimpleSynchronousResourceReloadListener() {
-			@Override
-			public ResourceLocation getFabricId() {
-				return Packages.id("fabric-config-reload");
-			}
-			
-			@Override
-			public void onResourceManagerReload(ResourceManager resourceManager) {
-				refreshConfig();
-			}
-		});
 	}
 	
 	@Override
@@ -93,7 +78,21 @@ public class FabricInit extends Packages implements AfterQuatlibInitializer {
 	}
 	
 	@Override
-	public ConfigSchema.Bakery commonConfigBakery() {
-		return new CrummyConfig.Bakery(FabricLoader.getInstance().getConfigDir().resolve("packages-common.cfg"));
+	public WritableConfig makeConfig(ConfigSection schema) {
+		Path configDir = FabricLoader.getInstance().getConfigDir();
+		Path season1ConfigFile = configDir.resolve("packages-common.cfg");
+		Path season2ConfigFile = configDir.resolve("packages-common.txt");
+		
+		new Season1CrummyConfigUpgrader(LOG, failures.context())
+			.configureForPackages()
+			.upgrade(season1ConfigFile, season2ConfigFile);
+		
+		return HalfDecentConfigFile.make(
+			failures.context(),
+			schema,
+			season2ConfigFile,
+			LOG, Util.ioPool()
+		);
 	}
+	
 }

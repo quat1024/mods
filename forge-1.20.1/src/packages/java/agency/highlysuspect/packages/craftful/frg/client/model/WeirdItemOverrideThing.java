@@ -38,7 +38,7 @@ public abstract class WeirdItemOverrideThing extends ItemOverrides {
 			}
 		};
 		
-		if(PackagesClient.instance.config.get(PropsClient.CACHE_MESHES)) bakeybake = new PackageModelBakery.Caching<>(bakeybake);
+		if(PackagesClient.inst().config.get(PropsClient.CACHE_MESHES)) bakeybake = new PackageModelBakery.Caching<>(bakeybake);
 		this.itemModelMaker = bakeybake;
 	}
 	

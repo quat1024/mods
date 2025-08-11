@@ -48,7 +48,7 @@ public class PackageRenderer implements BlockEntityRenderer<PackageBlockEntity> 
 		//0: No correction.
 		//1: Use the light level in front.
 		//2: Use the light level in front if the current light level is nonzero.
-		switch(PackagesClient.instance.config.get(PropsClient.LIGHTING_CORRECTION)) {
+		switch(PackagesClient.inst().config.get(PropsClient.LIGHTING_CORRECTION)) {
 			case 2:
 				if(light != 0) break;
 			case 1:

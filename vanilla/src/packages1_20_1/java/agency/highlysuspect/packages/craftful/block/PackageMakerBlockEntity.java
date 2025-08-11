@@ -56,7 +56,7 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Wo
 	@SuppressWarnings("RedundantIfStatement")
 	public static boolean matchesFrameSlot(ItemStack stack) {
 		if(!matchesFrameOrInnerSlotLogic(stack)) return false;
-		if(Packages.instance.config.get(PropsCommon.PACKAGE_MAKER_ALLOW_LIST_MODE) && !stack.is(PTags.ALLOWLIST_PACKAGE_MAKER_FRAME)) return false;
+		if(Packages.inst().config.get(PropsCommon.PACKAGE_MAKER_ALLOW_LIST_MODE) && !stack.is(PTags.ALLOWLIST_PACKAGE_MAKER_FRAME)) return false;
 		
 		return true;
 	}
@@ -64,7 +64,7 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Wo
 	@SuppressWarnings("RedundantIfStatement")
 	public static boolean matchesInnerSlot(ItemStack stack) {
 		if(!matchesFrameOrInnerSlotLogic(stack)) return false;
-		if(Packages.instance.config.get(PropsCommon.PACKAGE_MAKER_ALLOW_LIST_MODE) && !stack.is(PTags.ALLOWLIST_PACKAGE_MAKER_INNER)) return false;
+		if(Packages.inst().config.get(PropsCommon.PACKAGE_MAKER_ALLOW_LIST_MODE) && !stack.is(PTags.ALLOWLIST_PACKAGE_MAKER_INNER)) return false;
 		return true;
 	}
 	
@@ -357,7 +357,7 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Wo
 		//I still feel like it's weird that nonexistent classes can be referenced on the *interior* of a method as long as it's never called?
 		//Idk i don't trust it lol. (Is this defined behavior in the jvm spec or does it just happen to work on hotspot)
 		if(level != null && level.isClientSide()) {
-			Packages.instance.proxy.forceChunkRerender(level, getBlockPos());
+			Packages.inst().proxy.forceChunkRerender(level, getBlockPos());
 		}
 	}
 	

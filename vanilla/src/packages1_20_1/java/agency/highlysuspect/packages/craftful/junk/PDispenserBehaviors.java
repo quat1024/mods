@@ -15,7 +15,7 @@ import net.minecraft.world.level.block.DispenserBlock;
 
 public class PDispenserBehaviors {
 	public static void onInitialize() {
-		Packages.instance.registerDispenserBehavior(PItems.PACKAGE, new SimpleBlockPlacementDispenserBehavior());
+		Packages.inst().registerDispenserBehavior(PItems.PACKAGE, new SimpleBlockPlacementDispenserBehavior());
 	}
 	
 	//Copy-paste of ShulkerBoxDispenseBehavior, but it doesn't try to be smart about placing "on the ground"

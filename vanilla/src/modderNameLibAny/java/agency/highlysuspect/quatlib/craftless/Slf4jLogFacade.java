@@ -24,4 +24,9 @@ public class Slf4jLogFacade implements LogFacade {
 	public void warn(String pattern, Object... args) {
 		logger.warn(pattern, args);
 	}
+	
+	@Override
+	public void error(String pattern, Object... args) {
+		logger.error(pattern, args);
+	}
 }

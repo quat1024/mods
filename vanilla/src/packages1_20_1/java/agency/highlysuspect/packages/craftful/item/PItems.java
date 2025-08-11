@@ -17,8 +17,8 @@ public class PItems {
 	public static RegistryHandle<PackageItem> PACKAGE;
 	
 	public static void onInitialize() {
-		Packages.instance.register(BuiltInRegistries.CREATIVE_MODE_TAB, Packages.id("group"), () -> 
-			Packages.instance.creativeModeTabBuilder()
+		Packages.inst().register(BuiltInRegistries.CREATIVE_MODE_TAB, Packages.id("group"), () ->
+			Packages.inst().creativeModeTabBuilder()
 				.title(Component.translatable("itemGroup.packages.group"))
 				.icon(() -> {
 					try {
@@ -35,7 +35,7 @@ public class PItems {
 				.build()
 		);
 		
-		PACKAGE_MAKER = Packages.instance.register(BuiltInRegistries.ITEM, PBlocks.PACKAGE_MAKER.getId(), () -> new BlockItem(PBlocks.PACKAGE_MAKER.get(), new Item.Properties()));
-		PACKAGE = Packages.instance.register(BuiltInRegistries.ITEM, PBlocks.PACKAGE.getId(), () -> new PackageItem(PBlocks.PACKAGE.get(), new Item.Properties()));
+		PACKAGE_MAKER = Packages.inst().register(BuiltInRegistries.ITEM, PBlocks.PACKAGE_MAKER.getId(), () -> new BlockItem(PBlocks.PACKAGE_MAKER.get(), new Item.Properties()));
+		PACKAGE = Packages.inst().register(BuiltInRegistries.ITEM, PBlocks.PACKAGE.getId(), () -> new PackageItem(PBlocks.PACKAGE.get(), new Item.Properties()));
 	}
 }

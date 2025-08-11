@@ -43,7 +43,7 @@ public class BakedQuadPackageModelBakery implements PackageModelBakery<List<Bake
 	
 	@Override
 	public List<BakedQuad> bake(@Nullable Object cacheKey, @Nullable DyeColor faceColor, @Nullable Block frameBlock, @Nullable Block innerBlock) {
-		boolean swapRedAndBlue = PackagesClient.instance.config.get(PropsClient.FORGE_SWAP_RED_AND_BLUE);
+		boolean swapRedAndBlue = PackagesClient.inst().config.get(PropsClient.FORGE_SWAP_RED_AND_BLUE);
 		
 		ArrayList<BakedQuad> result = new ArrayList<>();
 		

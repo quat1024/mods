@@ -29,7 +29,7 @@ public class PClientBlockEventHandlers {
 		if(canAttack(player, level, pos, direction)) {
 			//Legacy stuff! Here's a reimplementation of the old, broken left click antirepeat. Old mod effectively had punchRepeat set to 4 ticks btw.
 			//removed in https://github.com/quat1024/packages/commit/401a19818dac539174081b219ca10c797fa0abf0
-			int punchRepeat = PackagesClient.instance.config.get(PropsClient.PUNCH_REPEAT);
+			int punchRepeat = PackagesClient.inst().config.get(PropsClient.PUNCH_REPEAT);
 			if(!level.isClientSide || punchRepeat < 0) return InteractionResult.CONSUME;
 			
 			if(pos.equals(lastPunchPosLegacy) && (level.getGameTime() - lastPunchTickLegacy <= punchRepeat)) return InteractionResult.CONSUME;
@@ -59,7 +59,7 @@ public class PClientBlockEventHandlers {
 		if(pkg.performAction(player, hand, action, true)) {
 			//...send a packet to do it for real
 			//SUCCESS sends a block-place packet too because fabric api is weird, so we use CONSUME+swing to mark the action as successful.
-			PackagesClient.instance.sendActionPacket(new ActionPacket(pos, hand, action));
+			PackagesClient.inst().sendActionPacket(new ActionPacket(pos, hand, action));
 			player.swing(hand);
 			return InteractionResult.CONSUME;
 		}
@@ -91,7 +91,7 @@ public class PClientBlockEventHandlers {
 		if(action == null) return false;
 		
 		if(pkg.performAction(player, InteractionHand.MAIN_HAND, action, true)) {
-			PackagesClient.instance.sendActionPacket(new ActionPacket(pos, InteractionHand.MAIN_HAND, action));
+			PackagesClient.inst().sendActionPacket(new ActionPacket(pos, InteractionHand.MAIN_HAND, action));
 			lastPunchTickLegacy = level.getGameTime();
 			return true;
 		}
@@ -102,7 +102,7 @@ public class PClientBlockEventHandlers {
 		//Find the closest one by edit distance
 		PackageActionBinding leastWrongBinding = null;
 		int leastWrongness = NOPE;
-		for(PackageActionBinding binding : PackagesClient.instance.sortedBindings) {
+		for(PackageActionBinding binding : PackagesClient.inst().sortedBindings) {
 			int wrongness = computeWrongness(player, binding, main);
 			if(wrongness == 0) return binding.action(); //Exact match, don't bother checking others
 			if(wrongness < leastWrongness) {

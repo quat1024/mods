@@ -135,7 +135,7 @@ public class PackageBlock extends Block implements EntityBlock {
 		if(!world.isClientSide && player.isCreative()) {
 			//Spawn a drop, even in creative mode. This echoes what shulker boxes do.
 			getDrops(state, (ServerLevel) world, pos, world.getBlockEntity(pos)).forEach(s -> {
-				if(!Packages.instance.config.get(PropsCommon.DROP_EMPTY_PACKAGES_IN_CREATIVE)) {
+				if(!Packages.inst().config.get(PropsCommon.DROP_EMPTY_PACKAGES_IN_CREATIVE)) {
 					PackageContainer cont = PackageContainer.fromItemStack(s, true);
 					if(cont == null || cont.isEmpty()) return;
 				}

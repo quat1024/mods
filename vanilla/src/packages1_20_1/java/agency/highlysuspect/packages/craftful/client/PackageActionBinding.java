@@ -53,7 +53,7 @@ public record PackageActionBinding(PackageAction action, boolean ctrl, boolean s
 				case "alt" -> b.alt();
 				case "punch", "attack", "left" -> b.punch();
 				case "use", "right", "activate" -> b.use();
-				default -> Packages.LOGGER.warn("Unknown PackageActionBinding component '" + option + "', skipping");
+				default -> Packages.LOG.warn("Unknown PackageActionBinding component '" + option + "', skipping");
 			}
 		}
 		return b.build();

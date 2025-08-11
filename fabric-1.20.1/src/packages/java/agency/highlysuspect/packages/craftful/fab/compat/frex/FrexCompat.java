@@ -5,7 +5,7 @@ public class FrexCompat {
 	
 	static {
 		FrexProxy p = new NoFrex();
-//		if(PackagesClient.instance.config.get(PropsClient.FABRIC_FREX_SUPPORT) && FabricLoader.getInstance().isModLoaded("frex")) {
+//		if(PackagesClient.inst().config.get(PropsClient.FABRIC_FREX_SUPPORT) && FabricLoader.getInstance().isModLoaded("frex")) {
 //			Packages.LOGGER.info("Packages is loading FREX support !");
 //			try {
 //				p = (FrexProxy) Class.forName("agency.highlysuspect.packages.craftful.fab.compat.frex.YesFrex").getDeclaredConstructor().newInstance();

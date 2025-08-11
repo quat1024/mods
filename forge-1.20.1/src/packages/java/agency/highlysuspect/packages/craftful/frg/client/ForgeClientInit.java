@@ -1,17 +1,17 @@
 package agency.highlysuspect.packages.craftful.frg.client;
 
-import agency.highlysuspect.packages.craftful.Packages;
 import agency.highlysuspect.packages.craftful.client.PClientBlockEventHandlers;
 import agency.highlysuspect.packages.craftful.client.PackagesClient;
-import agency.highlysuspect.packages.craftful.config.ConfigSchema;
+import agency.highlysuspect.packages.craftful.frg.ForgeInit;
+import agency.highlysuspect.packages.craftful.frg.client.model.ForgePackageMakerModel;
+import agency.highlysuspect.packages.craftful.frg.client.model.ForgePackageModel;
+import agency.highlysuspect.packages.craftful.frg.client.model.NoConfigGeometryLoader;
 import agency.highlysuspect.packages.craftful.net.ActionPacket;
 import agency.highlysuspect.packages.craftful.platform.RegistryHandle;
 import agency.highlysuspect.packages.craftful.platform.client.MyScreenConstructor;
-import agency.highlysuspect.packages.craftful.frg.ForgeBackedConfig;
-import agency.highlysuspect.packages.craftful.frg.ForgeInit;
-import agency.highlysuspect.packages.craftful.frg.client.model.NoConfigGeometryLoader;
-import agency.highlysuspect.packages.craftful.frg.client.model.ForgePackageMakerModel;
-import agency.highlysuspect.packages.craftful.frg.client.model.ForgePackageModel;
+import agency.highlysuspect.quatlib.craftful.frg.ForgeBackedConfig_V1;
+import agency.highlysuspect.quatlib.craftless.config.ConfigSection;
+import agency.highlysuspect.quatlib.craftless.config.WritableConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.gui.screens.Screen;
@@ -33,14 +33,13 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.client.event.ModelEvent;
-import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.Event;
+import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.LogicalSide;
-import net.minecraftforge.fml.ModLoadingContext;
+import net.minecraftforge.fml.ModContainer;
 import net.minecraftforge.fml.config.ModConfig;
-import net.minecraftforge.fml.event.config.ModConfigEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
@@ -50,32 +49,26 @@ import java.util.List;
 import java.util.Map;
 
 public class ForgeClientInit extends PackagesClient {
-	public static ForgeClientInit instanceForge;
-	
-	private final ForgeConfigSpec.Builder forgeSpec = new ForgeConfigSpec.Builder();
-	
 	private final List<MenuScreenEntry<?, ?>> menuScreensToRegister = new ArrayList<>();
 	private final List<BlockEntityRendererEntry<?>> blockEntityRenderersToRegister = new ArrayList<>();
 	private final Map<RegistryHandle<? extends Block>, RenderType> renderTypesToRegister = new HashMap<>();
 	
-	private static record MenuScreenEntry<T extends AbstractContainerMenu, U extends Screen & MenuAccess<T>>(RegistryHandle<MenuType<T>> type, MyScreenConstructor<T, U> cons) {
+	private record MenuScreenEntry<T extends AbstractContainerMenu, U extends Screen & MenuAccess<T>>(RegistryHandle<MenuType<T>> type, MyScreenConstructor<T, U> cons) {
 		private void register() { MenuScreens.register(type.get(), cons::create); } //generics moment
 	}
 	
-	private static record BlockEntityRendererEntry<T extends BlockEntity>(RegistryHandle<? extends BlockEntityType<T>> type, BlockEntityRendererProvider<? super T> renderer) {
+	private record BlockEntityRendererEntry<T extends BlockEntity>(RegistryHandle<? extends BlockEntityType<T>> type, BlockEntityRendererProvider<? super T> renderer) {
 		private void register(EntityRenderersEvent.RegisterRenderers e) { e.registerBlockEntityRenderer(type.get(), renderer); } //generics moment
 	}
 	
+	protected final IEventBus modBus;
+	protected final ModContainer modContainer;
+	
 	public ForgeClientInit() {
-		if(instanceForge != null) throw new IllegalStateException("Packages ForgeClientInit instantiated twice!");
-		instanceForge = this;
-		
 		earlySetup();
 		
-		//finish up config (earlySetup populated the forgeSpec)
-		ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, forgeSpec.build(), "packages-client.toml");
-		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onLoadConfig);
-		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onReloadConfig);
+		modBus = ForgeInit.inst().modBus;
+		modContainer = ForgeInit.inst().modContainer;
 		
 		//misc events (generally, toppling the dominoes that earlySetup stood)
 		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::actuallyRegisterMenuScreens);
@@ -158,15 +151,7 @@ public class ForgeClientInit extends PackagesClient {
 	
 	@Override
 	public void sendActionPacket(ActionPacket packet) {
-		ForgeInit.instanceForge.channel.sendToServer(packet);
-	}
-	
-	private void onLoadConfig(ModConfigEvent.Loading e) {
-		if(e.getConfig().getModId().equals(Packages.MODID)) refreshConfig();
-	}
-	
-	private void onReloadConfig(ModConfigEvent.Reloading e) {
-		if(e.getConfig().getModId().equals(Packages.MODID)) refreshConfig();
+		ForgeInit.inst().channel.sendToServer(packet);
 	}
 	
 	private void actuallyRegisterMenuScreens(FMLClientSetupEvent e) {
@@ -182,8 +167,10 @@ public class ForgeClientInit extends PackagesClient {
 		renderTypesToRegister.forEach((handle, layer) -> ItemBlockRenderTypes.setRenderLayer(handle.get(), layer));
 	}
 	
+	//config
 	@Override
-	public ConfigSchema.Bakery clientConfigBakery() {
-		return new ForgeBackedConfig.Bakery(forgeSpec);
+	public WritableConfig makeClientConfig(ConfigSection schema) {
+		return ForgeBackedConfig_V1.make(failures.context(), schema, modBus, modContainer, ModConfig.Type.CLIENT)
+			.addReloadHook(this::onConfigReload);
 	}
 }

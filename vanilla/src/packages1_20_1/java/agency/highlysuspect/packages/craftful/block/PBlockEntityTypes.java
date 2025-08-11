@@ -10,7 +10,7 @@ public class PBlockEntityTypes {
 	public static RegistryHandle<BlockEntityType<PackageMakerBlockEntity>> PACKAGE_MAKER;
 	
 	public static void onInitialize() {
-		PACKAGE = Packages.instance.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, Packages.id("package"), () -> Packages.instance.makeBlockEntityType(PackageBlockEntity::new, PBlocks.PACKAGE.get()));
-		PACKAGE_MAKER = Packages.instance.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, Packages.id("package_maker"), () -> Packages.instance.makeBlockEntityType(PackageMakerBlockEntity::new, PBlocks.PACKAGE_MAKER.get()));
+		PACKAGE = Packages.inst().register(BuiltInRegistries.BLOCK_ENTITY_TYPE, Packages.id("package"), () -> Packages.inst().makeBlockEntityType(PackageBlockEntity::new, PBlocks.PACKAGE.get()));
+		PACKAGE_MAKER = Packages.inst().register(BuiltInRegistries.BLOCK_ENTITY_TYPE, Packages.id("package_maker"), () -> Packages.inst().makeBlockEntityType(PackageMakerBlockEntity::new, PBlocks.PACKAGE_MAKER.get()));
 	}
 }

@@ -16,7 +16,7 @@ public class PSoundEvents {
 	public static RegistryHandle<SoundEvent> TAKE_ALL;
 	
 	private static RegistryHandle<SoundEvent> reg(ResourceLocation id) {
-		return Packages.instance.register(BuiltInRegistries.SOUND_EVENT, id, () -> SoundEvent.createVariableRangeEvent(id));
+		return Packages.inst().register(BuiltInRegistries.SOUND_EVENT, id, () -> SoundEvent.createVariableRangeEvent(id));
 	}
 	
 	public static void onInitialize() {

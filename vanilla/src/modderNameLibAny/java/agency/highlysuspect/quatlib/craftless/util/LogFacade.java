@@ -6,6 +6,7 @@ import java.util.function.Consumer;
 public interface LogFacade extends Consumer<String> {
 	void info(String pattern, Object... args);
 	void warn(String pattern, Object... args);
+	void error(String pattern, Object... args);
 	
 	@Override
 	default void accept(String s) {
@@ -34,6 +35,11 @@ public interface LogFacade extends Consumer<String> {
 		@Override
 		public void warn(String pattern, Object... args) {
 			fancy(err, pattern, args);
+		}
+		
+		@Override
+		public void error(String pattern, Object... args) {
+			fancy(err, "ERROR: " + pattern, args);
 		}
 		
 		//honestly idgaf about the ability to escape the {} pattern

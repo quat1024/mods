@@ -9,6 +9,6 @@ public class PMenuTypes {
 	public static RegistryHandle<MenuType<PackageMakerMenu>> PACKAGE_MAKER;
 	
 	public static void onInitialize() {
-		PACKAGE_MAKER = Packages.instance.register(BuiltInRegistries.MENU, Packages.id("package_maker"), () -> Packages.instance.makeMenuType(PackageMakerMenu::new));
+		PACKAGE_MAKER = Packages.inst().register(BuiltInRegistries.MENU, Packages.id("package_maker"), () -> Packages.inst().makeMenuType(PackageMakerMenu::new));
 	}
 }
