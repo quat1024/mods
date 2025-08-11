@@ -6,6 +6,8 @@ mkdir collect
 # excludes :vanilla, excludes :floader-only
 cp ./*1.*/build/libs/*.jar collect
 
+cp CHANGELOG.md collect
+
 #mv ./collect/*sources*.jar collect/sources
 
 echo "Yay all done"

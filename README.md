@@ -1,8 +1,26 @@
-# quat's mods
+# quat's mods *(Season 2)*
 
-Monorepo. An attempt at implementing ["project sanity"](https://notes.highlysuspect.agency/project-sanity.html).
+This monorepo contains the source for all of my *Season 2* mods. They can be identified by their datestamped versions (a version number like `2025.08.10` for a mod released on August 10, 2025) and a dependency on `modder_name_lib`. If it has a much smaller version number, it's a *Season 1* mod.
 
-## shape
+* *Modder Name Lib* (fabric/forge 1.20.1, fabric/neoforge 1.21.1, fabric/neoforge 1.21.5)
+  * Contains code shared between all of the *Season 2* mods.
+  * You probably don't need to download it separately; on supported platforms it is shipped alongside each mod with the modloader's jar-in-jar system.
+* *Rebind Narrator* (fabric/forge 1.20.1, fabric/neoforge 1.21.1, fabric/neoforge 1.21.5)
+  * Change the narrator keybind.
+  * [Curseforge](https://www.curseforge.com/minecraft/mc-mods/rebind-narrator), [Modrinth](https://modrinth.com/mod/rebind-narrator).
+  * *Season 1* codebase: [quat1024/RebindNarrator](https://github.com/quat1024/RebindNarrator)
+* *Crowmap* (fabric/forge 1.20.1, fabric/neoforge 1.21.1, fabric/neoforge 1.21.5)
+  * Maps update anywhere in your inventory. 
+  * [Curseforge](https://www.curseforge.com/minecraft/mc-mods/crowmap), [Modrinth](https://modrinth.com/mod/crowmap) .
+  * *Season 1* codebase: [quat1024/Crowmap](https://github.com/quat1024/Crowmap)
+
+(This is a heinously complicated gradle house-of-cards, so I'm starting with the simple ones.)
+
+## Why
+
+I called it ["project sanity"](https://notes.highlysuspect.agency/project-sanity.html). I was getting very annoyed with Minecraft modding largely because of the porting workload, the code duplication, the long wait-times when switching between projects, and the frictions involved in scaffolding a new project (even a small throwaway project). So this repo (hopefully!) allows me to work on mods without the things that burn me out.
+
+## How
 
 It's multi-version development, multi-mod development, *and* [multi-loader](https://github.com/jaredlll08/multiloader-template) development in the same repo.
 
@@ -18,20 +36,10 @@ In the top-level `build.gradle`, the global version number is set based off the 
 
 ~~contains no actual content mods lol~~ Contains the world's most complicated implementation of "rebind narrator" and crowmap.
 
-Yet more refmap problems:
-
-* missing refmaps for non-loader-specific mixins, i think the problem is util.hasresource checks one source-set but amendMixinJson checks another, revealed as a problem because i no longer collate resources
-
-Run config problems:
-
-* ~~Totally bizarre bug where Neoforge run configurations open the wrong version of the game. `neo-1.21.1 - Client` starts 1.21.5 (with 1.21.1 mods). What?~~ Just using the wrong version of neoforge LOL
-* ~~Back to assets not loading on Loom run configs~~ Fixed by loading the built jars instead of loading out of classes/resources dirs. Janky but seems to work
-
 Wishlist:
 
-* Automatically jar-in-jar moddernamelib on legacyforge and neoforge. (Will probably need to write my own task for this, the jij stuff in MDG seems tricky to use.)
-* Datagen system
-* Make moddernamelib/quatlib less "special" throughout the ecosystem. E.g. i should be able to make a second quatlib for my mods on very old versions
+* [Datagen system](https://notes.highlysuspect.agency/another-datagen.html)
+* Make moddernamelib less "special" throughout the ecosystem. E.g. i should be able to make a second quatlib for my mods on very old versions
 * Automated publishing
 
 ## Note
