@@ -12,7 +12,6 @@ modSetup.go {
 	mods {
 		rebind_narrator {
 			legacyForgeMixinConfigs += "rebind_narrator.mixins.json"
-			legacyForgeMixinConfigs += "rebind_narrator.forge.mixins.json"
 		}
 		crowmap {
 			legacyForgeMixinConfigs += "crowmap.mixins.json"
