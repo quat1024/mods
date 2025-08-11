@@ -34,6 +34,7 @@ public class LoaderMod extends VanillaMod {
 	public Configuration splat;
 	public TaskProvider<Jar> depJar;
 	public TaskProvider<? extends Jar> depJarNamed;
+	public TaskProvider<? extends Jar> depJarNamedJarjarred;
 	
 	public List<RefmapJob> refmapJobs = new ArrayList<>();
 }

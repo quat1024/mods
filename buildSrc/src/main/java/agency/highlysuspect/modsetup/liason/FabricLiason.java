@@ -20,7 +20,7 @@ import java.io.File;
 import java.lang.reflect.Field;
 import java.util.List;
 
-public class FabricLiason extends Liason implements Liason.RemapLiason, Liason.RefmapLiason {
+public class FabricLiason extends Liason implements Liason.RemapLiason, Liason.RefmapLiason, Liason.JarInJarLiason {
 	public FabricLiason(Project project, String ver, NamedDomainObjectContainer<LoaderMod> mods) {
 		super(project, ver, "fabric", mods);
 		this.loom = project.getExtensions().getByType(LoomGradleExtensionAPI.class);
@@ -122,7 +122,12 @@ public class FabricLiason extends Liason implements Liason.RemapLiason, Liason.R
 	}
 	
 	@Override
-	public void jijQuatlib() {
+	public @Nullable JarInJarLiason getJarInJarLiason() {
+		return this;
+	}
+	
+	@Override
+	public void setupJarInJars() {
 		LoaderMod quatlib = mods.getByName("modder_name_lib");
 		
 		for(LoaderMod mod : mods) {
@@ -135,6 +140,8 @@ public class FabricLiason extends Liason implements Liason.RemapLiason, Liason.R
 					((RemapJarTask) it).getAddNestedDependencies().set(true);
 				});
 			}
+			
+			mod.depJarNamedJarjarred = mod.depJarNamed; //accomplished in the same task
 		}
 	}
 	

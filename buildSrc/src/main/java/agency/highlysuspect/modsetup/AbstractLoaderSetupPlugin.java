@@ -123,6 +123,7 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 			this.loader = liason.loader;
 			Liason.RefmapLiason refmapHelper = liason.getRefmapLiason();
 			Liason.RemapLiason remapHelper = liason.getRemapLiason();
+			Liason.JarInJarLiason jijHelper = liason.getJarInJarLiason();
 			
 			LoaderMod quatlib = mods.create("modder_name_lib", it -> {
 				it.vars.put("name", "ModderNameLib");
@@ -341,14 +342,9 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 				
 				remapHelper.remapMods();
 			} else {
-				//remapHelper == null -> no remapping is needed
-				for(LoaderMod mod : mods) {
-					mod.depJarNamed = mod.depJar; //the mod is already named correctly
-				}
+				//remapHelper == null so no remapping is needed
+				for(LoaderMod mod : mods) mod.depJarNamed = mod.depJar; //the mod is already named correctly
 			}
-			
-			/// JIJ ///
-			liason.jijQuatlib();
 			
 			//TODO: just cut-pasted the mixin handling shit to this jar, not sure why it's not sticking
 			for(LoaderMod mod : mods) {
@@ -360,10 +356,16 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 				});
 			}
 			
+			/// JIJ ///
+			if(jijHelper != null) {
+				jijHelper.setupJarInJars();
+			} else {
+				for(LoaderMod mod : mods) mod.depJarNamedJarjarred = mod.depJarNamed;
+			}
 			
 			//hang these tasks off a default gradle task so it's easy to build every mod
 			TaskProvider<?> jar = tasks.named("jar");
-			for(LoaderMod mod : mods) jar.configure(it -> it.dependsOn(mod.depJarNamed));
+			for(LoaderMod mod : mods) jar.configure(it -> it.dependsOn(mod.depJarNamedJarjarred));
 			
 			/// RUN CONFIGS ///
 			project.getLogger().lifecycle("setting up run configs");

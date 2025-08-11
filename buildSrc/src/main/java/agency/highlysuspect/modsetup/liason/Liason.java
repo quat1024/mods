@@ -32,11 +32,11 @@ public abstract class Liason extends Util {
 	
 	public abstract void setupOfficialNames();
 	public abstract void disableUnusedDefaultTasks();
-	public abstract void jijQuatlib();
 	public abstract void setupRuns();
 	
 	public abstract @Nullable RefmapLiason getRefmapLiason();
 	public abstract @Nullable RemapLiason getRemapLiason();
+	public abstract @Nullable JarInJarLiason getJarInJarLiason();
 	
 	public interface RemapLiason {
 		void createIncomingRemapConfigurations(LoaderMod mod);
@@ -49,5 +49,9 @@ public abstract class Liason extends Util {
 		File refmapGetMappingsIn();
 		List<String> refmapArgs(RegularFileProperty mappingsIn, RegularFileProperty mappingsOut, RegularFileProperty refmapOut);
 		void configureRefmapTask(TaskProvider<JavaCompile> task);
+	}
+	
+	public interface JarInJarLiason {
+		void setupJarInJars();
 	}
 }
