@@ -65,10 +65,10 @@ public class ForgeClientInit extends PackagesClient {
 	protected final ModContainer modContainer;
 	
 	public ForgeClientInit() {
-		earlySetup();
-		
 		modBus = ForgeInit.inst().modBus;
 		modContainer = ForgeInit.inst().modContainer;
+		
+		earlySetup();
 		
 		//misc events (generally, toppling the dominoes that earlySetup stood)
 		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::actuallyRegisterMenuScreens);

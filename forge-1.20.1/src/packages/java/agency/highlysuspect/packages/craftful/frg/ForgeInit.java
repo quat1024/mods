@@ -65,6 +65,8 @@ public class ForgeInit extends Packages {
 	public final IEventBus modBus;
 	
 	public ForgeInit() {
+		super();
+		
 		this.modContainer = ModLoadingContext.get().getActiveContainer();
 		this.modBus = FMLJavaModLoadingContext.get().getModEventBus();
 		

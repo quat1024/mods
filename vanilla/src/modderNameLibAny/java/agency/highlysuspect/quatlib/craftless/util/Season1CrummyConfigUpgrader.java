@@ -80,8 +80,8 @@ public class Season1CrummyConfigUpgrader {
 		Files.write(to, newLines, StandardCharsets.UTF_8);
 		
 		//TODO(season2): debugging spew
-		Files.write(to.resolveSibling(to.getFileName().toString() + ".upgraded"), newLines, StandardCharsets.UTF_8);
-		//Files.deleteIfExists(from);
+		//Files.write(to.resolveSibling(to.getFileName().toString() + ".upgraded"), newLines, StandardCharsets.UTF_8);
+		Files.deleteIfExists(from);
 		log.info("Upgraded config successfully.");
 	}
 }

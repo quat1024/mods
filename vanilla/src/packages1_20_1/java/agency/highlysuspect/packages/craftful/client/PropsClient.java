@@ -65,7 +65,8 @@ public class PropsClient {
 			"any combination of 'ctrl', 'alt', or 'sneak' to require some modifier keys.",
 			"Separate multiple items with hyphens. Disable an action entirely by leaving it blank."
 		).add(INSERT_ONE_BINDING_UNPARSED, INSERT_STACK_BINDING_UNPARSED, INSERT_ALL_BINDING_UNPARSED,
-			TAKE_ONE_BINDING_UNPARSED, TAKE_STACK_BINDING_UNPARSED, TAKE_ALL_BINDING_UNPARSED);
+			TAKE_ONE_BINDING_UNPARSED, TAKE_STACK_BINDING_UNPARSED, TAKE_ALL_BINDING_UNPARSED,
+			PUNCH_REPEAT);
 		
 		schema.subsection("Pedantry").add(RED_BAR_WHEN_FULL);
 		
