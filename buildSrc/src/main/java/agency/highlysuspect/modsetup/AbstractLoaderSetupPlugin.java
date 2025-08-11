@@ -193,6 +193,12 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 			));
 			for(LoaderMod mod : mods) {
 				configureProcessResources(mod.set, plus(allVars, mod.vars));
+				//HACK: include mixin jsons from the other source-sets here as well. this is so they end up in
+				//the processResources output folder, which is needed because way down there a processResources
+				//doLast is used to locate these mixin jsons and amend them with refmaps.
+				tasks.named(mod.set.getProcessResourcesTaskName(), ProcessResources.class, it -> {
+					it.from(mod.getPerVersionSourceSet(ver).getResources().matching(zz -> zz.include("*.mixins.json")));
+				});
 			}
 			
 			/// JARS ///
@@ -200,15 +206,16 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 			for(LoaderMod mod : mods) {
 				//contains all mod-specific code, including some splatted from other projects
 				mod.depJar = tasks.register(mod.modid + "DepJar", Jar.class, it -> {
-					it.dependsOn(mod.splat);
+					it.setGroup("build");
+					it.dependsOn(mod.splat); //depending on a configuration forces it to be resolved? ok
 					
 					it.from(mod.set.getOutput());
 					
 					//splat stuff directly into the jar
 					for(File splat : mod.splat) {
 						it.getLogger().lifecycle("yyttttt SPLATTING FILE: {}", splat);
-						if(splat.isDirectory()) it.from(splat);
-						else it.from(project.zipTree(splat)); //look through the zip, treat it like a directory
+						//the above hack included mixin jsons from other source-sets in my own resources, so don't *also* splat them
+						it.from(project.zipTree(splat).matching(zz -> zz.exclude("*.mixins.json")));
 					}
 					
 					it.getArchiveBaseName().set(mod.modid + "-" + ver + "-" + loader);
