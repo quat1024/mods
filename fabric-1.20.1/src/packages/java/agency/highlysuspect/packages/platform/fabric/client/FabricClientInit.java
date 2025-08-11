@@ -11,8 +11,8 @@ import agency.highlysuspect.packages.platform.fabric.CrummyConfig;
 import agency.highlysuspect.packages.platform.fabric.client.model.FrapiMeshPackageMakerModel;
 import agency.highlysuspect.packages.platform.fabric.client.model.FrapiMeshPackageModel;
 import agency.highlysuspect.packages.platform.fabric.compat.frex.FrexCompat;
+import agency.highlysuspect.quatlib.craftless.fab.AfterQuatlibClientInitializer;
 import io.netty.buffer.Unpooled;
-import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
 import net.fabricmc.fabric.api.client.model.ModelLoadingRegistry;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -39,7 +39,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 
-public class FabricClientInit extends PackagesClient implements ClientModInitializer {
+public class FabricClientInit extends PackagesClient implements AfterQuatlibClientInitializer {
 	public static FabricClientInit instanceFabric;
 	
 	private final UnbakedModel packageModel = new FrapiMeshPackageModel();

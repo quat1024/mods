@@ -6,7 +6,7 @@ import agency.highlysuspect.packages.net.ActionPacket;
 import agency.highlysuspect.packages.platform.BlockEntityFactory;
 import agency.highlysuspect.packages.platform.MyMenuSupplier;
 import agency.highlysuspect.packages.platform.RegistryHandle;
-import net.fabricmc.api.ModInitializer;
+import agency.highlysuspect.quatlib.craftless.fab.AfterQuatlibInitializer;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
@@ -30,7 +30,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 
 import java.util.function.Supplier;
 
-public class FabricInit extends Packages implements ModInitializer {
+public class FabricInit extends Packages implements AfterQuatlibInitializer {
 	@Override
 	public void onInitialize() {
 		earlySetup();

@@ -1,20 +1,20 @@
-modLoader="javafml"
-loaderVersion="[45,)"
-license="LGPL-3.0-or-later"
-issueTrackerURL="https://github.com/quat1024/packages/issues"
+modLoader = "javafml"
+loaderVersion = "[1,)"
+license = "${license}"
+issueTrackerURL = "${issues}"
+logoFile = "${modid}_banner.png"
 
 [[mods]]
-modId="packages"
-version="${version}"
-displayName="Packages"
-displayURL="https://github.com/quat1024/packages/"
-logoFile="packages-icon.png"
-authors="quaternary"
-description="The opinionated storage mod. Worse Barrels descendant. Now on Forge!"
+modId = "${modid}"
+version = "${version}"
+displayName = "${name}"
+description = "${description}"
+authors = "${author}"
 
-[[dependencies.packages]]
-modId="minecraft"
-mandatory=true
-versionRange="1.20.1"
-ordering="NONE"
+[[dependencies.${modid}]]
+modId="modder_name_lib"
+type="required"
+versionRange="*"
+ordering="AFTER"
 side="BOTH"
+mandatory=true

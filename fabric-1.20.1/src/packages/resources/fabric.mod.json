@@ -1,43 +1,46 @@
 {
 	"schemaVersion": 1,
-	"id": "packages",
+	"id": "${modid}",
 	"version": "${version}",
-	"name": "Packages",
-	"description": "The opinionated storage mod. Worse Barrels descendant.",
+	"name": "${name}",
+	"description": "${description}",
 	"authors": [
-		"quaternary"
+		"${author}"
 	],
 	"contact": {
-		"homepage": "https://highlysuspect.agency",
-		"sources": "https://github.com/quat1024/packages"
+		"homepage": "${homepage}",
+		"issues": "${issues}",
+		"sources": "${sources}"
 	},
-	"license": "LGPL-3.0-or-later",
-	"icon": "packages-icon.png",
+	"license": "${license}",
+	"icon": "${modid}_modmenu.png",
 	"environment": "*",
 	"entrypoints": {
-		"main": [
+		"modder_name_lib:after": [
 			"agency.highlysuspect.packages.platform.fabric.FabricInit"
 		],
-		"client": [
+		"modder_name_lib:after_client": [
 			"agency.highlysuspect.packages.platform.fabric.client.FabricClientInit"
 		],
-		"emi": [
+		"todo-reenable-emi": [
 			"agency.highlysuspect.packages.compat.emi.PackagesEmiPlugin"
 		]
 	},
 	"mixins": [
-		"packages.xplat.mixins.json",
+		"packages.mixins.json",
 		"packages.fabric.mixins.json"
 	],
-	"custom": {
-		"todo-reenable-this---dashloader:customobject": [
-			"agency.highlysuspect.packages.client.compat.dashloader.DashPackageModel",
-			"agency.highlysuspect.packages.client.compat.dashloader.DashPackageMakerModel"
-		]
-	},
 	"depends": {
 		"fabricloader": "*",
-		"fabric": "*",
-		"minecraft": "1.20.1"
+		"fabric-api": "*",
+		"modder_name_lib": "*",
+		"minecraft": ">=${minecraft_version}"
+	},
+	"custom": {
+		"modmenu": {
+			"links": {
+				"modmenu.discord": "https://highlysuspect.agency/discord"
+			}
+		}
 	}
 }

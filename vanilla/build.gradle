@@ -23,6 +23,20 @@ vanillaSetup.go {
 	}
 }
 
+repositories {
+	maven {
+		name = "TerraformersMC"
+		url = "https://maven.terraformersmc.com/"
+		content {
+			includeGroup "dev.emi"
+		}
+	}
+}
+
+dependencies {
+	packages1_20_1CompileOnly "dev.emi:emi-xplat-mojmap:1.1.22+1.20.1:api"
+}
+
 List<Map.Entry<String, MinecraftProvider.Result>> sortedcrafts = vanillaSetup.getMinecrafts().entrySet().stream()
 	.sorted((a, b) -> FlexVerComparator.compare(a.key, b.key))
 	.toList()
