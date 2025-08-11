@@ -15,5 +15,8 @@ dependencies {
 	modImplementation "net.fabricmc:fabric-loader:${project.floaderVersion}"
 	modImplementation "net.fabricmc.fabric-api:fabric-api:0.127.1+1.21.5"
 	
+	modLocalRuntime modSetup.lib("modmenu-14.0.0-rc.2.jar");
+	modLocalRuntime modSetup.lib("placeholder-api-2.6.0+1.21.5.jar");
+	
 	modRebindNarratorImplementation modSetup.lib("Amecs-Reborn-2.0.2+mc1.21.5.jar")
 }
