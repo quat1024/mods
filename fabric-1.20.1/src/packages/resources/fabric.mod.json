@@ -17,13 +17,13 @@
 	"environment": "*",
 	"entrypoints": {
 		"modder_name_lib:after": [
-			"agency.highlysuspect.packages.platform.fabric.FabricInit"
+			"agency.highlysuspect.packages.craftful.fab.FabricInit"
 		],
 		"modder_name_lib:after_client": [
-			"agency.highlysuspect.packages.platform.fabric.client.FabricClientInit"
+			"agency.highlysuspect.packages.craftful.fab.client.FabricClientInit"
 		],
-		"todo-reenable-emi": [
-			"agency.highlysuspect.packages.compat.emi.PackagesEmiPlugin"
+		"emi": [
+			"agency.highlysuspect.packages.craftful.compat.emi.PackagesEmiPlugin"
 		]
 	},
 	"mixins": [

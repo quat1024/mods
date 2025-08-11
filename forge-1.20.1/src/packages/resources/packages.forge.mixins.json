@@ -1,6 +1,6 @@
 {
 	"required": true,
-	"package": "agency.highlysuspect.packages.platform.forge.mixin",
+	"package": "agency.highlysuspect.packages.craftful.frg.mixin",
 	"compatibilityLevel": "JAVA_17",
 	"mixins": [
 	],
