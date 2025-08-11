@@ -18,11 +18,11 @@ import java.nio.file.Files;
 
 public abstract class RefmapJob implements Named {
 	@Inject
-	public RefmapJob(@NotNull String name) {
-		this.name = name;
+	public RefmapJob(@NotNull String modid) {
+		this.modid = modid;
 	}
 	
-	public final String name;
+	public final String modid;
 	
 	public ListProperty<String> inputMixinJsons = getObjects().listProperty(String.class);
 	
@@ -55,7 +55,7 @@ public abstract class RefmapJob implements Named {
 			throw new RuntimeException("failed mkdirs", e);
 		}
 		
-		return task = project.getTasks().register("generateRefmaps" + StringGroovyMethods.capitalize(name), JavaCompile.class, it -> {
+		return task = project.getTasks().register("generateRefmaps" + StringGroovyMethods.capitalize(Util.snakeToCamel(modid)), JavaCompile.class, it -> {
 			it.setSource(sources);
 			it.setClasspath(classpath);
 			it.getOptions().setAnnotationProcessorPath(apPath);
@@ -82,7 +82,7 @@ public abstract class RefmapJob implements Named {
 	
 	@Override
 	public @NotNull String getName() {
-		return name;
+		return modid;
 	}
 	
 	@Inject

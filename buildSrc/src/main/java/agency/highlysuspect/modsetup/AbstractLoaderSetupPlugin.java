@@ -146,7 +146,7 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 			/// SOURCE SET SCAFFOLDING ///
 			project.getLogger().lifecycle("making source sets");
 			for(LoaderMod mod : mods) {
-				mod.set = makeSourceSetWithCommonDeps(mod.modid);
+				mod.set = makeSourceSetWithCommonDeps(Util.snakeToCamel(mod.modid));
 				setCompatLevel(mod.set, javaCompatLevel);
 				
 				//ecosystem plugins install minecraft to the "main" source-set, so pull down main's entire compilation classpath
@@ -177,7 +177,7 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 				if(liason instanceof FabricLiason && mod == quatlib) withImplementation(mod.set, floaderOnlyDep());
 				
 				//configuration holding things to splat into the jar
-				mod.splat = project.getConfigurations().create(mod.modid + "Splat");
+				mod.splat = project.getConfigurations().create(Util.snakeToCamel(mod.modid) + "Splat");
 				withDeps(mod.splat, mod.getSplattedDep(project, ver));
 				if(mod == quatlib && liason instanceof FabricLiason) withDeps(mod.splat, floaderOnlyDep());
 			}
@@ -205,7 +205,7 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 			project.getLogger().lifecycle("preparing jars");
 			for(LoaderMod mod : mods) {
 				//contains all mod-specific code, including some splatted from other projects
-				mod.depJar = tasks.register(mod.modid + "DepJar", Jar.class, it -> {
+				mod.depJar = tasks.register(Util.snakeToCamel(mod.modid) + "DepJar", Jar.class, it -> {
 					it.setGroup("build");
 					it.dependsOn(mod.splat); //depending on a configuration forces it to be resolved? ok
 					
@@ -301,8 +301,8 @@ public abstract class AbstractLoaderSetupPlugin implements Plugin<Project> {
 							project.getLogger().lifecycle("just called getMappingsIn and got {}", mappingsIn);
 							return mappingsIn;
 						});
-						rj.mappingsOut.set(scratchDir2.map(d -> d.file(rj.name + "_mappings-out.txt")));
-						rj.refmapOut.set(scratchDir2.map(d -> d.file(rj.name + ".refmap.json")));
+						rj.mappingsOut.set(scratchDir2.map(d -> d.file(rj.modid + "_mappings-out.txt")));
+						rj.refmapOut.set(scratchDir2.map(d -> d.file(rj.modid + ".refmap.json")));
 						//same laziness concerns here
 						rj.args.addAll(() -> {
 							List<String> args = refmapHelper.refmapArgs(rj.mappingsIn, rj.mappingsOut, rj.refmapOut);

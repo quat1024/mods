@@ -69,7 +69,7 @@ public abstract class NeoishJarJar {
 			
 			//4. write that metadata json to a file because you have to do this in order to include it in a jar task.
 			//isn't gradle nice???
-			File tmpMetadata = project.getLayout().getBuildDirectory().file("tmp/jarjar-metadata/" + mod.modid)
+			File tmpMetadata = project.getLayout().getBuildDirectory().file("tmp/jarjar-metadata/" + mod.modid + ".json")
 				.get().getAsFile();
 			TaskProvider<?> writeMetadataToFileTask = project.getTasks().register(mod.depJarNamedJarjarred.getName() + "_manifest", DefaultTask.class, write -> {
 				write.getOutputs().file(tmpMetadata);
