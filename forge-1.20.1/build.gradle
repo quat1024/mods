@@ -16,5 +16,9 @@ modSetup.go {
 		crowmap {
 			legacyForgeMixinConfigs += "crowmap.mixins.json"
 		}
+		packages {
+			legacyForgeMixinConfigs += "packages.mixins.json"
+			legacyForgeMixinConfigs += "packages.forge.mixins.json"
+		}
 	}
 }

@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "packages:special/package_maker"
+    },
+    "facing=east": {
+      "model": "packages:special/package_maker",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "packages:special/package_maker",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "packages:special/package_maker",
+      "y": 270
+    }
+  }
+}

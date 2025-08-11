@@ -16,6 +16,10 @@ vanillaSetup.go {
 			versions += ["1.20.1", "1.21.1", "1.21.5"]
 			vars.description = "Maps update anywhere in your inventory."
 		}
+		packages {
+			versions += ["1.20.1"]
+			vars.description = "512 items is all you need. The underpowered barrels mod."
+		}
 	}
 }
 
