@@ -3,6 +3,7 @@ package agency.highlysuspect.quatlib.craftless.facet.facets;
 import agency.highlysuspect.quatlib.craftless.facet.Facet;
 import agency.highlysuspect.quatlib.craftless.facet.FileGenner;
 import agency.highlysuspect.quatlib.craftless.facet.Id;
+import agency.highlysuspect.quatlib.craftless.facet.Idable;
 import agency.highlysuspect.quatlib.craftless.util.QuatUtil;
 import com.google.gson.JsonObject;
 
@@ -17,8 +18,8 @@ public class LangFacet {
 	public String key;
 	public String value;
 	
-	public LangFacet file(Id file) {
-		this.file = file;
+	public LangFacet file(Idable file) {
+		this.file = file.getId();
 		return this;
 	}
 	
@@ -27,13 +28,13 @@ public class LangFacet {
 		return this;
 	}
 	
-	public LangFacet block(Id blockId) {
-		this.key = blockId.toLangKey("block");
+	public LangFacet block(Idable blockId) {
+		this.key = blockId.getId().toLangKey("block");
 		return this;
 	}
 	
-	public LangFacet item(Id itemId) {
-		this.key = itemId.toLangKey("item");
+	public LangFacet item(Idable itemId) {
+		this.key = itemId.getId().toLangKey("item");
 		return this;
 	}
 	

@@ -20,14 +20,22 @@ public abstract class ItemGen<T extends Item> implements Gen {
 	
 	public final Latch<T> itemLatch;
 	
+	public abstract T constructItem();
+	
 	@Override
 	public void gen(Ctx ctx, Consumer<Gen> more) {
-		//TODO
+		if(ctx.isDatagen()) {
+			//TODO: constructItem
+		}
 	}
 	
-	public abstract T constructItem();
+	// helpers //
 	
 	protected LangFacet lang() {
 		return new LangFacet().item(itemLatch.id);
+	}
+	
+	protected LangFacet lang(Id langFile) {
+		return lang().file(langFile);
 	}
 }

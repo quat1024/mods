@@ -1,11 +1,13 @@
 package agency.highlysuspect.quatlib.craftless.facet;
 
+import agency.highlysuspect.quatlib.craftless.QuatlibBase;
+import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 import java.util.function.UnaryOperator;
 
-public class Id implements Comparable<Id> {
+public class Id implements Comparable<Id>, Idable {
 	public final String ns, path;
 	
 	public Id(String ns, String path) {
@@ -49,6 +51,15 @@ public class Id implements Comparable<Id> {
 	
 	public String toStringOmitMinecraft() {
 		return ns.equals("minecraft") ? path : toString();
+	}
+	
+	public ResourceLocation toMinecraft() {
+		return QuatlibBase.inst().rlBridge.fromId(this);
+	}
+	
+	@Override
+	public Id getId() {
+		return this;
 	}
 	
 	@Override

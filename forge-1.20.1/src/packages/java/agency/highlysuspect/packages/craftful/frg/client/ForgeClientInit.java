@@ -12,6 +12,7 @@ import agency.highlysuspect.packages.craftful.platform.client.MyScreenConstructo
 import agency.highlysuspect.quatlib.craftful.frg.ForgeBackedConfig_V1;
 import agency.highlysuspect.quatlib.craftless.config.ConfigSection;
 import agency.highlysuspect.quatlib.craftless.config.WritableConfig;
+import agency.highlysuspect.quatlib.craftless.facet.Latch;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.gui.screens.Screen;
@@ -51,7 +52,7 @@ import java.util.Map;
 public class ForgeClientInit extends PackagesClient {
 	private final List<MenuScreenEntry<?, ?>> menuScreensToRegister = new ArrayList<>();
 	private final List<BlockEntityRendererEntry<?>> blockEntityRenderersToRegister = new ArrayList<>();
-	private final Map<RegistryHandle<? extends Block>, RenderType> renderTypesToRegister = new HashMap<>();
+	private final Map<Latch<? extends Block>, RenderType> renderTypesToRegister = new HashMap<>();
 	
 	private record MenuScreenEntry<T extends AbstractContainerMenu, U extends Screen & MenuAccess<T>>(RegistryHandle<MenuType<T>> type, MyScreenConstructor<T, U> cons) {
 		private void register() { MenuScreens.register(type.get(), cons::create); } //generics moment
@@ -145,7 +146,7 @@ public class ForgeClientInit extends PackagesClient {
 	}
 	
 	@Override
-	public void setRenderType(RegistryHandle<? extends Block> block, RenderType type) {
+	public void setRenderType(Latch<? extends Block> block, RenderType type) {
 		renderTypesToRegister.put(block, type);
 	}
 	

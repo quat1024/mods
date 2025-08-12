@@ -21,16 +21,23 @@ public abstract class BlockGen<T extends Block> implements Gen {
 	
 	public final Latch<T> blockLatch;
 	
+	public abstract T constructBlock();
+	
 	@Override
 	public void gen(Ctx ctx, Consumer<Gen> more) {
+		if(ctx.isRuntime()) {
+			//TODO: constructBlock
+		}
+		
 		ItemGen<?> itemForm = itemForm();
 		if(itemForm != null) more.accept(itemForm);
 	}
 	
-	public abstract T constructBlock();
 	public @Nullable ItemGen<?> itemForm() {
 		return new BlockItemGen.Basic<>(this);
 	}
+	
+	//  helpers  //
 	
 	protected LangFacet lang() {
 		return new LangFacet().block(blockLatch.id);

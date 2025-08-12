@@ -41,4 +41,9 @@ public class FacetBucket {
 		if(removed == null) return List.of();
 		else return removed;
 	}
+	
+	//yeah...
+	public <T> List<T> removeFacetsErased(Class<?> facetKey) {
+		return removeFacets((Class<T>) facetKey);
+	}
 }

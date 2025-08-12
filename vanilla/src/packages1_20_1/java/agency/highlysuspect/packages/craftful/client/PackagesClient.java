@@ -11,6 +11,7 @@ import agency.highlysuspect.packages.craftful.platform.client.MyScreenConstructo
 import agency.highlysuspect.packages.craftless.client.PackagesBaseClient;
 import agency.highlysuspect.quatlib.craftless.config.ConfigSection;
 import agency.highlysuspect.quatlib.craftless.config.ReadableConfig;
+import agency.highlysuspect.quatlib.craftless.facet.Latch;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.MenuAccess;
 import net.minecraft.client.renderer.RenderType;
@@ -60,7 +61,7 @@ public abstract class PackagesClient extends PackagesBaseClient {
 	
 	public abstract <T extends AbstractContainerMenu, U extends Screen & MenuAccess<T>> void registerMenuScreen(RegistryHandle<MenuType<T>> type, MyScreenConstructor<T, U> cons);
 	public abstract <T extends BlockEntity> void setBlockEntityRenderer(RegistryHandle<? extends BlockEntityType<T>> type, BlockEntityRendererProvider<? super T> renderer);
-	public abstract void setRenderType(RegistryHandle<? extends Block> block, RenderType type);
+	public abstract void setRenderType(Latch<? extends Block> block, RenderType type);
 	public abstract void setupCustomModelLoaders();
 	public abstract void sendActionPacket(ActionPacket packet);
 	

@@ -35,7 +35,7 @@ public class PItems {
 				.build()
 		);
 		
-		PACKAGE_MAKER = Packages.inst().register(BuiltInRegistries.ITEM, PBlocks.PACKAGE_MAKER.getId(), () -> new BlockItem(PBlocks.PACKAGE_MAKER.get(), new Item.Properties()));
-		PACKAGE = Packages.inst().register(BuiltInRegistries.ITEM, PBlocks.PACKAGE.getId(), () -> new PackageItem(PBlocks.PACKAGE.get(), new Item.Properties()));
+		PACKAGE = Packages.inst().register(BuiltInRegistries.ITEM, PBlocks.PACKAGE.getId().toMinecraft(), () -> new PackageItem(PBlocks.PACKAGE.get(), new Item.Properties()));
+		PACKAGE_MAKER = Packages.inst().register(BuiltInRegistries.ITEM, PBlocks.PACKAGE_MAKER.getId().toMinecraft(), () -> new BlockItem(PBlocks.PACKAGE_MAKER.get(), new Item.Properties()));
 	}
 }

@@ -11,9 +11,12 @@ import agency.highlysuspect.packages.craftless.PackagesBase;
 import agency.highlysuspect.quatlib.craftful.frg.ForgeBackedConfig_V1;
 import agency.highlysuspect.quatlib.craftless.config.ConfigSection;
 import agency.highlysuspect.quatlib.craftless.config.WritableConfig;
+import agency.highlysuspect.quatlib.craftless.facet.Reg;
+import agency.highlysuspect.quatlib.craftless.facet.RegType;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Registry;
 import net.minecraft.core.dispenser.DispenseItemBehavior;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.flag.FeatureFlagSet;
@@ -93,6 +96,19 @@ public class ForgeInit extends Packages {
 	@Override
 	public boolean isForge() {
 		return true;
+	}
+	
+	@SuppressWarnings({"unchecked", "deprecation"})
+	@Override
+	protected <T> Reg<T> createReg(RegType<T> type) {
+		ForgeReg<T> reg;
+		
+		if(type == RegType.BLOCKS) reg = (ForgeReg<T>) new ForgeReg<>(BuiltInRegistries.BLOCK.key());
+		else if(type == RegType.ITEMS) reg = (ForgeReg<T>) new ForgeReg<>(BuiltInRegistries.ITEM.key());
+		else throw new UnsupportedOperationException("Don't know how to register " + type);
+		
+		modBus.register(reg);
+		return reg;
 	}
 	
 	@SuppressWarnings("unchecked") //Go directly to generics hell. Do not pass Go or collect $200.

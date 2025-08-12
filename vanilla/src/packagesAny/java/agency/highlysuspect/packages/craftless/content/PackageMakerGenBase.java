@@ -7,8 +7,8 @@ import net.minecraft.world.level.block.Block;
 
 import java.util.function.Consumer;
 
-public abstract class PackageGenBase implements Gen, PackagesGenUtils {
-	public PackageGenBase(Latch<? extends Block> blockLatch) {
+public abstract class PackageMakerGenBase implements Gen, PackagesGenUtils {
+	public PackageMakerGenBase(Latch<? extends Block> blockLatch) {
 		this.blockLatch = blockLatch;
 	}
 	
@@ -17,7 +17,7 @@ public abstract class PackageGenBase implements Gen, PackagesGenUtils {
 	@Override
 	public void gen(Ctx ctx, Consumer<Gen> more) {
 		if(ctx.isDatagen()) {
-			ctx.add(enUs().block(blockLatch).value("Package"));
+			ctx.add(enUs().block(blockLatch).value("Package Crafter"));
 		}
 		
 		if(ctx.isRuntime()) {

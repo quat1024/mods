@@ -1,11 +1,13 @@
 package agency.highlysuspect.packages.craftful.content;
 
-import agency.highlysuspect.packages.craftless.content.PackageGenBase;
-import agency.highlysuspect.packages.craftless.content.PackagesGenBase;
+import agency.highlysuspect.quatlib.craftless.facet.Gen;
 
-public class PackagesGen extends PackagesGenBase {
+import java.util.function.Consumer;
+
+public class PackagesGen implements Gen {
 	@Override
-	protected PackageGenBase<?> packageGen() {
-		return new PackageGen();
+	public void gen(Ctx ctx, Consumer<Gen> more) {
+		more.accept(new PackageGen());
+		more.accept(new PackageMakerGen());
 	}
 }

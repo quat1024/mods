@@ -1,7 +1,6 @@
 package agency.highlysuspect.packages.craftful;
 
 import agency.highlysuspect.packages.craftful.block.PBlockEntityTypes;
-import agency.highlysuspect.packages.craftful.block.PBlocks;
 import agency.highlysuspect.packages.craftful.content.PackagesGen;
 import agency.highlysuspect.packages.craftful.item.PItems;
 import agency.highlysuspect.packages.craftful.junk.PDispenserBehaviors;
@@ -15,10 +14,9 @@ import agency.highlysuspect.packages.craftful.platform.RegistryHandle;
 import agency.highlysuspect.packages.craftless.PackagesBase;
 import agency.highlysuspect.quatlib.craftless.config.ConfigSection;
 import agency.highlysuspect.quatlib.craftless.facet.FacetBucket;
-import agency.highlysuspect.quatlib.craftless.facet.FileGenner;
 import agency.highlysuspect.quatlib.craftless.facet.Gen;
 import agency.highlysuspect.quatlib.craftless.facet.Period;
-import agency.highlysuspect.quatlib.craftless.facet.facets.LangFacet;
+import agency.highlysuspect.quatlib.craftless.facet.facets.RegFacet;
 import net.minecraft.core.Registry;
 import net.minecraft.core.dispenser.DispenseItemBehavior;
 import net.minecraft.resources.ResourceLocation;
@@ -38,7 +36,17 @@ public abstract class Packages extends PackagesBase {
 	public void earlySetup() {
 		super.earlySetup();
 		
-		PBlocks.onInitialize();
+		//TODO: gen testing
+		FacetBucket facets = new FacetBucket();
+		Gen.Ctx genCtx = new Gen.Ctx(facets, Period.RUNTIME);
+		Gen.run(genCtx, new PackagesGen());
+		
+		LOG.info("fgffffffffff");
+		RegFacet.handle(this, facets.removeFacetsErased(RegFacet.class));
+		//LangFacet.handle(new FileGenner.DebugGenner(LOG), facets.removeFacets(LangFacet.class));
+		LOG.info("fgffffffffff");
+		
+		//PBlocks.onInitialize();
 		PBlockEntityTypes.onInitialize();
 		PItems.onInitialize();
 		
@@ -49,15 +57,6 @@ public abstract class Packages extends PackagesBase {
 		registerActionPacketHandler();
 		
 		PSoundEvents.onInitialize();
-		
-		//TODO: gen testing
-		FacetBucket facets = new FacetBucket();
-		Gen.Ctx genCtx = new Gen.Ctx(facets, Period.DATAGEN);
-		Gen.run(genCtx, new PackagesGen());
-		
-		LOG.info("fgffffffffff");
-		LangFacet.handle(new FileGenner.DebugGenner(LOG), facets.removeFacets(LangFacet.class));
-		LOG.info("fgffffffffff");
 	}
 	
 	public static ResourceLocation id(String path) {

@@ -3,11 +3,17 @@ package agency.highlysuspect.packages.craftless;
 import agency.highlysuspect.quatlib.craftless.Slf4jLogFacade;
 import agency.highlysuspect.quatlib.craftless.config.ConfigSection;
 import agency.highlysuspect.quatlib.craftless.config.WritableConfig;
+import agency.highlysuspect.quatlib.craftless.facet.Reg;
+import agency.highlysuspect.quatlib.craftless.facet.RegType;
+import agency.highlysuspect.quatlib.craftless.facet.facets.RegFacet;
 import agency.highlysuspect.quatlib.craftless.failure.FailureLogger;
 import agency.highlysuspect.quatlib.craftless.failure.FailureRoot;
 import agency.highlysuspect.quatlib.craftless.util.LogFacade;
 
-public abstract class PackagesBase {
+import java.util.IdentityHashMap;
+import java.util.Map;
+
+public abstract class PackagesBase implements RegFacet.RegistryGetter {
 	public PackagesBase() {
 		INST = this;
 	}
@@ -20,13 +26,24 @@ public abstract class PackagesBase {
 	public ConfigSection configSchema;
 	public WritableConfig config;
 	
+	//registry stuff (TODO put in its own class?)
+	private final Map<RegType<?>, Reg<?>> regs = new IdentityHashMap<>();
+	
 	public void earlySetup() {
 		configSchema = visitConfigSchema(new ConfigSection(NAME, "Options for Packages."));
 		config = makeConfig(configSchema);
 	}
 	
+	@SuppressWarnings("unchecked")
+	@Override
+	public <T> Reg<T> getReg(RegType<T> type) {
+		return (Reg<T>) regs.computeIfAbsent(type, this::createReg);
+	}
+	
 	public abstract ConfigSection visitConfigSchema(ConfigSection root);
 	public abstract WritableConfig makeConfig(ConfigSection schema);
+	
+	protected abstract <T> Reg<T> createReg(RegType<T> type);
 	
 	protected static PackagesBase INST;
 	public static PackagesBase inst() {

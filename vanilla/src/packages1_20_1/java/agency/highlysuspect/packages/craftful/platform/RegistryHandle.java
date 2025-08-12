@@ -4,6 +4,7 @@ import net.minecraft.resources.ResourceLocation;
 
 import java.util.function.Supplier;
 
+@Deprecated //in favor of the Latch system
 public interface RegistryHandle<T> extends Supplier<T> {
 	ResourceLocation getId();
 	

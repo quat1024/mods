@@ -15,6 +15,7 @@ import agency.highlysuspect.quatlib.craftless.config.ConfigSection;
 import agency.highlysuspect.quatlib.craftless.config.WritableConfig;
 import agency.highlysuspect.quatlib.craftless.config.hdc.HalfDecentConfigFile;
 import agency.highlysuspect.quatlib.craftless.fab.AfterQuatlibClientInitializer;
+import agency.highlysuspect.quatlib.craftless.facet.Latch;
 import agency.highlysuspect.quatlib.craftless.util.Season1CrummyConfigUpgrader;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
@@ -72,7 +73,7 @@ public class FabricClientInit extends PackagesClient implements AfterQuatlibClie
 	}
 	
 	@Override
-	public void setRenderType(RegistryHandle<? extends Block> block, RenderType type) {
+	public void setRenderType(Latch<? extends Block> block, RenderType type) {
 		BlockRenderLayerMap.INSTANCE.putBlock(block.get(), type);
 	}
 	
