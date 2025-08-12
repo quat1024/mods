@@ -3,10 +3,10 @@ package agency.highlysuspect.quatlib.craftful.bridge;
 import agency.highlysuspect.quatlib.craftless.bridge.ResourceLocationBridge;
 import net.minecraft.resources.ResourceLocation;
 
-public class ResourceLocationBridgeImpl implements ResourceLocationBridge {
+public class ResourceLocationBridgeImpl implements ResourceLocationBridge<ResourceLocation> {
 	@Override
-	public ResourceLocation id(String namespace, String path) {
-		return ResourceLocation.fromNamespaceAndPath(namespace, path);
+	public ResourceLocation make(String ns, String path) {
+		return ResourceLocation.fromNamespaceAndPath(ns, path);
 	}
 	
 	@Override

@@ -1,21 +1,27 @@
 package agency.highlysuspect.quatlib.craftless.bridge;
 
-import net.minecraft.resources.ResourceLocation;
+import agency.highlysuspect.quatlib.craftless.facet.Id;
 
-import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
-public interface ResourceLocationBridge {
-	ResourceLocation id(String namespace, String path);
+/**
+ * trying a different approach
+ */
+public interface ResourceLocationBridge<RL> {
+	RL make(String ns, String path);
 	
-	String ns(ResourceLocation rl);
-	String path(ResourceLocation rl);
+	String ns(RL rl);
+	String path(RL rl);
 	
-	default ResourceLocation mapPath(ResourceLocation in, UnaryOperator<String> op) {
-		return id(ns(in), op.apply(path(in)));
+	default RL mapPath(RL rl, UnaryOperator<String> op) {
+		return make(ns(rl), op.apply(path(rl)));
 	}
 	
-	default Function<String, ResourceLocation> factory(String ns) {
-		return path -> id(ns, path);
+	default RL fromId(Id id) {
+		return make(id.ns(), id.path());
+	}
+	
+	default Id toId(RL rl) {
+		return new Id(ns(rl), path(rl));
 	}
 }

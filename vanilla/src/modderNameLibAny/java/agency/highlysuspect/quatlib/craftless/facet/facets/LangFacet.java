@@ -1,0 +1,73 @@
+package agency.highlysuspect.quatlib.craftless.facet.facets;
+
+import agency.highlysuspect.quatlib.craftless.facet.Facet;
+import agency.highlysuspect.quatlib.craftless.facet.FileGenner;
+import agency.highlysuspect.quatlib.craftless.facet.Id;
+import agency.highlysuspect.quatlib.craftless.util.QuatUtil;
+import com.google.gson.JsonObject;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
+
+@Facet
+public class LangFacet {
+	public Id file;
+	public String key;
+	public String value;
+	
+	public LangFacet file(Id file) {
+		this.file = file;
+		return this;
+	}
+	
+	public LangFacet key(String key) {
+		this.key = key;
+		return this;
+	}
+	
+	public LangFacet block(Id blockId) {
+		this.key = blockId.toLangKey("block");
+		return this;
+	}
+	
+	public LangFacet item(Id itemId) {
+		this.key = itemId.toLangKey("item");
+		return this;
+	}
+	
+	public LangFacet value(String value) {
+		this.value = value;
+		return this;
+	}
+	
+	protected void check() {
+		Objects.requireNonNull(this.file, this::toString);
+		Objects.requireNonNull(this.key, this::toString);
+		Objects.requireNonNull(this.value, this::toString);
+	}
+	
+	@Override
+	public String toString() {
+		return "LangFacet(lang file '%s', key '%s', value '%s')".formatted(file, key, value);
+	}
+	
+	public static void handle(FileGenner genner, List<LangFacet> allLange) {
+		allLange.forEach(LangFacet::check);
+		
+		//for each lang file...
+		QuatUtil.collate(allLange, f -> f.file).forEach((langFile, langs) -> {
+			//sort language entries by key
+			List<LangFacet> sortedLangs = new ArrayList<>(langs);
+			sortedLangs.sort(Comparator.comparing(f -> f.key));
+			
+			//build the json
+			JsonObject langJson = new JsonObject();
+			for(LangFacet lang : sortedLangs) langJson.addProperty(lang.key, lang.value);
+			
+			//and write it out
+			genner.writeJson(langFile, langJson);
+		});
+	}
+}
