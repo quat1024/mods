@@ -90,7 +90,7 @@ public class PackageRenderer implements BlockEntityRenderer<PackageBlockEntity> 
 	private static final Quaternionf[] MAGIC_QUATS = new Quaternionf[TwelveDirection.values().length]; //wow i wonder how many directions are in TwelveDirection
 	static {
 		for(TwelveDirection dir : TwelveDirection.values()) {
-			if(dir.primaryDirection.get2DDataValue() == -1) { //up/down
+			if(dir.secondaryDirection != null) { //up/down
 				Quaternionf magic1 = Axis.YP.rotationDegrees(-dir.secondaryDirection.toYRot() + 90);
 				Quaternionf magic2 = Axis.ZP.rotationDegrees(dir.primaryDirection == Direction.UP ? 90 : -90);
 				MAGIC_QUATS[dir.ordinal()] = magic1.mul(magic2);

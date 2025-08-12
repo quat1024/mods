@@ -3,8 +3,9 @@ package agency.highlysuspect.packages.craftful.junk;
 import net.minecraft.core.Direction;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.entity.Entity;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.EnumMap;
 import java.util.Locale;
 
 //Cut and paste this from Carved Melons without looking too closely at it lmao
@@ -22,63 +23,46 @@ public enum TwelveDirection implements StringRepresentable {
 	DOWN_EAST(Direction.DOWN, Direction.EAST),
 	DOWN_WEST(Direction.DOWN, Direction.WEST);
 	
-	TwelveDirection(Direction primaryDirection, Direction secondaryDirection) {
+	TwelveDirection(@NotNull Direction primaryDirection, @Nullable Direction secondaryDirection) {
 		this.primaryDirection = primaryDirection;
 		this.secondaryDirection = secondaryDirection;
 	}
 	
-	public final Direction primaryDirection;
-	public final Direction secondaryDirection;
+	public final @NotNull Direction primaryDirection;
+	public final @Nullable Direction secondaryDirection;
 	
-	public static final EnumMap<Direction, TwelveDirection> byPrimary = new EnumMap<>(Direction.class);
-	public static final EnumMap<Direction, TwelveDirection> ups = new EnumMap<>(Direction.class);
-	public static final EnumMap<Direction, TwelveDirection> downs = new EnumMap<>(Direction.class);
-	
-	static {
-		byPrimary.put(Direction.UP, UP_NORTH);
-		byPrimary.put(Direction.NORTH, NORTH);
-		byPrimary.put(Direction.SOUTH, SOUTH);
-		byPrimary.put(Direction.EAST, EAST);
-		byPrimary.put(Direction.WEST, WEST);
-		byPrimary.put(Direction.DOWN, DOWN_NORTH);
+	public static TwelveDirection get(Direction primary, @Nullable Direction secondary) {
+		//this is j17 language level, "case null" doesn't work yet...
+		if(primary == Direction.UP && secondary == null) return UP_NORTH;
+		if(primary == Direction.DOWN && secondary == null) return DOWN_NORTH;
 		
-		ups.put(Direction.NORTH, UP_NORTH);
-		ups.put(Direction.SOUTH, UP_SOUTH);
-		ups.put(Direction.EAST, UP_EAST);
-		ups.put(Direction.WEST, UP_WEST);
-		
-		downs.put(Direction.NORTH, DOWN_NORTH);
-		downs.put(Direction.SOUTH, DOWN_SOUTH);
-		downs.put(Direction.EAST, DOWN_EAST);
-		downs.put(Direction.WEST, DOWN_WEST);
-	}
-	
-	@Override
-	public String getSerializedName() {
-		return name().toLowerCase(Locale.ROOT);
-	}
-	
-	public TwelveDirection withSecondary(Direction sec) {
-		return switch(primaryDirection) {
-			case UP -> ups.get(sec);
-			case DOWN -> downs.get(sec);
-			default -> this;
+		return switch(primary) {
+			case NORTH -> TwelveDirection.NORTH;
+			case SOUTH -> TwelveDirection.SOUTH;
+			case EAST -> TwelveDirection.EAST;
+			case WEST -> TwelveDirection.WEST;
+			case UP -> switch(secondary) {
+				case SOUTH -> TwelveDirection.UP_SOUTH;
+				case EAST -> TwelveDirection.UP_EAST;
+				case WEST -> TwelveDirection.UP_WEST;
+				default -> TwelveDirection.UP_NORTH;
+			};
+			case DOWN -> switch (secondary) {
+				case SOUTH -> TwelveDirection.DOWN_SOUTH;
+				case EAST -> TwelveDirection.DOWN_EAST;
+				case WEST -> TwelveDirection.DOWN_WEST;
+				default -> TwelveDirection.DOWN_NORTH;
+			};
 		};
 	}
 	
 	public static TwelveDirection fromEntity(Entity ent) {
-		Direction d = Direction.orderedByNearest(ent)[0];
-		TwelveDirection td = byPrimary.get(d);
+		//general look direction (can be up/down)
+		Direction primary = Direction.orderedByNearest(ent)[0];
+		//horizontal look direction
+		Direction secondary = ent.getDirection().getOpposite();
 		
-		if(d.getAxis() != Direction.Axis.Y) {
-			return td;
-		} else {
-			return td.withSecondary(ent.getDirection().getOpposite());
-		}
-	}
-	
-	public static TwelveDirection fromDirection(Direction dir) {
-		return byPrimary.get(dir);
+		return get(primary, secondary);
 	}
 	
 	public TwelveDirection getOpposite() {
@@ -96,5 +80,10 @@ public enum TwelveDirection implements StringRepresentable {
 			case DOWN_SOUTH -> UP_NORTH;
 			case DOWN_WEST -> UP_EAST;
 		};
+	}
+	
+	@Override
+	public String getSerializedName() {
+		return name().toLowerCase(Locale.ROOT);
 	}
 }

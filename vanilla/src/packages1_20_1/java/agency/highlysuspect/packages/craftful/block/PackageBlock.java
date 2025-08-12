@@ -52,7 +52,7 @@ public class PackageBlock extends Block implements EntityBlock {
 	public BlockState getStateForPlacement(BlockPlaceContext ctx) {
 		TwelveDirection facing;
 		
-		if(ctx.getPlayer() == null) facing = TwelveDirection.fromDirection(ctx.getClickedFace());
+		if(ctx.getPlayer() == null) facing = TwelveDirection.get(ctx.getClickedFace(), null);
 		else facing = TwelveDirection.fromEntity(ctx.getPlayer()).getOpposite();
 		
 		return defaultBlockState().setValue(FACING, facing);
