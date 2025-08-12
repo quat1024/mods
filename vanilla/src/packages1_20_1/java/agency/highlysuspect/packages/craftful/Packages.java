@@ -16,17 +16,12 @@ import agency.highlysuspect.quatlib.craftless.facet.Latch;
 import agency.highlysuspect.quatlib.craftless.facet.Period;
 import agency.highlysuspect.quatlib.craftless.facet.facets.BlockEntityTypeFacet;
 import agency.highlysuspect.quatlib.craftless.facet.facets.RegFacet;
-import agency.highlysuspect.quatlib.craftless.util.BlockEntityFactory;
 import net.minecraft.core.Registry;
 import net.minecraft.core.dispenser.DispenseItemBehavior;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.level.ItemLike;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityType;
 
 import java.util.function.Supplier;
 
@@ -71,10 +66,10 @@ public abstract class Packages extends PackagesBase {
 		return false;
 	}
 	
+	@Deprecated //use gens
 	public abstract <T> RegistryHandle<T> register(Registry<? super T> registry, ResourceLocation id, Supplier<T> thingMaker);
-	public abstract CreativeModeTab.Builder creativeModeTabBuilder();
+	
 	public abstract void registerDispenserBehavior(Latch<? extends ItemLike> item, DispenseItemBehavior behavior);
-	public abstract <T extends BlockEntity> BlockEntityType<T> makeBlockEntityType(BlockEntityFactory<T> factory, Block... blocks);
 	public abstract <T extends AbstractContainerMenu> MenuType<T> makeMenuType(MyMenuSupplier<T> supplier);
 	public abstract void registerActionPacketHandler();
 	

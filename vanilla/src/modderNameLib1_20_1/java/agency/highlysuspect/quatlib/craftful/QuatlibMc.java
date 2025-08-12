@@ -5,6 +5,7 @@ import agency.highlysuspect.quatlib.craftless.QuatlibBase;
 import agency.highlysuspect.quatlib.craftless.bridge.ResourceLocationBridge;
 import agency.highlysuspect.quatlib.craftless.util.SharedConfigFileWatcher;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.CreativeModeTab;
 
 public abstract class QuatlibMc extends QuatlibBase {
 	@Override
@@ -16,6 +17,8 @@ public abstract class QuatlibMc extends QuatlibBase {
 	protected ResourceLocationBridge<ResourceLocation> makeResourceLocationBridge() {
 		return new ResourceLocationBridgeImpl();
 	}
+	
+	public abstract CreativeModeTab.Builder makeCreativeModeTabBuilder();
 	
 	public static QuatlibMc inst() {
 		return (QuatlibMc) QuatlibBase.INST;

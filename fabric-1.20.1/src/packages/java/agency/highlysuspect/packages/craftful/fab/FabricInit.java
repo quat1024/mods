@@ -3,7 +3,6 @@ package agency.highlysuspect.packages.craftful.fab;
 import agency.highlysuspect.packages.craftful.Packages;
 import agency.highlysuspect.packages.craftful.net.ActionPacket;
 import agency.highlysuspect.quatlib.craftless.facet.Latch;
-import agency.highlysuspect.quatlib.craftless.util.BlockEntityFactory;
 import agency.highlysuspect.packages.craftful.platform.MyMenuSupplier;
 import agency.highlysuspect.packages.craftful.platform.RegistryHandle;
 import agency.highlysuspect.quatlib.craftless.config.ConfigSection;
@@ -13,9 +12,7 @@ import agency.highlysuspect.quatlib.craftless.fab.AfterQuatlibInitializer;
 import agency.highlysuspect.quatlib.craftless.facet.Reg;
 import agency.highlysuspect.quatlib.craftless.facet.RegType;
 import agency.highlysuspect.quatlib.craftless.util.Season1CrummyConfigUpgrader;
-import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.Util;
 import net.minecraft.core.Registry;
@@ -25,12 +22,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.level.ItemLike;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.DispenserBlock;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityType;
 
 import java.nio.file.Path;
 import java.util.function.Supplier;
@@ -64,16 +57,6 @@ public class FabricInit extends Packages implements AfterQuatlibInitializer {
 		
 		//Return a handle to it.
 		return new RegistryHandle.Immediate<>(thing, id);
-	}
-	
-	@Override
-	public <T extends BlockEntity> BlockEntityType<T> makeBlockEntityType(BlockEntityFactory<T> factory, Block... blocks) {
-		return FabricBlockEntityTypeBuilder.create(factory::create, blocks).build();
-	}
-	
-	@Override
-	public CreativeModeTab.Builder creativeModeTabBuilder() {
-		return FabricItemGroup.builder();
 	}
 	
 	@Override

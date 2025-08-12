@@ -3,6 +3,7 @@ package agency.highlysuspect.quatlib.craftful.frg;
 import agency.highlysuspect.quatlib.craftful.QuatlibMc;
 import agency.highlysuspect.quatlib.craftless.QuatlibBase;
 import agency.highlysuspect.quatlib.craftless.util.BlockEntityFactory;
+import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -20,6 +21,11 @@ public class QuatlibForge extends QuatlibMc {
 	@Override
 	public <T extends BlockEntity> BlockEntityType<T> makeBlockEntityType(BlockEntityFactory<T> factory, Block... blocks) {
 		return new BlockEntityType<>(factory::create, Set.of(blocks), null); //Access widened by forge
+	}
+	
+	@Override
+	public CreativeModeTab.Builder makeCreativeModeTabBuilder() {
+		return CreativeModeTab.builder(); //forge-added zero arg method
 	}
 	
 	public static QuatlibForge inst() {

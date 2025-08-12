@@ -25,3 +25,8 @@ Part of the `Facet` system for declaratively specifying things which should be d
 ## `RegFacet.handle`
 
 Takes a list of `RegFacet`s to register, finds each corresponding `Reg` (with the `RegGetter`) and calls `defer`.
+
+# Shortcomings
+
+* Probably fucked up the generics somewhere. I'm doing a lot of casting
+* Annoying: `Latch<PackageMakerBlock>` isn't possible to put in the common source-set because packagemakerblock is from minecraft. Inconvenient to use `Latch<Block>` because then latch#get returns the upcasted type. Could keep two copies of all latches, one downcasted in the version-specific set ?

@@ -60,7 +60,7 @@ public class Season1CrummyConfigUpgrader {
 				continue;
 			}
 			
-			//comment
+			//strip comments
 			if(line.trim().startsWith("#"))
 				continue;
 			
@@ -71,7 +71,7 @@ public class Season1CrummyConfigUpgrader {
 				continue;
 			}
 			
-			//otherwise pass it along (probably whitespace, new line, something
+			//otherwise pass it along
 			newLines.add(line);
 		}
 		

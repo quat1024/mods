@@ -3,6 +3,7 @@ package agency.highlysuspect.packages.craftful.content;
 import agency.highlysuspect.packages.craftful.Packages;
 import agency.highlysuspect.packages.craftful.block.PBlocks;
 import agency.highlysuspect.packages.craftful.item.PItems;
+import agency.highlysuspect.quatlib.craftful.QuatlibMc;
 import agency.highlysuspect.quatlib.craftless.facet.Gen;
 import agency.highlysuspect.quatlib.craftless.facet.Id;
 import agency.highlysuspect.quatlib.craftless.facet.Latch;
@@ -22,7 +23,7 @@ public class PackagesGen implements Gen {
 		more.accept(new PackageMakerGen());
 		
 		ctx.add(new RegFacet<>().latch(Latch.open(RegType.CREATIVE_TABS, new Id(Packages.MODID, "group"))).sup(() ->
-			Packages.inst().creativeModeTabBuilder()
+			QuatlibMc.inst().makeCreativeModeTabBuilder()
 				.title(Component.translatable("itemGroup.packages.group"))
 				.icon(() -> {
 					try {
