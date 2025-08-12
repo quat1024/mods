@@ -19,4 +19,8 @@ This is a test release of mods created with my new modding pipeline. Please repo
   * Enable/disable mod integrations. 
   * If AMECS is not installed, configure whether you're required to hold CTRL to activate the narrator keybind.
 
-This isn't strictly needed on Neoforge, because you've always been able to configure key modifiers through the Neoforge keybindings screen. 
+This isn't strictly needed on Neoforge, because you've always been able to configure key modifiers through the Neoforge keybindings screen.
+
+## Packages
+
+* Slightly less willing to be placed vertically (you have to look up/down a bit farther)
