@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Supplier;
 
+//TODO(season2): remove the type parameter, it's just getting in the way of stuff.
 @Facet
 public class RegFacet<T> {
 	public Latch<? extends T> latch;

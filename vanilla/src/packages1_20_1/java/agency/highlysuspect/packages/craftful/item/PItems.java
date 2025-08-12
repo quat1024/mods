@@ -1,41 +1,11 @@
 package agency.highlysuspect.packages.craftful.item;
 
-import agency.highlysuspect.packages.craftful.Packages;
 import agency.highlysuspect.packages.craftful.block.PBlocks;
-import agency.highlysuspect.packages.craftful.platform.RegistryHandle;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.chat.Component;
+import agency.highlysuspect.quatlib.craftless.facet.Latch;
+import agency.highlysuspect.quatlib.craftless.facet.RegType;
 import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-
-import java.util.List;
-import java.util.Random;
 
 public class PItems {
-	public static RegistryHandle<BlockItem> PACKAGE_MAKER;
-	public static RegistryHandle<PackageItem> PACKAGE;
-	
-	public static void onInitialize() {
-		Packages.inst().register(BuiltInRegistries.CREATIVE_MODE_TAB, Packages.id("group"), () ->
-			Packages.inst().creativeModeTabBuilder()
-				.title(Component.translatable("itemGroup.packages.group"))
-				.icon(() -> {
-					try {
-						List<ItemStack> stacks = PBlocks.PACKAGE.get().lotsOfPackages();
-						return stacks.get(new Random(System.currentTimeMillis()).nextInt(stacks.size()));
-					} catch (Exception e) { //trust no one not even yourself
-						return new ItemStack(PACKAGE_MAKER.get());
-					}
-				})
-				.displayItems((params, out) -> {
-					out.accept(PACKAGE_MAKER.get());
-					PBlocks.PACKAGE.get().lotsOfPackages().forEach(out::accept);
-				})
-				.build()
-		);
-		
-		PACKAGE = Packages.inst().register(BuiltInRegistries.ITEM, PBlocks.PACKAGE.getId().toMinecraft(), () -> new PackageItem(PBlocks.PACKAGE.get(), new Item.Properties()));
-		PACKAGE_MAKER = Packages.inst().register(BuiltInRegistries.ITEM, PBlocks.PACKAGE_MAKER.getId().toMinecraft(), () -> new BlockItem(PBlocks.PACKAGE_MAKER.get(), new Item.Properties()));
-	}
+	public static Latch<PackageItem> PACKAGE = Latch.open(RegType.ITEMS, PBlocks.PACKAGE.id);
+	public static Latch<BlockItem> PACKAGE_MAKER = Latch.open(RegType.ITEMS, PBlocks.PACKAGE_MAKER.id);
 }

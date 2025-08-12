@@ -1,22 +1,22 @@
 package agency.highlysuspect.packages.craftful;
 
-import agency.highlysuspect.packages.craftful.block.PBlockEntityTypes;
 import agency.highlysuspect.packages.craftful.content.PackagesGen;
-import agency.highlysuspect.packages.craftful.item.PItems;
 import agency.highlysuspect.packages.craftful.junk.PDispenserBehaviors;
 import agency.highlysuspect.packages.craftful.junk.PSoundEvents;
 import agency.highlysuspect.packages.craftful.junk.PTags;
 import agency.highlysuspect.packages.craftful.junk.SidedProxy;
 import agency.highlysuspect.packages.craftful.menu.PMenuTypes;
-import agency.highlysuspect.packages.craftful.platform.BlockEntityFactory;
 import agency.highlysuspect.packages.craftful.platform.MyMenuSupplier;
 import agency.highlysuspect.packages.craftful.platform.RegistryHandle;
 import agency.highlysuspect.packages.craftless.PackagesBase;
 import agency.highlysuspect.quatlib.craftless.config.ConfigSection;
 import agency.highlysuspect.quatlib.craftless.facet.FacetBucket;
 import agency.highlysuspect.quatlib.craftless.facet.Gen;
+import agency.highlysuspect.quatlib.craftless.facet.Latch;
 import agency.highlysuspect.quatlib.craftless.facet.Period;
+import agency.highlysuspect.quatlib.craftless.facet.facets.BlockEntityTypeFacet;
 import agency.highlysuspect.quatlib.craftless.facet.facets.RegFacet;
+import agency.highlysuspect.quatlib.craftless.util.BlockEntityFactory;
 import net.minecraft.core.Registry;
 import net.minecraft.core.dispenser.DispenseItemBehavior;
 import net.minecraft.resources.ResourceLocation;
@@ -43,12 +43,12 @@ public abstract class Packages extends PackagesBase {
 		
 		LOG.info("fgffffffffff");
 		RegFacet.handle(this, facets.removeFacetsErased(RegFacet.class));
+		BlockEntityTypeFacet.handle(this, facets.removeFacets(BlockEntityTypeFacet.class));
 		//LangFacet.handle(new FileGenner.DebugGenner(LOG), facets.removeFacets(LangFacet.class));
 		LOG.info("fgffffffffff");
 		
 		//PBlocks.onInitialize();
-		PBlockEntityTypes.onInitialize();
-		PItems.onInitialize();
+		//PBlockEntityTypes.onInitialize();
 		
 		PDispenserBehaviors.onInitialize();
 		PTags.onInitialize();
@@ -73,7 +73,7 @@ public abstract class Packages extends PackagesBase {
 	
 	public abstract <T> RegistryHandle<T> register(Registry<? super T> registry, ResourceLocation id, Supplier<T> thingMaker);
 	public abstract CreativeModeTab.Builder creativeModeTabBuilder();
-	public abstract void registerDispenserBehavior(RegistryHandle<? extends ItemLike> item, DispenseItemBehavior behavior);
+	public abstract void registerDispenserBehavior(Latch<? extends ItemLike> item, DispenseItemBehavior behavior);
 	public abstract <T extends BlockEntity> BlockEntityType<T> makeBlockEntityType(BlockEntityFactory<T> factory, Block... blocks);
 	public abstract <T extends AbstractContainerMenu> MenuType<T> makeMenuType(MyMenuSupplier<T> supplier);
 	public abstract void registerActionPacketHandler();

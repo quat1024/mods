@@ -3,8 +3,13 @@ package agency.highlysuspect.quatlib.craftful.fab;
 import agency.highlysuspect.quatlib.craftful.QuatlibMc;
 import agency.highlysuspect.quatlib.craftless.QuatlibBase;
 import agency.highlysuspect.quatlib.craftless.fab.AfterQuatlibInitializer;
+import agency.highlysuspect.quatlib.craftless.util.BlockEntityFactory;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 
 public class QuatlibFabric extends QuatlibMc implements ModInitializer {
 	@Override
@@ -12,6 +17,11 @@ public class QuatlibFabric extends QuatlibMc implements ModInitializer {
 		//...do stuff...
 		
 		FabricLoader.getInstance().invokeEntrypoints("modder_name_lib:after", AfterQuatlibInitializer.class, AfterQuatlibInitializer::onInitialize);
+	}
+	
+	@Override
+	public <T extends BlockEntity> BlockEntityType<T> makeBlockEntityType(BlockEntityFactory<T> factory, Block... blocks) {
+		return FabricBlockEntityTypeBuilder.create(factory::create, blocks).build();
 	}
 	
 	public static QuatlibFabric inst() {

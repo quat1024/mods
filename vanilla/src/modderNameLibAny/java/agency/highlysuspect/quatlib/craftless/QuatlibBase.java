@@ -3,11 +3,13 @@ package agency.highlysuspect.quatlib.craftless;
 import agency.highlysuspect.quatlib.craftless.bridge.ResourceLocationBridge;
 import agency.highlysuspect.quatlib.craftless.failure.FailureLogger;
 import agency.highlysuspect.quatlib.craftless.failure.FailureRoot;
+import agency.highlysuspect.quatlib.craftless.util.BlockEntityFactory;
 import agency.highlysuspect.quatlib.craftless.util.LogFacade;
 import agency.highlysuspect.quatlib.craftless.util.SharedConfigFileWatcher;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 
 public abstract class QuatlibBase {
 	public QuatlibBase() {
@@ -26,7 +28,7 @@ public abstract class QuatlibBase {
 	protected abstract SharedConfigFileWatcher makeSharedConfigFileWatcher();
 	protected abstract ResourceLocationBridge<ResourceLocation> makeResourceLocationBridge();
 	
-	public abstract BlockItem basicBlockItem(Block b);
+	public abstract <T extends BlockEntity> BlockEntityType<T> makeBlockEntityType(BlockEntityFactory<T> factory, Block... blocks);
 	
 	public static QuatlibBase inst() {
 		return INST;

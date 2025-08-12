@@ -58,7 +58,7 @@ public class ForgeClientInit extends PackagesClient {
 		private void register() { MenuScreens.register(type.get(), cons::create); } //generics moment
 	}
 	
-	private record BlockEntityRendererEntry<T extends BlockEntity>(RegistryHandle<? extends BlockEntityType<T>> type, BlockEntityRendererProvider<? super T> renderer) {
+	private record BlockEntityRendererEntry<T extends BlockEntity>(Latch<? extends BlockEntityType<T>> type, BlockEntityRendererProvider<? super T> renderer) {
 		private void register(EntityRenderersEvent.RegisterRenderers e) { e.registerBlockEntityRenderer(type.get(), renderer); } //generics moment
 	}
 	
@@ -141,7 +141,7 @@ public class ForgeClientInit extends PackagesClient {
 	}
 	
 	@Override
-	public <T extends BlockEntity> void setBlockEntityRenderer(RegistryHandle<? extends BlockEntityType<T>> type, BlockEntityRendererProvider<? super T> renderer) {
+	public <T extends BlockEntity> void setBlockEntityRenderer(Latch<? extends BlockEntityType<T>> type, BlockEntityRendererProvider<? super T> renderer) {
 		blockEntityRenderersToRegister.add(new BlockEntityRendererEntry<>(type, renderer));
 	}
 	

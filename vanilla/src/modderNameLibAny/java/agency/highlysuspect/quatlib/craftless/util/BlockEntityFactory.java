@@ -1,4 +1,4 @@
-package agency.highlysuspect.packages.craftful.platform;
+package agency.highlysuspect.quatlib.craftless.util;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.entity.BlockEntity;

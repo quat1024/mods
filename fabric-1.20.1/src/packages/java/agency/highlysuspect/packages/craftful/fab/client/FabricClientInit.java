@@ -67,7 +67,7 @@ public class FabricClientInit extends PackagesClient implements AfterQuatlibClie
 	}
 	
 	@Override
-	public <T extends BlockEntity> void setBlockEntityRenderer(RegistryHandle<? extends BlockEntityType<T>> type, BlockEntityRendererProvider<? super T> renderer) {
+	public <T extends BlockEntity> void setBlockEntityRenderer(Latch<? extends BlockEntityType<T>> type, BlockEntityRendererProvider<? super T> renderer) {
 		//BlockEntityRendererRegistry.register(type.get(), renderer); //frapi deprecated
 		BlockEntityRenderers.register(type.get(), renderer); //fabric-transitive-access-wideners
 	}

@@ -60,7 +60,7 @@ public abstract class PackagesClient extends PackagesBaseClient {
 	}
 	
 	public abstract <T extends AbstractContainerMenu, U extends Screen & MenuAccess<T>> void registerMenuScreen(RegistryHandle<MenuType<T>> type, MyScreenConstructor<T, U> cons);
-	public abstract <T extends BlockEntity> void setBlockEntityRenderer(RegistryHandle<? extends BlockEntityType<T>> type, BlockEntityRendererProvider<? super T> renderer);
+	public abstract <T extends BlockEntity> void setBlockEntityRenderer(Latch<? extends BlockEntityType<T>> type, BlockEntityRendererProvider<? super T> renderer);
 	public abstract void setRenderType(Latch<? extends Block> block, RenderType type);
 	public abstract void setupCustomModelLoaders();
 	public abstract void sendActionPacket(ActionPacket packet);

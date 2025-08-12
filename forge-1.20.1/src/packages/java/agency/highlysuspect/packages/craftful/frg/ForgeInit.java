@@ -4,7 +4,8 @@ import agency.highlysuspect.packages.craftful.Packages;
 import agency.highlysuspect.packages.craftful.block.PackageBlockEntity;
 import agency.highlysuspect.packages.craftful.block.PackageMakerBlockEntity;
 import agency.highlysuspect.packages.craftful.net.ActionPacket;
-import agency.highlysuspect.packages.craftful.platform.BlockEntityFactory;
+import agency.highlysuspect.quatlib.craftless.facet.Latch;
+import agency.highlysuspect.quatlib.craftless.util.BlockEntityFactory;
 import agency.highlysuspect.packages.craftful.platform.MyMenuSupplier;
 import agency.highlysuspect.packages.craftful.platform.RegistryHandle;
 import agency.highlysuspect.packages.craftless.PackagesBase;
@@ -62,7 +63,7 @@ public class ForgeInit extends Packages {
 	public final SimpleChannel channel = NetworkRegistry.newSimpleChannel(id("n"), () -> "0", "0"::equals, "0"::equals);
 	
 	private final Map<Registry<?>, DeferredRegister<?>> deferredRegistries = new HashMap<>();
-	private final Map<RegistryHandle<? extends ItemLike>, DispenseItemBehavior> dispenseBehaviorsToRegister = new HashMap<>();
+	private final Map<Latch<? extends ItemLike>, DispenseItemBehavior> dispenseBehaviorsToRegister = new HashMap<>();
 	
 	public final ModContainer modContainer;
 	public final IEventBus modBus;
@@ -105,6 +106,8 @@ public class ForgeInit extends Packages {
 		
 		if(type == RegType.BLOCKS) reg = (ForgeReg<T>) new ForgeReg<>(BuiltInRegistries.BLOCK.key());
 		else if(type == RegType.ITEMS) reg = (ForgeReg<T>) new ForgeReg<>(BuiltInRegistries.ITEM.key());
+		else if(type == RegType.CREATIVE_TABS) reg = (ForgeReg<T>) new ForgeReg<>(BuiltInRegistries.CREATIVE_MODE_TAB.key());
+		else if(type == RegType.BLOCK_ENTITY_TYPES) reg = (ForgeReg<T>) new ForgeReg<>(BuiltInRegistries.BLOCK_ENTITY_TYPE.key());
 		else throw new UnsupportedOperationException("Don't know how to register " + type);
 		
 		modBus.register(reg);
@@ -152,7 +155,7 @@ public class ForgeInit extends Packages {
 	}
 	
 	@Override
-	public void registerDispenserBehavior(RegistryHandle<? extends ItemLike> item, DispenseItemBehavior behavior) {
+	public void registerDispenserBehavior(Latch<? extends ItemLike> item, DispenseItemBehavior behavior) {
 		dispenseBehaviorsToRegister.put(item, behavior);
 	}
 	

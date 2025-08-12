@@ -2,7 +2,8 @@ package agency.highlysuspect.packages.craftful.fab;
 
 import agency.highlysuspect.packages.craftful.Packages;
 import agency.highlysuspect.packages.craftful.net.ActionPacket;
-import agency.highlysuspect.packages.craftful.platform.BlockEntityFactory;
+import agency.highlysuspect.quatlib.craftless.facet.Latch;
+import agency.highlysuspect.quatlib.craftless.util.BlockEntityFactory;
 import agency.highlysuspect.packages.craftful.platform.MyMenuSupplier;
 import agency.highlysuspect.packages.craftful.platform.RegistryHandle;
 import agency.highlysuspect.quatlib.craftless.config.ConfigSection;
@@ -50,6 +51,8 @@ public class FabricInit extends Packages implements AfterQuatlibInitializer {
 	protected <T> Reg<T> createReg(RegType<T> type) {
 		if(type == RegType.BLOCKS) return (Reg<T>) new FabricReg<>(BuiltInRegistries.BLOCK.key());
 		if(type == RegType.ITEMS) return (Reg<T>) new FabricReg<>(BuiltInRegistries.ITEM.key());
+		if(type == RegType.CREATIVE_TABS) return (Reg<T>) new FabricReg<>(BuiltInRegistries.CREATIVE_MODE_TAB.key());
+		if(type == RegType.BLOCK_ENTITY_TYPES) return (Reg<T>) new FabricReg<>(BuiltInRegistries.BLOCK_ENTITY_TYPE.key());
 		throw new UnsupportedOperationException("Don't know how to register " + type);
 	}
 	
@@ -74,7 +77,7 @@ public class FabricInit extends Packages implements AfterQuatlibInitializer {
 	}
 	
 	@Override
-	public void registerDispenserBehavior(RegistryHandle<? extends ItemLike> item, DispenseItemBehavior behavior) {
+	public void registerDispenserBehavior(Latch<? extends ItemLike> item, DispenseItemBehavior behavior) {
 		DispenserBlock.registerBehavior(item.get(), behavior);
 	}
 	
