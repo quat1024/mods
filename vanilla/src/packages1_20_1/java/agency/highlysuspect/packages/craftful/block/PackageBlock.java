@@ -60,14 +60,10 @@ public class PackageBlock extends Block implements EntityBlock {
 			//Previously they'd place upwards/downwards at any angle lower than 45
 			float pitch = p.getXRot();
 			if(pitch > 60 || pitch < -60) {
-				//general look direction (can be up/down)
-				Direction primary = Direction.orderedByNearest(p)[0];
-				//horizontal look direction
-				Direction secondary = p.getDirection().getOpposite();
-				
-				facing = TwelveDirection.get(primary, secondary).getOpposite();
+				//                                     general look dir                            yaw
+				facing = TwelveDirection.get(Direction.orderedByNearest(p)[0].getOpposite(), p.getDirection());
 			} else {
-				facing = TwelveDirection.get(ctx.getPlayer().getDirection(), null).getOpposite();
+				facing = TwelveDirection.get(ctx.getPlayer().getDirection().getOpposite(), null);
 			}
 		}
 		

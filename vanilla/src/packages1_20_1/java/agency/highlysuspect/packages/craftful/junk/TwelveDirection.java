@@ -2,7 +2,6 @@ package agency.highlysuspect.packages.craftful.junk;
 
 import net.minecraft.core.Direction;
 import net.minecraft.util.StringRepresentable;
-import net.minecraft.world.entity.Entity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -53,32 +52,6 @@ public enum TwelveDirection implements StringRepresentable {
 				case WEST -> TwelveDirection.DOWN_WEST;
 				default -> TwelveDirection.DOWN_NORTH;
 			};
-		};
-	}
-	
-	public static TwelveDirection fromEntity(Entity ent) {
-		//general look direction (can be up/down)
-		Direction primary = Direction.orderedByNearest(ent)[0];
-		//horizontal look direction
-		Direction secondary = ent.getDirection().getOpposite();
-		
-		return get(primary, secondary);
-	}
-	
-	public TwelveDirection getOpposite() {
-		return switch(this) {
-			case UP_NORTH -> DOWN_SOUTH;
-			case UP_EAST -> DOWN_WEST;
-			case UP_SOUTH -> DOWN_NORTH;
-			case UP_WEST -> DOWN_EAST;
-			case NORTH -> SOUTH;
-			case EAST -> WEST;
-			case SOUTH -> NORTH;
-			case WEST -> EAST;
-			case DOWN_NORTH -> UP_SOUTH;
-			case DOWN_EAST -> UP_WEST;
-			case DOWN_SOUTH -> UP_NORTH;
-			case DOWN_WEST -> UP_EAST;
 		};
 	}
 	
