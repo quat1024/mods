@@ -8,7 +8,6 @@ import agency.highlysuspect.quatlib.craftless.facet.Gen;
 import agency.highlysuspect.quatlib.craftless.facet.Id;
 import agency.highlysuspect.quatlib.craftless.facet.Latch;
 import agency.highlysuspect.quatlib.craftless.facet.RegType;
-import agency.highlysuspect.quatlib.craftless.facet.facets.RegFacet;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 
@@ -16,13 +15,13 @@ import java.util.List;
 import java.util.Random;
 import java.util.function.Consumer;
 
-public class PackagesGen implements Gen {
+public class PackagesGen implements PGen {
 	@Override
 	public void gen(Ctx ctx, Consumer<Gen> more) {
 		more.accept(new PackageGen());
 		more.accept(new PackageMakerGen());
 		
-		ctx.add(new RegFacet().latch(Latch.open(RegType.CREATIVE_TABS, new Id(Packages.MODID, "group"))).sup(() ->
+		ctx.reg(Latch.open(RegType.CREATIVE_TABS, new Id(Packages.MODID, "group")), () ->
 			QuatlibMc.inst().makeCreativeModeTabBuilder()
 				.title(Component.translatable("itemGroup.packages.group"))
 				.icon(() -> {
@@ -38,6 +37,6 @@ public class PackagesGen implements Gen {
 					PBlocks.PACKAGE.get().lotsOfPackages().forEach(out::accept);
 				})
 				.build()
-		));
+		);
 	}
 }

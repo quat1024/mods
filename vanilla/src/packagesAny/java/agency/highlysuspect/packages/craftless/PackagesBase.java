@@ -3,6 +3,7 @@ package agency.highlysuspect.packages.craftless;
 import agency.highlysuspect.quatlib.craftless.Slf4jLogFacade;
 import agency.highlysuspect.quatlib.craftless.config.ConfigSection;
 import agency.highlysuspect.quatlib.craftless.config.WritableConfig;
+import agency.highlysuspect.quatlib.craftless.facet.Id;
 import agency.highlysuspect.quatlib.craftless.facet.Reg;
 import agency.highlysuspect.quatlib.craftless.facet.RegType;
 import agency.highlysuspect.quatlib.craftless.facet.facets.RegFacet;
@@ -21,6 +22,10 @@ public abstract class PackagesBase implements RegFacet.RegistryGetter {
 	public static final String MODID = "packages";
 	public static final String NAME = "Packages";
 	public static final LogFacade LOG = new Slf4jLogFacade(NAME);
+	
+	public static Id id(String path) {
+		return new Id(MODID, path);
+	}
 	
 	public FailureRoot failures = new FailureRoot(NAME).addListener(new FailureLogger(LOG));
 	public ConfigSection configSchema;
@@ -42,7 +47,7 @@ public abstract class PackagesBase implements RegFacet.RegistryGetter {
 	public abstract ConfigSection visitConfigSchema(ConfigSection root);
 	public abstract WritableConfig makeConfig(ConfigSection schema);
 	
-	protected abstract <T> Reg<T> createReg(RegType<T> type);
+	protected abstract Reg<?> createReg(RegType<?> type);
 	
 	protected static PackagesBase INST;
 	public static PackagesBase inst() {

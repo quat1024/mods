@@ -7,7 +7,6 @@ import agency.highlysuspect.packages.craftful.fab.client.model.FrapiMeshPackageM
 import agency.highlysuspect.packages.craftful.fab.client.model.FrapiMeshPackageModel;
 import agency.highlysuspect.packages.craftful.fab.compat.frex.FrexCompat;
 import agency.highlysuspect.packages.craftful.net.ActionPacket;
-import agency.highlysuspect.packages.craftful.platform.RegistryHandle;
 import agency.highlysuspect.packages.craftful.platform.client.MyScreenConstructor;
 import agency.highlysuspect.packages.craftless.PackagesBase;
 import agency.highlysuspect.packages.craftless.client.PackagesBaseClient;
@@ -62,7 +61,7 @@ public class FabricClientInit extends PackagesClient implements AfterQuatlibClie
 	}
 	
 	@Override
-	public <T extends AbstractContainerMenu, U extends Screen & MenuAccess<T>> void registerMenuScreen(RegistryHandle<MenuType<T>> type, MyScreenConstructor<T, U> cons) {
+	public <T extends AbstractContainerMenu, U extends Screen & MenuAccess<T>> void registerMenuScreen(Latch<MenuType<T>> type, MyScreenConstructor<T, U> cons) {
 		MenuScreens.register(type.get(), cons::create);
 	}
 	
@@ -81,10 +80,10 @@ public class FabricClientInit extends PackagesClient implements AfterQuatlibClie
 	
 	@Override
 	public void setupCustomModelLoaders() {
-		ResourceLocation specialPackage = Packages.id("special/package");
-		ResourceLocation specialPackageMaker = Packages.id("special/package_maker");
-		ModelResourceLocation packageInventory = new ModelResourceLocation(Packages.id("package"), "inventory");
-		ModelResourceLocation packageMakerInventory = new ModelResourceLocation(Packages.id("package_maker"), "inventory");
+		ResourceLocation specialPackage = Packages.rl("special/package");
+		ResourceLocation specialPackageMaker = Packages.rl("special/package_maker");
+		ModelResourceLocation packageInventory = new ModelResourceLocation(Packages.rl("package"), "inventory");
+		ModelResourceLocation packageMakerInventory = new ModelResourceLocation(Packages.rl("package_maker"), "inventory");
 		
 		//block models (packages:special/package)
 		//note that assets/packages/models/special/package.json actually does exist, but on fabric modelresourceproviders take priority

@@ -82,8 +82,8 @@ public interface PackageModelBakery<MODEL> {
 		}
 	}
 	
-	@SuppressWarnings("deprecation") Material SPECIAL_FRAME = new Material(TextureAtlas.LOCATION_BLOCKS, Packages.id("package_special/frame"));
-	@SuppressWarnings("deprecation") Material SPECIAL_INNER = new Material(TextureAtlas.LOCATION_BLOCKS, Packages.id("package_special/inner"));
+	@SuppressWarnings("deprecation") Material SPECIAL_FRAME = new Material(TextureAtlas.LOCATION_BLOCKS, Packages.rl("package_special/frame"));
+	@SuppressWarnings("deprecation") Material SPECIAL_INNER = new Material(TextureAtlas.LOCATION_BLOCKS, Packages.rl("package_special/inner"));
 	
 	static <X> PackageModelBakery<X> finishBaking(ModelBaker loader, Function<Material, TextureAtlasSprite> textureGetter, ModelState rotationContainer, ResourceLocation modelId, ResourceLocation blockModelId, Maker<X> maker) {
 		UnbakedModel unbaked = loader.getModel(blockModelId);

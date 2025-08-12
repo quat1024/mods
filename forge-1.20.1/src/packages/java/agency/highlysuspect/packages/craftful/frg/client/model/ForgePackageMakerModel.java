@@ -35,7 +35,7 @@ import java.util.function.Function;
 
 public class ForgePackageMakerModel implements IUnbakedGeometry<ForgePackageMakerModel> {
 	protected static final ModelProperty<PackageMakerStyle> STYLE_PROPERTY = new ModelProperty<>();
-	protected static final ResourceLocation BLOCK_MODEL_ID = Packages.id("block/package_maker");
+	protected static final ResourceLocation BLOCK_MODEL_ID = Packages.rl("block/package_maker");
 	
 	@Override
 	public void resolveParents(Function<ResourceLocation, UnbakedModel> modelGetter, IGeometryBakingContext context) {

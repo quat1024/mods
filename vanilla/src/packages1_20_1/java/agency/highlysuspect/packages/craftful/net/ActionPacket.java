@@ -13,7 +13,7 @@ import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
 public final class ActionPacket {
-	public static final ResourceLocation LONG_ID = Packages.id("action"); //used on fabric
+	public static final ResourceLocation LONG_ID = Packages.rl("action"); //used on fabric
 	public static final byte SHORT_ID = 0; //used on forge
 	
 	public ActionPacket(BlockPos pos, InteractionHand hand, PackageAction action) {

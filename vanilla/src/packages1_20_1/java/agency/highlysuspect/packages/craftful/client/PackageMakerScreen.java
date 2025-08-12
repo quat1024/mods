@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.Optional;
 
 public class PackageMakerScreen extends AbstractContainerScreen<PackageMakerMenu> {
-	private static final ResourceLocation TEXTURE = Packages.id("textures/gui/package_maker.png");
+	private static final ResourceLocation TEXTURE = Packages.rl("textures/gui/package_maker.png");
 	
 	public PackageMakerScreen(PackageMakerMenu menu, Inventory inventory, Component title) {
 		super(menu, inventory, title);

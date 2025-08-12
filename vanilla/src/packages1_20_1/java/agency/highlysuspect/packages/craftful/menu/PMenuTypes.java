@@ -1,14 +1,10 @@
 package agency.highlysuspect.packages.craftful.menu;
 
-import agency.highlysuspect.packages.craftful.Packages;
-import agency.highlysuspect.packages.craftful.platform.RegistryHandle;
-import net.minecraft.core.registries.BuiltInRegistries;
+import agency.highlysuspect.packages.craftful.block.PBlocks;
+import agency.highlysuspect.quatlib.craftless.facet.Latch;
+import agency.highlysuspect.quatlib.craftless.facet.RegType;
 import net.minecraft.world.inventory.MenuType;
 
 public class PMenuTypes {
-	public static RegistryHandle<MenuType<PackageMakerMenu>> PACKAGE_MAKER;
-	
-	public static void onInitialize() {
-		PACKAGE_MAKER = Packages.inst().register(BuiltInRegistries.MENU, Packages.id("package_maker"), () -> Packages.inst().makeMenuType(PackageMakerMenu::new));
-	}
+	public static Latch<MenuType<PackageMakerMenu>> PACKAGE_MAKER = RegType.MENU_TYPES.latch(PBlocks.PACKAGE_MAKER.id);
 }

@@ -30,7 +30,7 @@ import java.util.Random;
 @EmiEntrypoint
 public class PackagesEmiPlugin implements EmiPlugin {
 	public static final EmiRecipeCategory PACKAGE_MAKER_CATEGORY = new EmiRecipeCategory(
-		Packages.id("package_maker"),
+		Packages.rl("package_maker"),
 		EmiStack.of(PBlocks.PACKAGE_MAKER.get())
 	) {
 		@Override
@@ -77,7 +77,7 @@ public class PackagesEmiPlugin implements EmiPlugin {
 		
 		@Override
 		public @Nullable ResourceLocation getId() {
-			return Packages.id("/package_maker/package");
+			return Packages.rl("/package_maker/package");
 		}
 		
 		@Override

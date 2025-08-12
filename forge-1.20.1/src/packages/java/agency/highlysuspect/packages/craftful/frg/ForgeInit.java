@@ -6,7 +6,6 @@ import agency.highlysuspect.packages.craftful.block.PackageMakerBlockEntity;
 import agency.highlysuspect.packages.craftful.net.ActionPacket;
 import agency.highlysuspect.quatlib.craftless.facet.Latch;
 import agency.highlysuspect.packages.craftful.platform.MyMenuSupplier;
-import agency.highlysuspect.packages.craftful.platform.RegistryHandle;
 import agency.highlysuspect.packages.craftless.PackagesBase;
 import agency.highlysuspect.quatlib.craftful.frg.ForgeBackedConfig_V1;
 import agency.highlysuspect.quatlib.craftless.config.ConfigSection;
@@ -17,7 +16,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Registry;
 import net.minecraft.core.dispenser.DispenseItemBehavior;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -45,17 +43,15 @@ import net.minecraftforge.network.NetworkEvent;
 import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.simple.SimpleChannel;
 import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.RegistryObject;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Supplier;
 
 @Mod("packages")
 public class ForgeInit extends Packages {
-	public final SimpleChannel channel = NetworkRegistry.newSimpleChannel(id("n"), () -> "0", "0"::equals, "0"::equals);
+	public final SimpleChannel channel = NetworkRegistry.newSimpleChannel(rl("n"), () -> "0", "0"::equals, "0"::equals);
 	
 	private final Map<Registry<?>, DeferredRegister<?>> deferredRegistries = new HashMap<>();
 	private final Map<Latch<? extends ItemLike>, DispenseItemBehavior> dispenseBehaviorsToRegister = new HashMap<>();
@@ -94,15 +90,18 @@ public class ForgeInit extends Packages {
 		return true;
 	}
 	
-	@SuppressWarnings({"unchecked", "deprecation"})
+	//TODO: kick into quatlib?
+	@SuppressWarnings({"deprecation"})
 	@Override
-	protected <T> Reg<T> createReg(RegType<T> type) {
-		ForgeReg<T> reg;
+	protected Reg<?> createReg(RegType<?> type) {
+		ForgeReg<?> reg;
 		
-		if(type == RegType.BLOCKS) reg = (ForgeReg<T>) new ForgeReg<>(BuiltInRegistries.BLOCK.key());
-		else if(type == RegType.ITEMS) reg = (ForgeReg<T>) new ForgeReg<>(BuiltInRegistries.ITEM.key());
-		else if(type == RegType.CREATIVE_TABS) reg = (ForgeReg<T>) new ForgeReg<>(BuiltInRegistries.CREATIVE_MODE_TAB.key());
-		else if(type == RegType.BLOCK_ENTITY_TYPES) reg = (ForgeReg<T>) new ForgeReg<>(BuiltInRegistries.BLOCK_ENTITY_TYPE.key());
+		if(type == RegType.BLOCKS) reg = new ForgeReg<>(BuiltInRegistries.BLOCK.key());
+		else if(type == RegType.ITEMS) reg = new ForgeReg<>(BuiltInRegistries.ITEM.key());
+		else if(type == RegType.CREATIVE_TABS) reg = new ForgeReg<>(BuiltInRegistries.CREATIVE_MODE_TAB.key());
+		else if(type == RegType.BLOCK_ENTITY_TYPES) reg = new ForgeReg<>(BuiltInRegistries.BLOCK_ENTITY_TYPE.key());
+		else if(type == RegType.SOUND_EVENTS) reg = new ForgeReg<>(BuiltInRegistries.SOUND_EVENT.key());
+		else if(type == RegType.MENU_TYPES) reg = new ForgeReg<>(BuiltInRegistries.MENU.key());
 		else throw new UnsupportedOperationException("Don't know how to register " + type);
 		
 		modBus.register(reg);
@@ -116,26 +115,6 @@ public class ForgeInit extends Packages {
 			deferred.register(FMLJavaModLoadingContext.get().getModEventBus());
 			return deferred;
 		});
-	}
-	
-	@Override
-	public <T> RegistryHandle<T> register(Registry<? super T> registry, ResourceLocation id, Supplier<T> thingMaker) {
-		if(!id.getNamespace().equals(Packages.MODID)) throw new IllegalArgumentException("Forge enforces one modid per DeferredRegister");
-		
-		RegistryObject<T> obj = getDeferredRegister(registry).register(id.getPath(), thingMaker);
-		return new RegistryObjectRegistryHandle<>(obj);
-	}
-	
-	private record RegistryObjectRegistryHandle<T>(RegistryObject<T> obj) implements RegistryHandle<T> {
-		@Override
-		public T get() {
-			return obj.get();
-		}
-		
-		@Override
-		public ResourceLocation getId() {
-			return obj.getId();
-		}
 	}
 	
 	@Override
@@ -176,14 +155,14 @@ public class ForgeInit extends Packages {
 	//not all bad; with the Package i think a custom implementation is beneficial anyway
 	private void attachCaps(AttachCapabilitiesEvent<BlockEntity> e) {
 		if(e.getObject() instanceof PackageBlockEntity pkg) {
-			e.addCapability(Packages.id("a"), new ICapabilityProvider() {
+			e.addCapability(Packages.rl("a"), new ICapabilityProvider() {
 				@Override
 				public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
 					return ForgeCapabilities.ITEM_HANDLER.orEmpty(cap, LazyOptional.of(() -> new PackageItemHandler(pkg.getContainer())).cast());
 				}
 			});
 		} else if(e.getObject() instanceof PackageMakerBlockEntity pmbe) {
-			e.addCapability(Packages.id("b"), new ICapabilityProvider() {
+			e.addCapability(Packages.rl("b"), new ICapabilityProvider() {
 				@Override
 				public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
 					return ForgeCapabilities.ITEM_HANDLER.orEmpty(cap, LazyOptional.of(() -> new SidedInvWrapper(pmbe, side)));

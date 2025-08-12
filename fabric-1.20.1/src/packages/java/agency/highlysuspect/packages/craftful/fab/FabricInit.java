@@ -4,7 +4,6 @@ import agency.highlysuspect.packages.craftful.Packages;
 import agency.highlysuspect.packages.craftful.net.ActionPacket;
 import agency.highlysuspect.quatlib.craftless.facet.Latch;
 import agency.highlysuspect.packages.craftful.platform.MyMenuSupplier;
-import agency.highlysuspect.packages.craftful.platform.RegistryHandle;
 import agency.highlysuspect.quatlib.craftless.config.ConfigSection;
 import agency.highlysuspect.quatlib.craftless.config.WritableConfig;
 import agency.highlysuspect.quatlib.craftless.config.hdc.HalfDecentConfigFile;
@@ -15,10 +14,8 @@ import agency.highlysuspect.quatlib.craftless.util.Season1CrummyConfigUpgrader;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.Util;
-import net.minecraft.core.Registry;
 import net.minecraft.core.dispenser.DispenseItemBehavior;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
@@ -26,7 +23,6 @@ import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.DispenserBlock;
 
 import java.nio.file.Path;
-import java.util.function.Supplier;
 
 public class FabricInit extends Packages implements AfterQuatlibInitializer {
 	@Override
@@ -41,22 +37,14 @@ public class FabricInit extends Packages implements AfterQuatlibInitializer {
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	protected <T> Reg<T> createReg(RegType<T> type) {
-		if(type == RegType.BLOCKS) return (Reg<T>) new FabricReg<>(BuiltInRegistries.BLOCK.key());
-		if(type == RegType.ITEMS) return (Reg<T>) new FabricReg<>(BuiltInRegistries.ITEM.key());
-		if(type == RegType.CREATIVE_TABS) return (Reg<T>) new FabricReg<>(BuiltInRegistries.CREATIVE_MODE_TAB.key());
-		if(type == RegType.BLOCK_ENTITY_TYPES) return (Reg<T>) new FabricReg<>(BuiltInRegistries.BLOCK_ENTITY_TYPE.key());
+	protected Reg<?> createReg(RegType<?> type) {
+		if(type == RegType.BLOCKS) return new FabricReg<>(BuiltInRegistries.BLOCK.key());
+		if(type == RegType.ITEMS) return new FabricReg<>(BuiltInRegistries.ITEM.key());
+		if(type == RegType.CREATIVE_TABS) return new FabricReg<>(BuiltInRegistries.CREATIVE_MODE_TAB.key());
+		if(type == RegType.BLOCK_ENTITY_TYPES) return new FabricReg<>(BuiltInRegistries.BLOCK_ENTITY_TYPE.key());
+		if(type == RegType.SOUND_EVENTS) return new FabricReg<>(BuiltInRegistries.SOUND_EVENT.key());
+		if(type == RegType.MENU_TYPES) return new FabricReg<>(BuiltInRegistries.MENU.key());
 		throw new UnsupportedOperationException("Don't know how to register " + type);
-	}
-	
-	@Override
-	public <T> RegistryHandle<T> register(Registry<? super T> registry, ResourceLocation id, Supplier<T> thingMaker) {
-		//It's safe to initialize and register the object right away on Fabric.
-		T thing = thingMaker.get();
-		Registry.register(registry, id, thing);
-		
-		//Return a handle to it.
-		return new RegistryHandle.Immediate<>(thing, id);
 	}
 	
 	@Override

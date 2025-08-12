@@ -31,7 +31,7 @@ import java.util.function.Supplier;
  * It uses PackageMakerStyle instead of PackageStyle, and uses a different style of choosing the model from the item stack.
  */
 public class FrapiMeshPackageMakerModel implements UnbakedModel {
-	private static final ResourceLocation BLOCK_MODEL_ID = Packages.id("block/package_maker");
+	private static final ResourceLocation BLOCK_MODEL_ID = Packages.rl("block/package_maker");
 	
 	@Override
 	public Collection<ResourceLocation> getDependencies() {

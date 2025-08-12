@@ -42,7 +42,7 @@ public class ForgePackageModel implements IUnbakedGeometry<ForgePackageModel> {
 	protected static final ModelProperty<BlockAndTintGetter> BATG_PROPERTY = new ModelProperty<>(); //To support getParticleIcon.
 	protected static final ModelProperty<BlockPos> BLOCKPOS_PROPERTY = new ModelProperty<>();//To support getParticleIcon.
 	
-	protected static final ResourceLocation BLOCK_MODEL_ID = Packages.id("block/package");
+	protected static final ResourceLocation BLOCK_MODEL_ID = Packages.rl("block/package");
 	
 	@Override
 	public void resolveParents(Function<ResourceLocation, UnbakedModel> modelGetter, IGeometryBakingContext context) {

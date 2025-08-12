@@ -6,7 +6,6 @@ import agency.highlysuspect.packages.craftful.block.PBlocks;
 import agency.highlysuspect.packages.craftful.menu.PMenuTypes;
 import agency.highlysuspect.packages.craftful.net.ActionPacket;
 import agency.highlysuspect.packages.craftful.net.PackageAction;
-import agency.highlysuspect.packages.craftful.platform.RegistryHandle;
 import agency.highlysuspect.packages.craftful.platform.client.MyScreenConstructor;
 import agency.highlysuspect.packages.craftless.client.PackagesBaseClient;
 import agency.highlysuspect.quatlib.craftless.config.ConfigSection;
@@ -22,7 +21,10 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 public abstract class PackagesClient extends PackagesBaseClient {
 	//Bindings, parsed from the config, and sorted such that the more specific ones are at the front of the list
@@ -59,7 +61,7 @@ public abstract class PackagesClient extends PackagesBaseClient {
 		Collections.sort(sortedBindings);
 	}
 	
-	public abstract <T extends AbstractContainerMenu, U extends Screen & MenuAccess<T>> void registerMenuScreen(RegistryHandle<MenuType<T>> type, MyScreenConstructor<T, U> cons);
+	public abstract <T extends AbstractContainerMenu, U extends Screen & MenuAccess<T>> void registerMenuScreen(Latch<MenuType<T>> type, MyScreenConstructor<T, U> cons);
 	public abstract <T extends BlockEntity> void setBlockEntityRenderer(Latch<? extends BlockEntityType<T>> type, BlockEntityRendererProvider<? super T> renderer);
 	public abstract void setRenderType(Latch<? extends Block> block, RenderType type);
 	public abstract void setupCustomModelLoaders();

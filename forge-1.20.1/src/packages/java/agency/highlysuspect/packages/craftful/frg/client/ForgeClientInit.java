@@ -7,7 +7,6 @@ import agency.highlysuspect.packages.craftful.frg.client.model.ForgePackageMaker
 import agency.highlysuspect.packages.craftful.frg.client.model.ForgePackageModel;
 import agency.highlysuspect.packages.craftful.frg.client.model.NoConfigGeometryLoader;
 import agency.highlysuspect.packages.craftful.net.ActionPacket;
-import agency.highlysuspect.packages.craftful.platform.RegistryHandle;
 import agency.highlysuspect.packages.craftful.platform.client.MyScreenConstructor;
 import agency.highlysuspect.quatlib.craftful.frg.ForgeBackedConfig_V1;
 import agency.highlysuspect.quatlib.craftless.config.ConfigSection;
@@ -54,7 +53,7 @@ public class ForgeClientInit extends PackagesClient {
 	private final List<BlockEntityRendererEntry<?>> blockEntityRenderersToRegister = new ArrayList<>();
 	private final Map<Latch<? extends Block>, RenderType> renderTypesToRegister = new HashMap<>();
 	
-	private record MenuScreenEntry<T extends AbstractContainerMenu, U extends Screen & MenuAccess<T>>(RegistryHandle<MenuType<T>> type, MyScreenConstructor<T, U> cons) {
+	private record MenuScreenEntry<T extends AbstractContainerMenu, U extends Screen & MenuAccess<T>>(Latch<MenuType<T>> type, MyScreenConstructor<T, U> cons) {
 		private void register() { MenuScreens.register(type.get(), cons::create); } //generics moment
 	}
 	
@@ -136,7 +135,7 @@ public class ForgeClientInit extends PackagesClient {
 	///
 	
 	@Override
-	public <T extends AbstractContainerMenu, U extends Screen & MenuAccess<T>> void registerMenuScreen(RegistryHandle<MenuType<T>> type, MyScreenConstructor<T, U> cons) {
+	public <T extends AbstractContainerMenu, U extends Screen & MenuAccess<T>> void registerMenuScreen(Latch<MenuType<T>> type, MyScreenConstructor<T, U> cons) {
 		menuScreensToRegister.add(new MenuScreenEntry<>(type, cons));
 	}
 	
