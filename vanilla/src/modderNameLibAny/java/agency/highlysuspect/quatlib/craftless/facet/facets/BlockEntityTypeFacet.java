@@ -3,6 +3,7 @@ package agency.highlysuspect.quatlib.craftless.facet.facets;
 import agency.highlysuspect.quatlib.craftless.QuatlibBase;
 import agency.highlysuspect.quatlib.craftless.facet.Facet;
 import agency.highlysuspect.quatlib.craftless.facet.Latch;
+import agency.highlysuspect.quatlib.craftless.facet.Reg;
 import agency.highlysuspect.quatlib.craftless.facet.RegType;
 import agency.highlysuspect.quatlib.craftless.util.BlockEntityFactory;
 import agency.highlysuspect.quatlib.craftless.util.QuatUtil;
@@ -38,6 +39,7 @@ public class BlockEntityTypeFacet {
 		return this;
 	}
 	
+	@SuppressWarnings("unchecked")
 	public static void handle(RegFacet.RegistryGetter getter, List<BlockEntityTypeFacet> allFacets) {
 		QuatUtil.collate(allFacets, f -> f.latch).forEach((typeLatch, facets) -> {
 			//pick one with a nonnull factory
@@ -48,12 +50,13 @@ public class BlockEntityTypeFacet {
 				.orElseThrow(() -> new RuntimeException("No factory registered for BlockEntityType " + typeLatch.id));
 			
 			//register the block entity type
-			getter.getReg(RegType.BLOCK_ENTITY_TYPES).defer(typeLatch, () -> {
-				return (BlockEntityType<?>) QuatlibBase.inst().makeBlockEntityType(factory, facets.stream()
+			Reg<BlockEntityType<?>> blockEntityTypeReg = (Reg<BlockEntityType<?>>) getter.getReg(RegType.BLOCK_ENTITY_TYPES);
+			
+			blockEntityTypeReg.defer(typeLatch, () ->
+				QuatlibBase.inst().makeBlockEntityType(factory, facets.stream()
 					.flatMap(f -> f.blocks.stream())
 					.map(Latch::get)
-					.toArray(Block[]::new));
-			});
+					.toArray(Block[]::new)));
 		});
 	}
 }

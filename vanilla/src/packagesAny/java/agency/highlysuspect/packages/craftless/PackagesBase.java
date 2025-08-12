@@ -34,10 +34,9 @@ public abstract class PackagesBase implements RegFacet.RegistryGetter {
 		config = makeConfig(configSchema);
 	}
 	
-	@SuppressWarnings("unchecked")
 	@Override
-	public <T> Reg<T> getReg(RegType<T> type) {
-		return (Reg<T>) regs.computeIfAbsent(type, this::createReg);
+	public Reg<?> getReg(RegType<?> type) {
+		return regs.computeIfAbsent(type, this::createReg);
 	}
 	
 	public abstract ConfigSection visitConfigSchema(ConfigSection root);

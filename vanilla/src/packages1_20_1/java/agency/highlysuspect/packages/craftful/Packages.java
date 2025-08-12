@@ -37,7 +37,7 @@ public abstract class Packages extends PackagesBase {
 		Gen.run(genCtx, new PackagesGen());
 		
 		LOG.info("fgffffffffff");
-		RegFacet.handle(this, facets.removeFacetsErased(RegFacet.class));
+		RegFacet.handle(this, facets.removeFacets(RegFacet.class));
 		BlockEntityTypeFacet.handle(this, facets.removeFacets(BlockEntityTypeFacet.class));
 		//LangFacet.handle(new FileGenner.DebugGenner(LOG), facets.removeFacets(LangFacet.class));
 		LOG.info("fgffffffffff");

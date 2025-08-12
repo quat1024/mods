@@ -22,7 +22,6 @@ public abstract class PackageGenBase implements Gen, PackagesGenUtils {
 	private final Latch<? extends Item> itemLatch;
 	private final Latch<? extends BlockEntityType<?>> blockEntityTypeLatch;
 	
-	@SuppressWarnings("unchecked")
 	@Override
 	public void gen(Ctx ctx, Consumer<Gen> more) {
 		if(ctx.isDatagen()) {
@@ -30,8 +29,8 @@ public abstract class PackageGenBase implements Gen, PackagesGenUtils {
 		}
 		
 		if(ctx.isRuntime()) {
-			ctx.add(new RegFacet<>().latch(blockLatch).sup(this::constructBlock));
-			ctx.add(new RegFacet<>().latch(itemLatch).sup(this::constructItem));
+			ctx.add(new RegFacet().latch(blockLatch).sup(this::constructBlock));
+			ctx.add(new RegFacet().latch(itemLatch).sup(this::constructItem));
 			
 			ctx.add(new BlockEntityTypeFacet().latch(blockEntityTypeLatch).factory(blockEntityFactory()).addBlocks(blockLatch));
 		}

@@ -9,18 +9,17 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Supplier;
 
-//TODO(season2): remove the type parameter, it's just getting in the way of stuff.
 @Facet
-public class RegFacet<T> {
-	public Latch<? extends T> latch;
-	public Supplier<? extends T> sup;
+public class RegFacet {
+	public Latch<?> latch;
+	public Supplier<?> sup;
 	
-	public RegFacet<T> latch(Latch<? extends T> latch) {
+	public RegFacet latch(Latch<?> latch) {
 		this.latch = latch;
 		return this;
 	}
 	
-	public RegFacet<T> sup(Supplier<? extends T> sup) {
+	public RegFacet sup(Supplier<?> sup) {
 		this.sup = sup;
 		return this;
 	}
@@ -30,23 +29,19 @@ public class RegFacet<T> {
 		Objects.requireNonNull(sup, () -> "null supplier (latch: " + latch + ")");
 	}
 	
-	public static void handle(RegistryGetter regGetter, List<RegFacet<?>> facets) {
+	public static void handle(RegistryGetter regGetter, List<RegFacet> facets) {
 		facets.forEach(RegFacet::check);
 		facets.forEach(facet -> doHandle(regGetter, facet));
 	}
 	
-	//this is some horrendously unsound casting, but it works
+	//RegFacet is type-erased but this definitely isn't, so we need some type football
 	@SuppressWarnings("unchecked")
-	private static <T> void doHandle(RegistryGetter getter, RegFacet<T> facet) {
-		Reg<T> reg = getter.getReg((RegType<T>) facet.latch.type);
-		reg.defer((Latch<T>) facet.latch, (Supplier<T>) facet.sup);
+	private static <T, X extends T> void doHandle(RegistryGetter getter, RegFacet facet) {
+		Reg<T> reg = (Reg<T>) getter.getReg(facet.latch.type);
+		reg.defer((Latch<X>) facet.latch, (Supplier<X>) facet.sup);
 	}
 	
-	/**
-	 * sadly the generic placement means this can't be a lambda function.
-	 * method references are okay though
-	 */
 	public interface RegistryGetter {
-		<T> Reg<T> getReg(RegType<T> type) throws UnsupportedOperationException;
+		Reg<?> getReg(RegType<?> type) throws UnsupportedOperationException;
 	}
 }

@@ -22,7 +22,7 @@ public class PackagesGen implements Gen {
 		more.accept(new PackageGen());
 		more.accept(new PackageMakerGen());
 		
-		ctx.add(new RegFacet<>().latch(Latch.open(RegType.CREATIVE_TABS, new Id(Packages.MODID, "group"))).sup(() ->
+		ctx.add(new RegFacet().latch(Latch.open(RegType.CREATIVE_TABS, new Id(Packages.MODID, "group"))).sup(() ->
 			QuatlibMc.inst().makeCreativeModeTabBuilder()
 				.title(Component.translatable("itemGroup.packages.group"))
 				.icon(() -> {

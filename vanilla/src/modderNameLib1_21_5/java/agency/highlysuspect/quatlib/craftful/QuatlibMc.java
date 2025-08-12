@@ -6,7 +6,7 @@ import agency.highlysuspect.quatlib.craftless.bridge.ResourceLocationBridge;
 import agency.highlysuspect.quatlib.craftless.util.SharedConfigFileWatcher;
 import net.minecraft.resources.ResourceLocation;
 
-public class QuatlibMc extends QuatlibBase {
+public abstract class QuatlibMc extends QuatlibBase {
 	@Override
 	protected SharedConfigFileWatcher makeSharedConfigFileWatcher() {
 		return new SharedConfigFileWatcher(LOG);
