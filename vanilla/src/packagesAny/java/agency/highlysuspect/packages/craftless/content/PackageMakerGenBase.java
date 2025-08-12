@@ -2,8 +2,6 @@ package agency.highlysuspect.packages.craftless.content;
 
 import agency.highlysuspect.quatlib.craftless.facet.Gen;
 import agency.highlysuspect.quatlib.craftless.facet.Latch;
-import agency.highlysuspect.quatlib.craftless.facet.facets.BlockEntityTypeFacet;
-import agency.highlysuspect.quatlib.craftless.facet.facets.RegFacet;
 import agency.highlysuspect.quatlib.craftless.util.BlockEntityFactory;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
@@ -29,10 +27,9 @@ public abstract class PackageMakerGenBase implements Gen, PackagesGenUtils {
 		}
 		
 		if(ctx.isRuntime()) {
-			ctx.add(new RegFacet().latch(blockLatch).sup(this::constructBlock));
-			ctx.add(new RegFacet().latch(itemLatch).sup(this::constructItem));
-			
-			ctx.add(new BlockEntityTypeFacet().latch(blockEntityTypeLatch).factory(blockEntityFactory()).addBlocks(blockLatch));
+			ctx.reg(blockLatch, this::constructBlock);
+			ctx.reg(itemLatch, this::constructItem);
+			ctx.blockEntity(blockEntityTypeLatch).factory(blockEntityFactory()).addBlocks(blockLatch);
 		}
 	}
 	

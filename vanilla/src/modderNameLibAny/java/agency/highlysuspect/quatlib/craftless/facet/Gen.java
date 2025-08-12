@@ -1,9 +1,13 @@
 package agency.highlysuspect.quatlib.craftless.facet;
 
+import agency.highlysuspect.quatlib.craftless.facet.facets.BlockEntityTypeFacet;
+import agency.highlysuspect.quatlib.craftless.facet.facets.RegFacet;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public interface Gen {
 	void gen(Ctx ctx, Consumer<Gen> more);
@@ -33,6 +37,14 @@ public interface Gen {
 		//shortcuts
 		public <T> T add(T facet) {
 			return facets.add(facet);
+		}
+		
+		public RegFacet reg(Latch<?> latch, Supplier<?> thing) {
+			return add(new RegFacet()).latch(latch).sup(thing);
+		}
+		
+		public BlockEntityTypeFacet blockEntity(Latch<?> latch) {
+			return add(new BlockEntityTypeFacet()).latch(latch);
 		}
 		
 		public boolean isDatagen() {
