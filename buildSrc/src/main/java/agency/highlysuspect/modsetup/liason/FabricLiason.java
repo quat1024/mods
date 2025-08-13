@@ -155,6 +155,8 @@ public class FabricLiason extends Liason implements Liason.RemapLiason, Liason.R
 		
 		//put all mods on the runtime classpath
 		project.getTasks().withType(AbstractRunTask.class).configureEach(it -> {
+			it.systemProperty("quatlib.dgen", "true");
+			
 			for(LoaderMod mod : mods) {
 				//PLEASE WORK
 				//it.classpath(mod.set.getOutput());
@@ -163,6 +165,10 @@ public class FabricLiason extends Liason implements Liason.RemapLiason, Liason.R
 				//(ommitted 50 other things i tried)
 				//OK WHATEVER RESOURCES DONT WANNA LOAD just load the fuckin Jar then, sure whatever.
 				it.classpath(mod.depJar.flatMap(AbstractArchiveTask::getArchiveFile));
+				
+				it.systemProperty("quatlib.dgen." + mod.modid, mod.versionAgnosticGeneratedResources.getAbsoluteFile());
+				for(String mcVer : mod.versions)
+					it.systemProperty("quatlib.dgen." + mod.modid + "." + mcVer, mod.perVersionGeneratedResources.get(mcVer).getAbsoluteFile());
 			}
 			
 			//Not sure how to get rid of the default runClient/runServer tasks so i'll at least leave them in the default folder

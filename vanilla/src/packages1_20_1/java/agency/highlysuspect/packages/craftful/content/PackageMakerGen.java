@@ -17,19 +17,17 @@ import java.util.function.Consumer;
 public class PackageMakerGen implements PGen {
 	@Override
 	public void gen(Ctx ctx, Consumer<Gen> more) {
-		if(ctx.isDatagen()) {
-			ctx.add(enUs().block(PLatches.Blocks.PACKAGE_MAKER).value("Package"));
+		if(ctx.dgen != null) {
+			ctx.add(enUs().block(PLatches.Blocks.PACKAGE_MAKER).value("Package Crafter"));
 		}
 		
-		if(ctx.isRuntime()) {
-			ctx.reg(PLatches.Blocks.PACKAGE_MAKER, this::constructBlock);
-			ctx.reg(PLatches.Items.PACKAGE_MAKER, this::constructItem);
-			ctx.blockEntity(PLatches.BlockEntityTypes.PACKAGE_MAKER).factory(blockEntityFactory()).addBlocks(PLatches.Blocks.PACKAGE_MAKER);
-			
-			simpleSoundEvent(ctx, PLatches.SoundEvents.PACKAGE_MAKER_CRAFT);
-			
-			ctx.reg(PLatches.MenuTypes.PACKAGE_MAKER, this::constructMenuType);
-		}
+		ctx.reg(PLatches.Blocks.PACKAGE_MAKER, this::constructBlock);
+		ctx.reg(PLatches.Items.PACKAGE_MAKER, this::constructItem);
+		ctx.blockEntity(PLatches.BlockEntityTypes.PACKAGE_MAKER).factory(blockEntityFactory()).addBlocks(PLatches.Blocks.PACKAGE_MAKER);
+		
+		simpleSoundEvent(ctx, PLatches.SoundEvents.PACKAGE_MAKER_CRAFT);
+		
+		ctx.reg(PLatches.MenuTypes.PACKAGE_MAKER, this::constructMenuType);
 	}
 	
 	public Block constructBlock() {

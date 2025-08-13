@@ -4,6 +4,7 @@ import agency.highlysuspect.quatlib.craftless.bridge.ResourceLocationBridge;
 import agency.highlysuspect.quatlib.craftless.facet.Latch;
 import agency.highlysuspect.quatlib.craftless.facet.Reg;
 import agency.highlysuspect.quatlib.craftless.facet.RegType;
+import agency.highlysuspect.quatlib.craftless.facet.dgen.DgenManager;
 import agency.highlysuspect.quatlib.craftless.failure.FailureLogger;
 import agency.highlysuspect.quatlib.craftless.failure.FailureRoot;
 import agency.highlysuspect.quatlib.craftless.util.*;
@@ -33,6 +34,7 @@ public abstract class QuatlibBase {
 	
 	public final PhysicalSide side;
 	public final PhysicalLoader loader;
+	public final DgenManager dgen = DgenManager.create();
 	
 	public final FailureRoot failures = new FailureRoot(NAME).addListener(new FailureLogger(LOG));
 	public final SharedConfigFileWatcher watcher;

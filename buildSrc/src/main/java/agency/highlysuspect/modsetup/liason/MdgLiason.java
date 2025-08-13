@@ -50,6 +50,13 @@ public abstract class MdgLiason<EXT extends ModDevExtension> extends Liason impl
 		
 		ext.getRuns().create("client-" + ver.replace('.', '-') + "-" + loader, it -> {
 			it.client();
+			it.systemProperty("quatlib.dgen", "true");
+			
+			for(LoaderMod mod : mods) {
+				it.systemProperty("quatlib.dgen." + mod.modid, mod.versionAgnosticGeneratedResources.getAbsoluteFile().toString());
+				for(String mcVer : mod.versions)
+					it.systemProperty("quatlib.dgen." + mod.modid + "." + mcVer, mod.perVersionGeneratedResources.get(mcVer).getAbsoluteFile().toString());
+			}
 		});
 		
 		for(LoaderMod mod : mods) {

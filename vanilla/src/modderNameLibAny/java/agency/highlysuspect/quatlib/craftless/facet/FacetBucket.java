@@ -42,8 +42,9 @@ public class FacetBucket {
 		else return removed;
 	}
 	
-	//yeah...
-	public <T> List<T> removeFacetsErased(Class<?> facetKey) {
-		return removeFacets((Class<T>) facetKey);
+	public int size() {
+		int size = 0;
+		for(List<Object> f : facets.values()) size += f.size();
+		return size;
 	}
 }

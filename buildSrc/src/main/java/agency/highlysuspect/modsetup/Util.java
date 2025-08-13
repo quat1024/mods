@@ -133,6 +133,26 @@ public abstract class Util {
 		return result;
 	}
 	
+	public static <T> Iterable<T> thisAndThat(T thing, Iterable<T> that) {
+		Iterator<T> thaterator = that.iterator();
+		return () -> new Iterator<T>() {
+			boolean first = true;
+			@Override
+			public boolean hasNext() {
+				return first || thaterator.hasNext();
+			}
+			
+			@Override
+			public T next() {
+				if(first) {
+					first = false;
+					return thing;
+				}
+				return thaterator.next();
+			}
+		};
+	}
+	
 	// https://notes.highlysuspect.agency/versions.html
 	public static int compatLevelForMinecraft(String minecraftVersion) {
 		int result;

@@ -2,7 +2,6 @@ package agency.highlysuspect.quatlib.craftless.facet.facets;
 
 import agency.highlysuspect.quatlib.craftless.facet.Facet;
 import agency.highlysuspect.quatlib.craftless.facet.FileGenner;
-import agency.highlysuspect.quatlib.craftless.facet.Id;
 import agency.highlysuspect.quatlib.craftless.facet.Idable;
 import agency.highlysuspect.quatlib.craftless.util.QuatUtil;
 import com.google.gson.JsonObject;
@@ -14,12 +13,12 @@ import java.util.Objects;
 
 @Facet
 public class LangFacet {
-	public Id file;
+	public String file;
 	public String key;
 	public String value;
 	
-	public LangFacet file(Idable file) {
-		this.file = file.getId();
+	public LangFacet file(String file) {
+		this.file = file;
 		return this;
 	}
 	
@@ -54,11 +53,11 @@ public class LangFacet {
 		return "LangFacet(lang file '%s', key '%s', value '%s')".formatted(file, key, value);
 	}
 	
-	public static void handle(FileGenner genner, List<LangFacet> allLange) {
-		allLange.forEach(LangFacet::check);
+	public static void handle(FileGenner genner, List<LangFacet> allLangs) {
+		allLangs.forEach(LangFacet::check);
 		
-		//for each lang file...
-		QuatUtil.collate(allLange, f -> f.file).forEach((langFile, langs) -> {
+		//for each lang file
+		QuatUtil.collate(allLangs, f -> f.file).forEach((langFile, langs) -> {
 			//sort language entries by key
 			List<LangFacet> sortedLangs = new ArrayList<>(langs);
 			sortedLangs.sort(Comparator.comparing(f -> f.key));
@@ -68,7 +67,7 @@ public class LangFacet {
 			for(LangFacet lang : sortedLangs) langJson.addProperty(lang.key, lang.value);
 			
 			//and write it out
-			genner.writeJson(langFile, langJson);
+			genner.writeJson(null, langFile, langJson);
 		});
 	}
 }

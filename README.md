@@ -42,8 +42,7 @@ In the top-level `build.gradle`, the global version number is set based off the 
 
 Wishlist:
 
-* [Datagen system](https://notes.highlysuspect.agency/another-datagen.html)
-  * I have a sketch of the Gen system in quatlib right now, using it in Packages. Not actually using it for datagen yet.
+* Add more things to the [datagen system](https://notes.highlysuspect.agency/another-datagen.html)
 * Make moddernamelib less "special" throughout the ecosystem. E.g. i should be able to make a second quatlib for my mods on very old versions
 * Automated publishing
 

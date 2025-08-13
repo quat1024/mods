@@ -11,6 +11,7 @@ import org.gradle.jvm.tasks.Jar;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -35,9 +36,11 @@ public class VanillaMod implements Named {
 	
 	@Nullable String simpleRunMainClass;
 	
-	//set in afterEvaluate
 	public SourceSet versionAgnosticSourceSet;
 	public Map<String, SourceSet> perVersionSourceSets = new HashMap<>();
+	
+	public File versionAgnosticGeneratedResources;
+	public Map<String, File> perVersionGeneratedResources = new HashMap<>();
 	
 	public TaskProvider<Jar> versionAgnosticJar;
 	public Map<String, TaskProvider<Jar>> perVersionJars = new HashMap<>();

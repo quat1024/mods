@@ -9,7 +9,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 
 public interface PGen extends Gen {
-	Id EN_US = new Id("packages__lang_gen", "assets/lang/en_us.json");
+	String EN_US = "assets/packages__lang_gen/lang/en_us.json";
 	
 	default LangFacet enUs() {
 		return new LangFacet().file(EN_US);

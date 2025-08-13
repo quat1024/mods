@@ -143,6 +143,15 @@ public class VanillaSetupPlugin implements Plugin<Project> {
 						mod.versionAgnosticSourceSet.getOutput()
 					);
 				}
+				
+				//generated sources (no need to do a separate source-set)
+				//assumes there is one resources dir per source set (by default) which is a reasonable assumption at this time
+				mod.versionAgnosticGeneratedResources = mod.versionAgnosticSourceSet.getResources().getSrcDirs().iterator().next()
+					.toPath().resolveSibling("resourcesGen").toFile();
+				mod.versionAgnosticSourceSet.getResources().srcDir(mod.versionAgnosticGeneratedResources);
+				mod.perVersionSourceSets.forEach((minecraftVersion, set) -> {
+					mod.perVersionGeneratedResources.put(minecraftVersion, set.getResources().getSrcDirs().iterator().next().toPath().resolveSibling("resourcesGen").toFile());
+				});
 			}
 			//put quatlib on compilation classpath of mods that use it
 			for(VanillaMod mod : mods) {

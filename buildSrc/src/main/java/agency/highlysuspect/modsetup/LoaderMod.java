@@ -20,6 +20,8 @@ public class LoaderMod extends VanillaMod {
 		simpleRunMainClass = base.simpleRunMainClass;
 		versionAgnosticSourceSet = base.versionAgnosticSourceSet;
 		perVersionSourceSets = new HashMap<>(base.perVersionSourceSets);
+		versionAgnosticGeneratedResources = base.versionAgnosticGeneratedResources;
+		perVersionGeneratedResources = new HashMap<>(base.perVersionGeneratedResources);
 		perVersionElements = new HashMap<>(base.perVersionElements);
 		versionAgnosticJar = base.versionAgnosticJar;
 		perVersionJars = new HashMap<>(base.perVersionJars);

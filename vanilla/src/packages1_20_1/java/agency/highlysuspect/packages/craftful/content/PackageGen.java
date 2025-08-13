@@ -16,24 +16,22 @@ import java.util.function.Consumer;
 public class PackageGen implements PGen {
 	@Override
 	public void gen(Ctx ctx, Consumer<Gen> more) {
-		if(ctx.isDatagen()) {
+		if(ctx.dgen != null) {
 			ctx.add(enUs().block(PLatches.Blocks.PACKAGE).value("Package"));
 		}
 		
-		if(ctx.isRuntime()) {
-			ctx.reg(PLatches.Blocks.PACKAGE, this::constructBlock);
-			ctx.reg(PLatches.Items.PACKAGE, this::constructItem);
-			ctx.blockEntity(PLatches.BlockEntityTypes.PACKAGE).factory(blockEntityFactory()).addBlocks(PLatches.Blocks.PACKAGE);
-			
-			simpleSoundEvent(ctx, PLatches.SoundEvents.INSERT_ONE);
-			simpleSoundEvent(ctx, PLatches.SoundEvents.TAKE_ONE);
-			simpleSoundEvent(ctx, PLatches.SoundEvents.INSERT_STACK);
-			simpleSoundEvent(ctx, PLatches.SoundEvents.TAKE_STACK);
-			simpleSoundEvent(ctx, PLatches.SoundEvents.INSERT_ALL);
-			simpleSoundEvent(ctx, PLatches.SoundEvents.TAKE_ALL);
-			
-			ctx.dispenser(PLatches.Items.PACKAGE).behavior(new PackageDispenseBehavior());
-		}
+		ctx.reg(PLatches.Blocks.PACKAGE, this::constructBlock);
+		ctx.reg(PLatches.Items.PACKAGE, this::constructItem);
+		ctx.blockEntity(PLatches.BlockEntityTypes.PACKAGE).factory(blockEntityFactory()).addBlocks(PLatches.Blocks.PACKAGE);
+		
+		simpleSoundEvent(ctx, PLatches.SoundEvents.INSERT_ONE);
+		simpleSoundEvent(ctx, PLatches.SoundEvents.TAKE_ONE);
+		simpleSoundEvent(ctx, PLatches.SoundEvents.INSERT_STACK);
+		simpleSoundEvent(ctx, PLatches.SoundEvents.TAKE_STACK);
+		simpleSoundEvent(ctx, PLatches.SoundEvents.INSERT_ALL);
+		simpleSoundEvent(ctx, PLatches.SoundEvents.TAKE_ALL);
+		
+		ctx.dispenser(PLatches.Items.PACKAGE).behavior(new PackageDispenseBehavior());
 	}
 	
 	public Block constructBlock() {

@@ -1,16 +1,18 @@
 package agency.highlysuspect.quatlib.craftless.facet;
 
 import agency.highlysuspect.quatlib.craftless.util.LogFacade;
+import agency.highlysuspect.quatlib.craftless.util.PhysicalVersion;
 import agency.highlysuspect.quatlib.craftless.util.QuatUtil;
 import com.google.gson.JsonElement;
+import org.jetbrains.annotations.Nullable;
 
 public interface FileGenner {
-	void writeFile(Id path, String toWrite);
+	void writeFile(@Nullable PhysicalVersion ver, String path, String toWrite);
 	
-	default void writeJson(Id id, JsonElement toWrite) {
+	default void writeJson(@Nullable PhysicalVersion ver, String path, JsonElement toWrite) {
 		//if the path has no file extension, default to .json
-		if(id.path.indexOf('.') == -1) id = id.mapPath(p -> p + ".json");
-		writeFile(id, QuatUtil.BASIC_PRETTY_GSON.toJson(toWrite));
+		if(path.indexOf('.') == -1) path = path + ".json";
+		writeFile(ver, path, QuatUtil.BASIC_PRETTY_GSON.toJson(toWrite));
 	}
 	
 	class DebugGenner implements FileGenner {
@@ -21,7 +23,7 @@ public interface FileGenner {
 		private final LogFacade log;
 		
 		@Override
-		public void writeFile(Id path, String toWrite) {
+		public void writeFile(@Nullable PhysicalVersion ver, String path, String toWrite) {
 			log.info("Would write to {}: {}", path, toWrite);
 		}
 	}

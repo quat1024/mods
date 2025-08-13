@@ -9,8 +9,6 @@ import java.util.function.Consumer;
 public class StickySyrupGen implements PGen {
 	@Override
 	public void gen(Ctx ctx, Consumer<Gen> more) {
-		if(ctx.isRuntime()) {
-			ctx.reg(PLatches.Items.STICKY_SYRUP, () -> new StickySyrupItem(new Item.Properties().stacksTo(1).durability(64)));
-		}
+		ctx.reg(PLatches.Items.STICKY_SYRUP, () -> new StickySyrupItem(new Item.Properties().stacksTo(1).durability(64)));
 	}
 }

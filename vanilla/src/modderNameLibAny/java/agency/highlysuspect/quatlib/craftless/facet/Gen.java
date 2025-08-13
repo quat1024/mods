@@ -1,9 +1,11 @@
 package agency.highlysuspect.quatlib.craftless.facet;
 
+import agency.highlysuspect.quatlib.craftless.facet.dgen.DgenHelper;
 import agency.highlysuspect.quatlib.craftless.facet.facets.BlockEntityTypeFacet;
 import agency.highlysuspect.quatlib.craftless.facet.facets.DispenserBehaviorFacet;
 import agency.highlysuspect.quatlib.craftless.facet.facets.RegFacet;
 import net.minecraft.world.item.Item;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,13 +26,13 @@ public interface Gen {
 	}
 	
 	class Ctx {
-		public Ctx(FacetBucket facets, Period period) {
+		public Ctx(FacetBucket facets, @Nullable DgenHelper dgen) {
 			this.facets = facets;
-			this.period = period;
+			this.dgen = dgen;
 		}
 		
 		public final FacetBucket facets;
-		public final Period period;
+		public final @Nullable DgenHelper dgen;
 		
 		public <T> T getService(Class<T> key) throws UnsupportedOperationException {
 			throw new UnsupportedOperationException("Unknown service " + key.getName());
@@ -51,14 +53,6 @@ public interface Gen {
 		
 		public DispenserBehaviorFacet dispenser(Latch<? extends Item> latch) {
 			return add(new DispenserBehaviorFacet()).latch(latch);
-		}
-		
-		public boolean isDatagen() {
-			return period == Period.DATAGEN;
-		}
-		
-		public boolean isRuntime() {
-			return period == Period.RUNTIME;
 		}
 	}
 }
