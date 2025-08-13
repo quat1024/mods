@@ -3,7 +3,6 @@ package agency.highlysuspect.packages.craftful.fab;
 import agency.highlysuspect.packages.craftful.Packages;
 import agency.highlysuspect.packages.craftful.net.ActionPacket;
 import agency.highlysuspect.quatlib.craftless.facet.Latch;
-import agency.highlysuspect.quatlib.craftless.util.MyMenuSupplier;
 import agency.highlysuspect.quatlib.craftless.config.ConfigSection;
 import agency.highlysuspect.quatlib.craftless.config.WritableConfig;
 import agency.highlysuspect.quatlib.craftless.config.hdc.HalfDecentConfigFile;
@@ -16,9 +15,6 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.Util;
 import net.minecraft.core.dispenser.DispenseItemBehavior;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.world.flag.FeatureFlagSet;
-import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.DispenserBlock;
 
@@ -50,11 +46,6 @@ public class FabricInit extends Packages implements AfterQuatlibInitializer {
 	@Override
 	public void registerDispenserBehavior(Latch<? extends ItemLike> item, DispenseItemBehavior behavior) {
 		DispenserBlock.registerBehavior(item.get(), behavior);
-	}
-	
-	@Override
-	public <T extends AbstractContainerMenu> MenuType<T> makeMenuType(MyMenuSupplier<T> supplier) {
-		return new MenuType<>(supplier::create, FeatureFlagSet.of());
 	}
 	
 	@Override

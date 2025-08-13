@@ -5,7 +5,6 @@ import agency.highlysuspect.packages.craftful.block.PackageBlockEntity;
 import agency.highlysuspect.packages.craftful.block.PackageMakerBlockEntity;
 import agency.highlysuspect.packages.craftful.net.ActionPacket;
 import agency.highlysuspect.quatlib.craftless.facet.Latch;
-import agency.highlysuspect.quatlib.craftless.util.MyMenuSupplier;
 import agency.highlysuspect.packages.craftless.PackagesBase;
 import agency.highlysuspect.quatlib.craftful.frg.ForgeBackedConfig_V1;
 import agency.highlysuspect.quatlib.craftless.config.ConfigSection;
@@ -17,9 +16,6 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.dispenser.DispenseItemBehavior;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.flag.FeatureFlagSet;
-import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -120,12 +116,6 @@ public class ForgeInit extends Packages {
 	@Override
 	public void registerDispenserBehavior(Latch<? extends ItemLike> item, DispenseItemBehavior behavior) {
 		dispenseBehaviorsToRegister.put(item, behavior);
-	}
-	
-	@Override
-	public <T extends AbstractContainerMenu> MenuType<T> makeMenuType(MyMenuSupplier<T> supplier) {
-		//Looks the same as on FabricPlatformSupport but it's private in mojang source so i can't use it there without access widening
-		return new MenuType<>(supplier::create, FeatureFlagSet.of());
 	}
 	
 	@Override

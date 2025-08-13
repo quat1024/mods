@@ -1,6 +1,5 @@
 package agency.highlysuspect.packages.craftful.content;
 
-import agency.highlysuspect.packages.craftful.Packages;
 import agency.highlysuspect.packages.craftful.block.PBlockEntityTypes;
 import agency.highlysuspect.packages.craftful.block.PBlocks;
 import agency.highlysuspect.packages.craftful.block.PackageMakerBlock;
@@ -9,6 +8,7 @@ import agency.highlysuspect.packages.craftful.item.PItems;
 import agency.highlysuspect.packages.craftful.junk.PSoundEvents;
 import agency.highlysuspect.packages.craftful.menu.PMenuTypes;
 import agency.highlysuspect.packages.craftful.menu.PackageMakerMenu;
+import agency.highlysuspect.quatlib.craftless.QuatlibBase;
 import agency.highlysuspect.quatlib.craftless.facet.Gen;
 import agency.highlysuspect.quatlib.craftless.util.BlockEntityFactory;
 import net.minecraft.world.inventory.MenuType;
@@ -51,7 +51,6 @@ public class PackageMakerGen implements PGen {
 	}
 	
 	protected MenuType<?> constructMenuType() {
-		//TODO: kick into quatlib
-		return Packages.inst().makeMenuType(PackageMakerMenu::new);
+		return QuatlibBase.inst().makeMenuType(PackageMakerMenu::new);
 	}
 }

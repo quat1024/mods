@@ -27,8 +27,6 @@ public abstract class PackagesClient extends PackagesBaseClient {
 	public void earlySetup() {
 		super.earlySetup();
 		
-		Packages.inst().proxy = new ClientProxy();
-		
 		//TODO: Facet system for these too.
 		
 		setupCustomModelLoaders();
