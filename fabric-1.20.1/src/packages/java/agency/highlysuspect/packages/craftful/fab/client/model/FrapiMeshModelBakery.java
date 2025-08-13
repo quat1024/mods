@@ -2,7 +2,6 @@ package agency.highlysuspect.packages.craftful.fab.client.model;
 
 import agency.highlysuspect.packages.craftful.client.PackageModelBakery;
 import agency.highlysuspect.packages.craftful.content.PLatches;
-import agency.highlysuspect.packages.craftful.fab.compat.frex.FrexCompat;
 import agency.highlysuspect.quatlib.craftless.util.QuatUtil;
 import net.fabricmc.fabric.api.renderer.v1.Renderer;
 import net.fabricmc.fabric.api.renderer.v1.RendererAccess;
@@ -76,7 +75,6 @@ public class FrapiMeshModelBakery implements PackageModelBakery<Mesh> {
 					if(frameSprite != null) {
 						bounds.normalizeEmitter(emitter, specialFrameSprite);
 						emitter.spriteBake(frameSprite, MutableQuadView.BAKE_NORMALIZED);
-						FrexCompat.PROXY.fancifyPackageQuad(emitter, frameState, frameSprite);
 						emitter.emit();
 					}
 					continue;
@@ -86,7 +84,6 @@ public class FrapiMeshModelBakery implements PackageModelBakery<Mesh> {
 					if(innerSprite != null) {
 						bounds.normalizeEmitter(emitter, specialInnerSprite);
 						emitter.spriteBake(innerSprite, MutableQuadView.BAKE_NORMALIZED);
-						FrexCompat.PROXY.fancifyPackageQuad(emitter, innerState, innerSprite);
 						emitter.emit();
 					}
 					continue;

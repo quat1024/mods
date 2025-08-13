@@ -52,12 +52,6 @@ public class PropsClient {
 		"on your modloader. If you need to reset this to 'false', I'd be interested in hearing what mods you're using."
 	);
 	
-//	public static final ConfigProperty<Boolean> FABRIC_FREX_SUPPORT = ConfigProperty.boolOpt(
-//		"frexSupport", true,
-//		"If 'true' and FREX is loaded, FREX materials will be forwarded through into Packages's custom block models.",
-//		"Use this if you have funky Canvas shaders. Requires a game restart to activate and deactivate."
-//	);
-	
 	public static ConfigSection visit(ConfigSection schema) {
 		schema.subsection("Keys",
 			"How do you want to interact with packages in the world?",

@@ -27,12 +27,6 @@ public record PackageStyle(@NotNull Block frameBlock, @NotNull Block innerBlock,
 		else return fromTag(tag.getCompound("BlockEntityTag").getCompound(KEY));
 	}
 	
-	public PackageStyle(@NotNull Block frameBlock, @NotNull Block innerBlock, @NotNull DyeColor color) {
-		this.frameBlock = frameBlock;
-		this.innerBlock = innerBlock;
-		this.color = color;
-	}
-	
 	public CompoundTag toTag() {
 		return toTag(new CompoundTag());
 	}

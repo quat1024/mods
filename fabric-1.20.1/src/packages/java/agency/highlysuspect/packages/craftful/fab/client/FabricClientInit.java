@@ -5,7 +5,6 @@ import agency.highlysuspect.packages.craftful.client.PClientBlockEventHandlers;
 import agency.highlysuspect.packages.craftful.client.PackagesClient;
 import agency.highlysuspect.packages.craftful.fab.client.model.FrapiMeshPackageMakerModel;
 import agency.highlysuspect.packages.craftful.fab.client.model.FrapiMeshPackageModel;
-import agency.highlysuspect.packages.craftful.fab.compat.frex.FrexCompat;
 import agency.highlysuspect.packages.craftful.net.ActionPacket;
 import agency.highlysuspect.packages.craftless.PackagesBase;
 import agency.highlysuspect.packages.craftless.client.PackagesBaseClient;
@@ -38,8 +37,6 @@ public class FabricClientInit extends PackagesClient implements AfterQuatlibClie
 		
 		//TODO: is this needed?
 		onConfigReload(config);
-		
-		FrexCompat.onInitializeClient();
 		
 		//How convenient wow, the apis just magically line up, Thats crazy
 		AttackBlockCallback.EVENT.register(PClientBlockEventHandlers::onHoldLeftClick);
