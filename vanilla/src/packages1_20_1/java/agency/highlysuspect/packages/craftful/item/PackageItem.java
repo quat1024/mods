@@ -92,7 +92,7 @@ public class PackageItem extends BlockItem {
 			
 			DyeColor color = style.color();
 			tooltip.add(Component.translatable("packages.style_tooltip.color",
-				Component.translatable("packages.style_tooltip.color." + color.getSerializedName())
+				Component.translatable("color.minecraft." + color.getSerializedName())
 					.withStyle(s -> s.withColor((color == DyeColor.BLACK ? DyeColor.GRAY : color).getTextColor()).withItalic(true))
 			));
 		} else {
