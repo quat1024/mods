@@ -81,7 +81,6 @@ public class PackageRenderer implements BlockEntityRenderer<PackageBlockEntity> 
 			detailLevel++;
 		}
 		
-		detailLevel = 2;
 		boolean sticky = blockEntity.canBeSticky();
 		if(detailLevel > 0) drawText(matrices, vertexConsumers, light, container, sticky, detailLevel, Math.sqrt(distanceSq));
 		
