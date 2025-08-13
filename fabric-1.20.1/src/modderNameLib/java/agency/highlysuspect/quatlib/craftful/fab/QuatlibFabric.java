@@ -3,6 +3,8 @@ package agency.highlysuspect.quatlib.craftful.fab;
 import agency.highlysuspect.quatlib.craftful.QuatlibMc;
 import agency.highlysuspect.quatlib.craftless.QuatlibBase;
 import agency.highlysuspect.quatlib.craftless.fab.AfterQuatlibInitializer;
+import agency.highlysuspect.quatlib.craftless.facet.Reg;
+import agency.highlysuspect.quatlib.craftless.facet.RegType;
 import agency.highlysuspect.quatlib.craftless.util.BlockEntityFactory;
 import agency.highlysuspect.quatlib.craftless.util.MyMenuSupplier;
 import agency.highlysuspect.quatlib.craftless.util.PhysicalSide;
@@ -30,6 +32,11 @@ public class QuatlibFabric extends QuatlibMc implements ModInitializer {
 	@Override
 	protected PhysicalSide findSide() {
 		return FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT ? PhysicalSide.CLIENT : PhysicalSide.DEDICATED_SERVER;
+	}
+	
+	@Override
+	public Reg<?> createReg(RegType<?> type) {
+		return new FabricReg<>(convertRegType(type));
 	}
 	
 	@Override

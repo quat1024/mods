@@ -1,5 +1,6 @@
 package agency.highlysuspect.packages.craftless;
 
+import agency.highlysuspect.quatlib.craftless.QuatlibBase;
 import agency.highlysuspect.quatlib.craftless.Slf4jLogFacade;
 import agency.highlysuspect.quatlib.craftless.config.ConfigSection;
 import agency.highlysuspect.quatlib.craftless.config.WritableConfig;
@@ -41,13 +42,11 @@ public abstract class PackagesBase implements RegFacet.RegistryGetter {
 	
 	@Override
 	public Reg<?> getReg(RegType<?> type) {
-		return regs.computeIfAbsent(type, this::createReg);
+		return regs.computeIfAbsent(type, QuatlibBase.inst()::createReg);
 	}
 	
 	public abstract ConfigSection visitConfigSchema(ConfigSection root);
 	public abstract WritableConfig makeConfig(ConfigSection schema);
-	
-	protected abstract Reg<?> createReg(RegType<?> type);
 	
 	protected static PackagesBase INST;
 	public static PackagesBase inst() {

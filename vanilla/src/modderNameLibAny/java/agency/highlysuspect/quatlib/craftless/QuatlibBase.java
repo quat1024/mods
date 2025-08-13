@@ -1,6 +1,8 @@
 package agency.highlysuspect.quatlib.craftless;
 
 import agency.highlysuspect.quatlib.craftless.bridge.ResourceLocationBridge;
+import agency.highlysuspect.quatlib.craftless.facet.Reg;
+import agency.highlysuspect.quatlib.craftless.facet.RegType;
 import agency.highlysuspect.quatlib.craftless.failure.FailureLogger;
 import agency.highlysuspect.quatlib.craftless.failure.FailureRoot;
 import agency.highlysuspect.quatlib.craftless.util.*;
@@ -33,8 +35,9 @@ public abstract class QuatlibBase {
 	
 	protected abstract SharedConfigFileWatcher makeSharedConfigFileWatcher();
 	protected abstract ResourceLocationBridge<ResourceLocation> makeResourceLocationBridge();
-	
 	protected abstract PhysicalSide findSide();
+	
+	public abstract Reg<?> createReg(RegType<?> type);
 	public abstract <T extends BlockEntity> BlockEntityType<T> makeBlockEntityType(BlockEntityFactory<T> factory, Block... blocks);
 	public abstract <T extends AbstractContainerMenu> MenuType<T> makeMenuType(MyMenuSupplier<T> supplier);
 	

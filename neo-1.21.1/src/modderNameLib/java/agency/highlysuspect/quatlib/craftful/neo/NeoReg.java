@@ -1,4 +1,4 @@
-package agency.highlysuspect.packages.craftful.frg;
+package agency.highlysuspect.quatlib.craftful.neo;
 
 import agency.highlysuspect.quatlib.craftless.QuatlibBase;
 import agency.highlysuspect.quatlib.craftless.facet.Id;
@@ -6,16 +6,16 @@ import agency.highlysuspect.quatlib.craftless.facet.Latch;
 import agency.highlysuspect.quatlib.craftless.facet.Reg;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.registries.RegisterEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.registries.RegisterEvent;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
-public class ForgeReg<T> extends Reg<T> {
-	public ForgeReg(ResourceKey<? extends Registry<T>> key) {
-		this.key = key;
+public class NeoReg<T> extends Reg<T> {
+	public NeoReg(ResourceKey<?> key) {
+		this.key = (ResourceKey<? extends Registry<T>>) key;
 	}
 	
 	protected final ResourceKey<? extends Registry<T>> key;
@@ -27,7 +27,7 @@ public class ForgeReg<T> extends Reg<T> {
 	}
 	
 	@SubscribeEvent
-	public void onForgeRegister(RegisterEvent e) {
+	public void register(RegisterEvent e) {
 		if(!e.getRegistryKey().equals(key)) return;
 		
 		if(thunks == null) throw new IllegalStateException("ForgeReg#onForgeRegister called twice for " + e.getRegistryKey());

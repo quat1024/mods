@@ -1,4 +1,4 @@
-package agency.highlysuspect.quatlib.craftful.fab;
+package agency.highlysuspect.quatlib.craftful.fab.client;
 
 import agency.highlysuspect.quatlib.craftless.fab.AfterQuatlibClientInitializer;
 import net.fabricmc.api.ClientModInitializer;

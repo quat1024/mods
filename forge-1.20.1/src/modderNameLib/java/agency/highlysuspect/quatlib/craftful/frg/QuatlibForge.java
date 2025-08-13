@@ -3,6 +3,8 @@ package agency.highlysuspect.quatlib.craftful.frg;
 import agency.highlysuspect.quatlib.craftful.QuatlibMc;
 import agency.highlysuspect.quatlib.craftful.frg.client.QuatlibClientForge;
 import agency.highlysuspect.quatlib.craftless.QuatlibBase;
+import agency.highlysuspect.quatlib.craftless.facet.Reg;
+import agency.highlysuspect.quatlib.craftless.facet.RegType;
 import agency.highlysuspect.quatlib.craftless.util.BlockEntityFactory;
 import agency.highlysuspect.quatlib.craftless.util.MyMenuSupplier;
 import agency.highlysuspect.quatlib.craftless.util.PhysicalSide;
@@ -37,6 +39,13 @@ public class QuatlibForge extends QuatlibMc {
 	@Override
 	protected PhysicalSide findSide() {
 		return FMLEnvironment.dist.isClient() ? PhysicalSide.CLIENT : PhysicalSide.DEDICATED_SERVER;
+	}
+	
+	@Override
+	public Reg<?> createReg(RegType<?> type) {
+		ForgeReg<?> reg = new ForgeReg<>(convertRegType(type));
+		modBus.register(reg);
+		return reg;
 	}
 	
 	@SuppressWarnings("DataFlowIssue") //dfu param

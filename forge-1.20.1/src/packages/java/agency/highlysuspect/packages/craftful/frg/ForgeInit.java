@@ -9,12 +9,9 @@ import agency.highlysuspect.packages.craftless.PackagesBase;
 import agency.highlysuspect.quatlib.craftful.frg.ForgeBackedConfig_V1;
 import agency.highlysuspect.quatlib.craftless.config.ConfigSection;
 import agency.highlysuspect.quatlib.craftless.config.WritableConfig;
-import agency.highlysuspect.quatlib.craftless.facet.Reg;
-import agency.highlysuspect.quatlib.craftless.facet.RegType;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Registry;
 import net.minecraft.core.dispenser.DispenseItemBehavior;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.DispenserBlock;
@@ -84,24 +81,6 @@ public class ForgeInit extends Packages {
 	@Override
 	public boolean isForge() {
 		return true;
-	}
-	
-	//TODO: kick into quatlib?
-	@SuppressWarnings({"deprecation"})
-	@Override
-	protected Reg<?> createReg(RegType<?> type) {
-		ForgeReg<?> reg;
-		
-		if(type == RegType.BLOCKS) reg = new ForgeReg<>(BuiltInRegistries.BLOCK.key());
-		else if(type == RegType.ITEMS) reg = new ForgeReg<>(BuiltInRegistries.ITEM.key());
-		else if(type == RegType.CREATIVE_TABS) reg = new ForgeReg<>(BuiltInRegistries.CREATIVE_MODE_TAB.key());
-		else if(type == RegType.BLOCK_ENTITY_TYPES) reg = new ForgeReg<>(BuiltInRegistries.BLOCK_ENTITY_TYPE.key());
-		else if(type == RegType.SOUND_EVENTS) reg = new ForgeReg<>(BuiltInRegistries.SOUND_EVENT.key());
-		else if(type == RegType.MENU_TYPES) reg = new ForgeReg<>(BuiltInRegistries.MENU.key());
-		else throw new UnsupportedOperationException("Don't know how to register " + type);
-		
-		modBus.register(reg);
-		return reg;
 	}
 	
 	@SuppressWarnings("unchecked") //Go directly to generics hell. Do not pass Go or collect $200.

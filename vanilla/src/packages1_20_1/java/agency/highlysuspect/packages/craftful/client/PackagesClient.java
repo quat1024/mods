@@ -1,6 +1,5 @@
 package agency.highlysuspect.packages.craftful.client;
 
-import agency.highlysuspect.packages.craftful.Packages;
 import agency.highlysuspect.packages.craftful.content.PLatches;
 import agency.highlysuspect.packages.craftful.net.ActionPacket;
 import agency.highlysuspect.packages.craftful.net.PackageAction;
@@ -35,9 +34,6 @@ public abstract class PackagesClient extends PackagesBaseClient {
 	}
 	
 	public void onConfigReload(ReadableConfig config) {
-		//TODO(season2): Debug print
-		Packages.LOG.info("Packages onConfigReload called with {}!!", config);
-		
 		sortedBindings = new ArrayList<>(Arrays.asList(
 			PackageActionBinding.fromString(PackageAction.INSERT_ONE, config.get(PropsClient.INSERT_ONE_BINDING_UNPARSED)),
 			PackageActionBinding.fromString(PackageAction.INSERT_STACK, config.get(PropsClient.INSERT_STACK_BINDING_UNPARSED)),

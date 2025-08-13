@@ -1,4 +1,4 @@
-package agency.highlysuspect.packages.craftful.fab;
+package agency.highlysuspect.quatlib.craftful.fab;
 
 import agency.highlysuspect.quatlib.craftful.QuatlibMc;
 import agency.highlysuspect.quatlib.craftless.facet.Latch;
@@ -11,13 +11,13 @@ import java.util.function.Supplier;
 
 public class FabricReg<T> extends Reg<T> {
 	@SuppressWarnings("unchecked")
-	public FabricReg(ResourceKey<? extends Registry<T>> key) {
+	public FabricReg(ResourceKey<?> key) {
 		this.registry = (Registry<T>) BuiltInRegistries.REGISTRY.get(transmute(key));
 	}
 	
 	//Bro I Am Straight Up Not Having A Good Time
 	@SuppressWarnings("unchecked")
-	private final <A, B> ResourceKey<B> transmute(A a) {
+	private <A, B> ResourceKey<B> transmute(A a) {
 		return (ResourceKey<B>) a;
 	}
 	
