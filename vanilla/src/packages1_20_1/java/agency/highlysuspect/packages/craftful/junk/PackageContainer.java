@@ -44,15 +44,11 @@ public class PackageContainer implements Container {
 	/// Listeners
 	
 	//Things that will be alerted when this PackageContainer changes. (As in SimpleContainer.)
-	private final List<ContainerListener> listeners = new ArrayList<>();
+	private final List<ContainerListener> listeners = new ArrayList<>(1);
 	
 	public PackageContainer addListener(ContainerListener listener) {
 		listeners.add(listener);
 		return this;
-	}
-	
-	public void removeListener(ContainerListener listener) {
-		listeners.remove(listener);
 	}
 	
 	/// Helpers
@@ -295,14 +291,16 @@ public class PackageContainer implements Container {
 	
 	@Override
 	public ItemStack removeItem(int slot, int amount) {
+		ItemStack removed = ContainerHelper.removeItem(inv, slot, amount);
 		setChanged();
-		return ContainerHelper.removeItem(inv, slot, amount);
+		return removed;
 	}
 	
 	@Override
 	public ItemStack removeItemNoUpdate(int slot) {
+		ItemStack removed = ContainerHelper.takeItem(inv, slot);
 		setChanged();
-		return ContainerHelper.takeItem(inv, slot);
+		return removed;
 	}
 	
 	@Override

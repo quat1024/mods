@@ -57,7 +57,7 @@ public class PackageBlockEntity extends BlockEntity implements Container, Nameab
 	
 	//Mapmaker "locking" feature. Maybe not so relevant after blanketcon.
 	//I don't think it protects against crushing the package with a piston...
-	private boolean locked;
+	private boolean mapmakerLockedTag;
 	
 	public PackageStyle getStyle() {
 		return style;
@@ -115,7 +115,7 @@ public class PackageBlockEntity extends BlockEntity implements Container, Nameab
 	
 	//<editor-fold desc="Interactions">
 	public boolean performAction(Player player, InteractionHand hand, PackageAction action, boolean simulate) {
-		if(locked) {
+		if(mapmakerLockedTag) {
 			player.displayClientMessage(Component.translatable("container.isLocked", getDisplayName()), true);
 			player.playNotifySound(SoundEvents.CHEST_LOCKED, SoundSource.BLOCKS, 1f, 1f);
 			return true; //consume the click anyway
@@ -399,7 +399,7 @@ public class PackageBlockEntity extends BlockEntity implements Container, Nameab
 		
 		//This is called bcLocked since it was originally developed for blanketcon
 		//Just gonna keep the nbt name because why not
-		if(locked) tag.putBoolean("bcLocked", true);
+		if(mapmakerLockedTag) tag.putBoolean("bcLocked", true);
 		
 		super.saveAdditional(tag);
 	}
@@ -415,7 +415,7 @@ public class PackageBlockEntity extends BlockEntity implements Container, Nameab
 		
 		stickyStack = ItemStack.of(tag.getCompound("StickyStack"));
 		
-		locked = tag.contains("bcLocked") && tag.getBoolean("bcLocked");
+		mapmakerLockedTag = tag.contains("bcLocked") && tag.getBoolean("bcLocked");
 	}
 	
 	@Nullable

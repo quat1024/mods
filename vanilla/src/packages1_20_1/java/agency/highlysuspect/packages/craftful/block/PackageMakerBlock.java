@@ -80,6 +80,7 @@ public class PackageMakerBlock extends Block implements EntityBlock {
 		return defaultBlockState().setValue(FACING, ctx.getHorizontalDirection().getOpposite());
 	}
 	
+	//Copypasta from most block entities (e.g. AbstractFurnaceBlockEntity)
 	@Override
 	public void setPlacedBy(Level world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
 		if(stack.hasCustomHoverName() && world.getBlockEntity(pos) instanceof PackageMakerBlockEntity maker) {

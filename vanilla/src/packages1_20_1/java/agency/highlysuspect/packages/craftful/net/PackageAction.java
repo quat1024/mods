@@ -38,7 +38,7 @@ public enum PackageAction {
 	}
 	
 	public static PackageAction get(int netValue) {
-		if(netValue < PackageAction.values().length) return PackageAction.values()[netValue];
+		if(netValue >= 0 && netValue < PackageAction.values().length) return PackageAction.values()[netValue];
 		else return TAKE_ONE; //shrug
 	}
 	
