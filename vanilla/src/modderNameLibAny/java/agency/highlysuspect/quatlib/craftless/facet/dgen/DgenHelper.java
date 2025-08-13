@@ -9,15 +9,28 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class DgenHelper implements FileGenner {
 	public DgenHelper(String modid) {
 		this.modid = modid;
 		this.propNameBase = "quatlib.dgen." + modid;
+		
+		this.supportedVersions = Arrays.stream(System.getProperty(propNameBase + ".versions", "").split(";"))
+			.map(String::trim)
+			.filter(s -> !s.isEmpty())
+			.map(PhysicalVersion::parse)
+			.collect(Collectors.toSet());
+		if(this.supportedVersions.isEmpty()) {
+			throw new IllegalStateException("Mod " + modid + " doesn't seem to have any supported versions");
+		}
 	}
 	
 	public final String modid;
 	private final String propNameBase;
+	public final Set<PhysicalVersion> supportedVersions;
 	
 	@Override
 	public void writeFile(@Nullable PhysicalVersion ver, String subpath, String toWrite) {

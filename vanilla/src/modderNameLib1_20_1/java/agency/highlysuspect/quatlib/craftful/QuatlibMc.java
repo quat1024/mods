@@ -6,6 +6,7 @@ import agency.highlysuspect.quatlib.craftless.bridge.ResourceLocationBridge;
 import agency.highlysuspect.quatlib.craftless.facet.RegType;
 import agency.highlysuspect.quatlib.craftless.util.PhysicalLoader;
 import agency.highlysuspect.quatlib.craftless.util.PhysicalSide;
+import agency.highlysuspect.quatlib.craftless.util.PhysicalVersion;
 import agency.highlysuspect.quatlib.craftless.util.SharedConfigFileWatcher;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceKey;
@@ -14,7 +15,7 @@ import net.minecraft.world.item.CreativeModeTab;
 
 public abstract class QuatlibMc extends QuatlibBase {
 	public QuatlibMc(PhysicalSide side, PhysicalLoader loader) {
-		super(side, loader);
+		super(side, loader, PhysicalVersion.V1_20_1);
 	}
 	
 	@Override

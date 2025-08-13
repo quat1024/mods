@@ -5,6 +5,8 @@ import agency.highlysuspect.packages.craftful.block.PackageBlockEntity;
 import agency.highlysuspect.packages.craftful.item.PackageItem;
 import agency.highlysuspect.packages.craftful.junk.PackageDispenseBehavior;
 import agency.highlysuspect.quatlib.craftless.facet.Gen;
+import agency.highlysuspect.quatlib.craftless.facet.facets.EmiTagExclusionFacet;
+import agency.highlysuspect.quatlib.craftless.facet.facets.TagFacet;
 import agency.highlysuspect.quatlib.craftless.util.BlockEntityFactory;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
@@ -42,6 +44,12 @@ public class PackageGen implements PGen {
 			ctx.soundsJson(PLatches.SoundEvents.TAKE_ALL)
 				.effect("block.gilded_blackstone.break").volume(0.5).pitch(0.7);
 			ctx.add(enUs()).sound(PLatches.SoundEvents.TAKE_ALL).value("Many items taken");
+			
+			ctx.add(TagFacet.mineableAxe()).value(PLatches.Blocks.PACKAGE);
+			//TODO: un-hardcode tag names
+			ctx.add(TagFacet.block()).tag("packages:sticky").value("minecraft:slime_block");
+			ctx.add(TagFacet.block()).tag("packages:sticky").value("minecraft:honey_block");
+			ctx.add(new EmiTagExclusionFacet("packages:banned_from_package"));
 		}
 		
 		ctx.reg(PLatches.Blocks.PACKAGE, this::constructBlock);

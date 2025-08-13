@@ -1,6 +1,7 @@
 package agency.highlysuspect.packages.craftful.content;
 
 import agency.highlysuspect.packages.craftful.Packages;
+import agency.highlysuspect.packages.craftless.PackagesBase;
 import agency.highlysuspect.quatlib.craftful.QuatlibMc;
 import agency.highlysuspect.quatlib.craftless.facet.Gen;
 import agency.highlysuspect.quatlib.craftless.facet.Id;
@@ -19,6 +20,8 @@ public class PackagesGen implements PGen {
 		more.accept(new PackageGen());
 		more.accept(new PackageMakerGen());
 		more.accept(new StickySyrupGen());
+		
+		ctx.add(enUs()).key("itemGroup.packages.group").value(PackagesBase.NAME);
 		
 		ctx.reg(Latch.open(RegType.CREATIVE_TABS, new Id(Packages.MODID, "group")), () ->
 			QuatlibMc.inst().makeCreativeModeTabBuilder()

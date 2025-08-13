@@ -19,6 +19,12 @@ public class Id implements Comparable<Id>, Idable {
 		return new Id("minecraft", path);
 	}
 	
+	public static Id parse(String s) {
+		int c = s.indexOf(':');
+		if(c == -1) return minecraft(s);
+		else return new Id(s.substring(0, c), s.substring(c + 1));
+	}
+	
 	public String ns() {
 		return ns;
 	}

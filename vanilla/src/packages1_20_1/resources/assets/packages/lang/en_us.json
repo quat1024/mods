@@ -1,12 +1,7 @@
 {
-	"itemGroup.packages.group": "Packages",
-	
-	"block.packages.package_maker": "Package Crafter",
-	"block.packages.package": "Package",
 	"block.packages.package.nonempty": "%s (%s)",
 	"block.packages.package.nonempty.reentrant": "(%s)",
 	"block.packages.package.nonempty.contents": "%sx %s",
-	"item.packages.sticky_syrup": "Sticky Syrup",
 	
 	"packages.style_tooltip.hold_for_composition": "Hold [%s] for Composition",
 	"packages.style_tooltip.shift": "Shift",
@@ -42,14 +37,6 @@
 	"packages.sticky": "sticky",
 
 	"packages.package_maker.craft_button": "Create",
-	
-	"packages.subtitle.package_maker_craft": "Package Crafter used",
-	"packages.subtitle.insert_one": "Item inserted",
-	"packages.subtitle.take_one": "Item taken",
-	"packages.subtitle.insert_stack": "Items inserted",
-	"packages.subtitle.take_stack": "Items taken",
-	"packages.subtitle.insert_all": "Many items inserted",
-	"packages.subtitle.take_all": "Many items taken",
 	
 	"tag.item.packages.things_you_need_for_package_crafting": "Package Crafting Ingredients"
 }

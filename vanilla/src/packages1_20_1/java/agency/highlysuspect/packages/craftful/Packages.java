@@ -29,12 +29,15 @@ public abstract class Packages extends PackagesBase {
 		
 		LOG.info("RUNNING GENS!");
 		Gen.run(genCtx, new PackagesGen());
+		
 		LOG.info("Got {} facets", facets.size());
 		RegFacet.handle(this, facets.getFacets(RegFacet.class));
 		BlockEntityTypeFacet.handle(this, facets.getFacets(BlockEntityTypeFacet.class));
 		DispenserBehaviorFacet.handle(facets.getFacets(DispenserBehaviorFacet.class));
 		if(dgen != null) {
 			LOG.info("Handling datagen-relevant facets");
+			TagFacet.handle(dgen, facets.getFacets(TagFacet.class));
+			EmiTagExclusionFacet.handle(dgen, facets.getFacets(EmiTagExclusionFacet.class));
 			LangFacet.handle(dgen, facets.getFacets(LangFacet.class));
 			SoundEventFacet.handle(dgen, facets.getFacets(SoundEventFacet.class));
 		}

@@ -6,8 +6,6 @@ import agency.highlysuspect.quatlib.craftless.facet.Idable;
 import agency.highlysuspect.quatlib.craftless.util.QuatUtil;
 import com.google.gson.JsonObject;
 
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
@@ -63,13 +61,9 @@ public class LangFacet {
 		
 		//for each lang file
 		QuatUtil.collate(allLangs, f -> f.file).forEach((langFile, langs) -> {
-			//sort language entries by key
-			List<LangFacet> sortedLangs = new ArrayList<>(langs);
-			sortedLangs.sort(Comparator.comparing(f -> f.key));
-			
-			//build the json
+			//build the json, sorting the language keys first
 			JsonObject langJson = new JsonObject();
-			for(LangFacet lang : sortedLangs) langJson.addProperty(lang.key, lang.value);
+			for(LangFacet lang : QuatUtil.sortedCopy(langs, f -> f.key)) langJson.addProperty(lang.key, lang.value);
 			
 			//and write it out
 			genner.writeJson(null, langFile, langJson);

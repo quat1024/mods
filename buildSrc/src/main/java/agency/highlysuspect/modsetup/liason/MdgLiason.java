@@ -54,6 +54,7 @@ public abstract class MdgLiason<EXT extends ModDevExtension> extends Liason impl
 			
 			for(LoaderMod mod : mods) {
 				it.systemProperty("quatlib.dgen." + mod.modid, mod.versionAgnosticGeneratedResources.getAbsoluteFile().toString());
+				it.systemProperty("quatlib.dgen." + mod.modid + ".versions", String.join(";", mod.versions));
 				for(String mcVer : mod.versions)
 					it.systemProperty("quatlib.dgen." + mod.modid + "." + mcVer, mod.perVersionGeneratedResources.get(mcVer).getAbsoluteFile().toString());
 			}

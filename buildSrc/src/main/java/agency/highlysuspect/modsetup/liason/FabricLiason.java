@@ -167,6 +167,7 @@ public class FabricLiason extends Liason implements Liason.RemapLiason, Liason.R
 				it.classpath(mod.depJar.flatMap(AbstractArchiveTask::getArchiveFile));
 				
 				it.systemProperty("quatlib.dgen." + mod.modid, mod.versionAgnosticGeneratedResources.getAbsoluteFile());
+				it.systemProperty("quatlib.dgen." + mod.modid + ".versions", String.join(";", mod.versions));
 				for(String mcVer : mod.versions)
 					it.systemProperty("quatlib.dgen." + mod.modid + "." + mcVer, mod.perVersionGeneratedResources.get(mcVer).getAbsoluteFile());
 			}

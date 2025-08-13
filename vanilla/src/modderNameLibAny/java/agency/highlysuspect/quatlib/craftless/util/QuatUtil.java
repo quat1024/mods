@@ -5,10 +5,7 @@ import com.google.gson.GsonBuilder;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 
 public class QuatUtil {
@@ -36,5 +33,32 @@ public class QuatUtil {
 		Map<K, List<T>> res = new HashMap<>();
 		for(T thing : things) res.computeIfAbsent(collator.apply(thing), __ -> new ArrayList<>()).add(thing);
 		return res;
+	}
+	
+	public static <T> boolean allEqual(Iterable<T> things) {
+		Iterator<T> iter = things.iterator();
+		if(!iter.hasNext()) return true;
+		
+		T first = iter.next();
+		if(!iter.hasNext()) return true;
+		
+		while(iter.hasNext()) if(!first.equals(iter.next())) return false;
+		return true;
+	}
+	
+	public static <T extends Comparable<? super T>> List<T> sortedCopy(List<T> in) {
+		List<T> result = new ArrayList<>(in);
+		Collections.sort(result);
+		return result;
+	}
+	
+	public static <T> List<T> sortedCopy(List<T> in, Comparator<? super T> comparator) {
+		List<T> result = new ArrayList<>(in);
+		result.sort(comparator);
+		return result;
+	}
+	
+	public static <T, C extends Comparable<C>> List<T> sortedCopy(List<T> in, Function<? super T, ? extends C> keyExtractor) {
+		return sortedCopy(in, Comparator.comparing(keyExtractor));
 	}
 }

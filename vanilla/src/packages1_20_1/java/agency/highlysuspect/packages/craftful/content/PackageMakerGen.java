@@ -5,6 +5,8 @@ import agency.highlysuspect.packages.craftful.block.PackageMakerBlockEntity;
 import agency.highlysuspect.packages.craftful.menu.PackageMakerMenu;
 import agency.highlysuspect.quatlib.craftless.QuatlibBase;
 import agency.highlysuspect.quatlib.craftless.facet.Gen;
+import agency.highlysuspect.quatlib.craftless.facet.facets.EmiTagExclusionFacet;
+import agency.highlysuspect.quatlib.craftless.facet.facets.TagFacet;
 import agency.highlysuspect.quatlib.craftless.util.BlockEntityFactory;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.BlockItem;
@@ -23,6 +25,19 @@ public class PackageMakerGen implements PGen {
 			ctx.soundsJson(PLatches.SoundEvents.PACKAGE_MAKER_CRAFT)
 				.effect("ui.stonecutter.take_result");
 			ctx.add(enUs()).sound(PLatches.SoundEvents.PACKAGE_MAKER_CRAFT).value("Package Crafter used");
+			
+			ctx.add(TagFacet.mineableAxe()).value(PLatches.Blocks.PACKAGE_MAKER);
+			
+			//Used in crafting recipe
+			ctx.add(TagFacet.item().tag("c:wooden_chests").value("minecraft:chest"));
+			ctx.add(TagFacet.item().tag("c:wooden_chests").value("#forge:chests/wooden").optional(true));
+			
+			//TODO: un-hardcode
+			ctx.add(TagFacet.item().tag("packages:banned_from_package_maker").value(PLatches.Items.PACKAGE));
+			ctx.add(TagFacet.item().tag("packages:banned_from_package_maker").value(PLatches.Items.PACKAGE_MAKER));
+			ctx.add(TagFacet.item().tag("packages:things_you_need_for_package_crafting").value("minecraft:copper_ingot"));
+			
+			ctx.add(new EmiTagExclusionFacet("packages:banned_from_package_maker"));
 		}
 		
 		ctx.reg(PLatches.Blocks.PACKAGE_MAKER, this::constructBlock);

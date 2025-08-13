@@ -20,10 +20,11 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import java.util.Objects;
 
 public abstract class QuatlibBase {
-	public QuatlibBase(PhysicalSide side, PhysicalLoader loader) {
+	public QuatlibBase(PhysicalSide side, PhysicalLoader loader, PhysicalVersion version) {
 		INST = this;
 		this.side = side;
 		this.loader = loader;
+		this.version = version;
 		this.watcher = makeSharedConfigFileWatcher();
 		this.rlBridge = makeResourceLocationBridge();
 	}
@@ -34,6 +35,7 @@ public abstract class QuatlibBase {
 	
 	public final PhysicalSide side;
 	public final PhysicalLoader loader;
+	public final PhysicalVersion version;
 	public final DgenManager dgen = DgenManager.create();
 	
 	public final FailureRoot failures = new FailureRoot(NAME).addListener(new FailureLogger(LOG));
