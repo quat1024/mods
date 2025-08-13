@@ -3,6 +3,7 @@ package agency.highlysuspect.packages.craftful.content;
 import agency.highlysuspect.packages.craftful.block.PackageBlock;
 import agency.highlysuspect.packages.craftful.block.PackageBlockEntity;
 import agency.highlysuspect.packages.craftful.item.PackageItem;
+import agency.highlysuspect.packages.craftful.junk.PackageDispenseBehavior;
 import agency.highlysuspect.quatlib.craftless.facet.Gen;
 import agency.highlysuspect.quatlib.craftless.util.BlockEntityFactory;
 import net.minecraft.world.item.Item;
@@ -30,6 +31,8 @@ public class PackageGen implements PGen {
 			simpleSoundEvent(ctx, PLatches.SoundEvents.TAKE_STACK);
 			simpleSoundEvent(ctx, PLatches.SoundEvents.INSERT_ALL);
 			simpleSoundEvent(ctx, PLatches.SoundEvents.TAKE_ALL);
+			
+			ctx.dispenser(PLatches.Items.PACKAGE).behavior(new PackageDispenseBehavior());
 		}
 	}
 	

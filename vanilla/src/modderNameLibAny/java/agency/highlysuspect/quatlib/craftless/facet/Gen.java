@@ -1,7 +1,9 @@
 package agency.highlysuspect.quatlib.craftless.facet;
 
 import agency.highlysuspect.quatlib.craftless.facet.facets.BlockEntityTypeFacet;
+import agency.highlysuspect.quatlib.craftless.facet.facets.DispenserBehaviorFacet;
 import agency.highlysuspect.quatlib.craftless.facet.facets.RegFacet;
+import net.minecraft.world.item.Item;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -45,6 +47,10 @@ public interface Gen {
 		
 		public BlockEntityTypeFacet blockEntity(Latch<?> latch) {
 			return add(new BlockEntityTypeFacet()).latch(latch);
+		}
+		
+		public DispenserBehaviorFacet dispenser(Latch<? extends Item> latch) {
+			return add(new DispenserBehaviorFacet()).latch(latch);
 		}
 		
 		public boolean isDatagen() {

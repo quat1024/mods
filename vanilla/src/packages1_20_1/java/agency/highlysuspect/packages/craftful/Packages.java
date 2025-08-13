@@ -2,7 +2,6 @@ package agency.highlysuspect.packages.craftful;
 
 import agency.highlysuspect.packages.craftful.client.ClientProxy;
 import agency.highlysuspect.packages.craftful.content.PackagesGen;
-import agency.highlysuspect.packages.craftful.junk.PDispenserBehaviors;
 import agency.highlysuspect.packages.craftful.junk.PTags;
 import agency.highlysuspect.packages.craftful.junk.SidedProxy;
 import agency.highlysuspect.packages.craftless.PackagesBase;
@@ -10,13 +9,11 @@ import agency.highlysuspect.quatlib.craftless.QuatlibBase;
 import agency.highlysuspect.quatlib.craftless.config.ConfigSection;
 import agency.highlysuspect.quatlib.craftless.facet.FacetBucket;
 import agency.highlysuspect.quatlib.craftless.facet.Gen;
-import agency.highlysuspect.quatlib.craftless.facet.Latch;
 import agency.highlysuspect.quatlib.craftless.facet.Period;
 import agency.highlysuspect.quatlib.craftless.facet.facets.BlockEntityTypeFacet;
+import agency.highlysuspect.quatlib.craftless.facet.facets.DispenserBehaviorFacet;
 import agency.highlysuspect.quatlib.craftless.facet.facets.RegFacet;
-import net.minecraft.core.dispenser.DispenseItemBehavior;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.ItemLike;
 
 public abstract class Packages extends PackagesBase {
 	public SidedProxy proxy;
@@ -34,9 +31,9 @@ public abstract class Packages extends PackagesBase {
 		LOG.info("RUNNING GENS!");
 		RegFacet.handle(this, facets.removeFacets(RegFacet.class));
 		BlockEntityTypeFacet.handle(this, facets.removeFacets(BlockEntityTypeFacet.class));
+		DispenserBehaviorFacet.handle(facets.removeFacets(DispenserBehaviorFacet.class));
 		LOG.info("Gens have been run !");
 		
-		PDispenserBehaviors.onInitialize();
 		PTags.onInitialize();
 		
 		registerActionPacketHandler();
@@ -54,7 +51,6 @@ public abstract class Packages extends PackagesBase {
 		return false;
 	}
 	
-	public abstract void registerDispenserBehavior(Latch<? extends ItemLike> item, DispenseItemBehavior behavior);
 	public abstract void registerActionPacketHandler();
 	
 	@Override

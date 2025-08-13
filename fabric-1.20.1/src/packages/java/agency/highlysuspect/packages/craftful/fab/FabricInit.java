@@ -2,7 +2,6 @@ package agency.highlysuspect.packages.craftful.fab;
 
 import agency.highlysuspect.packages.craftful.Packages;
 import agency.highlysuspect.packages.craftful.net.ActionPacket;
-import agency.highlysuspect.quatlib.craftless.facet.Latch;
 import agency.highlysuspect.quatlib.craftless.config.ConfigSection;
 import agency.highlysuspect.quatlib.craftless.config.WritableConfig;
 import agency.highlysuspect.quatlib.craftless.config.hdc.HalfDecentConfigFile;
@@ -11,9 +10,6 @@ import agency.highlysuspect.quatlib.craftless.util.Season1CrummyConfigUpgrader;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.Util;
-import net.minecraft.core.dispenser.DispenseItemBehavior;
-import net.minecraft.world.level.ItemLike;
-import net.minecraft.world.level.block.DispenserBlock;
 
 import java.nio.file.Path;
 
@@ -26,11 +22,6 @@ public class FabricInit extends Packages implements AfterQuatlibInitializer {
 	@Override
 	public boolean isFabric() {
 		return true;
-	}
-	
-	@Override
-	public void registerDispenserBehavior(Latch<? extends ItemLike> item, DispenseItemBehavior behavior) {
-		DispenserBlock.registerBehavior(item.get(), behavior);
 	}
 	
 	@Override

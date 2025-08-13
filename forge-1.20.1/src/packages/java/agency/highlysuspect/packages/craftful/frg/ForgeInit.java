@@ -4,17 +4,12 @@ import agency.highlysuspect.packages.craftful.Packages;
 import agency.highlysuspect.packages.craftful.block.PackageBlockEntity;
 import agency.highlysuspect.packages.craftful.block.PackageMakerBlockEntity;
 import agency.highlysuspect.packages.craftful.net.ActionPacket;
-import agency.highlysuspect.quatlib.craftless.facet.Latch;
 import agency.highlysuspect.packages.craftless.PackagesBase;
 import agency.highlysuspect.quatlib.craftful.frg.ForgeBackedConfig_V1;
 import agency.highlysuspect.quatlib.craftless.config.ConfigSection;
 import agency.highlysuspect.quatlib.craftless.config.WritableConfig;
 import net.minecraft.core.Direction;
-import net.minecraft.core.Registry;
-import net.minecraft.core.dispenser.DispenseItemBehavior;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.level.ItemLike;
-import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
@@ -28,26 +23,18 @@ import net.minecraftforge.fml.ModContainer;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.items.wrapper.SidedInvWrapper;
 import net.minecraftforge.network.NetworkEvent;
 import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.simple.SimpleChannel;
-import net.minecraftforge.registries.DeferredRegister;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @Mod("packages")
 public class ForgeInit extends Packages {
 	public final SimpleChannel channel = NetworkRegistry.newSimpleChannel(rl("n"), () -> "0", "0"::equals, "0"::equals);
-	
-	private final Map<Registry<?>, DeferredRegister<?>> deferredRegistries = new HashMap<>();
-	private final Map<Latch<? extends ItemLike>, DispenseItemBehavior> dispenseBehaviorsToRegister = new HashMap<>();
 	
 	public final ModContainer modContainer;
 	public final IEventBus modBus;
@@ -62,7 +49,6 @@ public class ForgeInit extends Packages {
 		earlySetup();
 		
 		//misc events
-		modBus.addListener(this::actuallyRegisterDispenserBehaviors);
 		MinecraftForge.EVENT_BUS.addGenericListener(BlockEntity.class, this::attachCaps);
 		
 		//If i was forge i would simply have client entrypoints
@@ -83,20 +69,6 @@ public class ForgeInit extends Packages {
 		return true;
 	}
 	
-	@SuppressWarnings("unchecked") //Go directly to generics hell. Do not pass Go or collect $200.
-	private <T> DeferredRegister<T> getDeferredRegister(Registry<?> reg) {
-		return (DeferredRegister<T>) deferredRegistries.computeIfAbsent(reg, __ -> {
-			DeferredRegister<T> deferred = (DeferredRegister<T>) DeferredRegister.create(reg.key(), Packages.MODID);
-			deferred.register(FMLJavaModLoadingContext.get().getModEventBus());
-			return deferred;
-		});
-	}
-	
-	@Override
-	public void registerDispenserBehavior(Latch<? extends ItemLike> item, DispenseItemBehavior behavior) {
-		dispenseBehaviorsToRegister.put(item, behavior);
-	}
-	
 	@Override
 	public void registerActionPacketHandler() {
 		channel.registerMessage(ActionPacket.SHORT_ID, ActionPacket.class, ActionPacket::write, ActionPacket::read, (action, ctxSupplier) -> {
@@ -114,10 +86,6 @@ public class ForgeInit extends Packages {
 	@Override
 	public WritableConfig makeConfig(ConfigSection schema) {
 		return ForgeBackedConfig_V1.make(failures.context(), schema, modBus, modContainer, ModConfig.Type.COMMON);
-	}
-	
-	private void actuallyRegisterDispenserBehaviors(FMLCommonSetupEvent e) {
-		dispenseBehaviorsToRegister.forEach((handle, behavior) -> DispenserBlock.registerBehavior(handle.get(), behavior));
 	}
 	
 	//forge doesn't automatically wrap iinventories with item handlers anymore :pensive:

@@ -7,30 +7,16 @@ import agency.highlysuspect.packages.craftful.frg.client.model.ForgePackageMaker
 import agency.highlysuspect.packages.craftful.frg.client.model.ForgePackageModel;
 import agency.highlysuspect.packages.craftful.frg.client.model.NoConfigGeometryLoader;
 import agency.highlysuspect.packages.craftful.net.ActionPacket;
-import agency.highlysuspect.quatlib.craftless.client.MyScreenConstructor;
 import agency.highlysuspect.quatlib.craftful.frg.ForgeBackedConfig_V1;
 import agency.highlysuspect.quatlib.craftless.config.ConfigSection;
 import agency.highlysuspect.quatlib.craftless.config.WritableConfig;
-import agency.highlysuspect.quatlib.craftless.facet.Latch;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.MenuScreens;
-import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.gui.screens.inventory.MenuAccess;
-import net.minecraft.client.renderer.ItemBlockRenderTypes;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
-import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.client.event.ModelEvent;
 import net.minecraftforge.common.MinecraftForge;
@@ -40,27 +26,8 @@ import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.ModContainer;
 import net.minecraftforge.fml.config.ModConfig;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class ForgeClientInit extends PackagesClient {
-	private final List<MenuScreenEntry<?, ?>> menuScreensToRegister = new ArrayList<>();
-	private final List<BlockEntityRendererEntry<?>> blockEntityRenderersToRegister = new ArrayList<>();
-	private final Map<Latch<? extends Block>, RenderType> renderTypesToRegister = new HashMap<>();
-	
-	private record MenuScreenEntry<T extends AbstractContainerMenu, U extends Screen & MenuAccess<T>>(Latch<MenuType<T>> type, MyScreenConstructor<T, U> cons) {
-		private void register() { MenuScreens.register(type.get(), cons::create); } //generics moment
-	}
-	
-	private record BlockEntityRendererEntry<T extends BlockEntity>(Latch<? extends BlockEntityType<T>> type, BlockEntityRendererProvider<? super T> renderer) {
-		private void register(EntityRenderersEvent.RegisterRenderers e) { e.registerBlockEntityRenderer(type.get(), renderer); } //generics moment
-	}
-	
 	protected final IEventBus modBus;
 	protected final ModContainer modContainer;
 	
@@ -69,11 +36,6 @@ public class ForgeClientInit extends PackagesClient {
 		modContainer = ForgeInit.inst().modContainer;
 		
 		earlySetup();
-		
-		//misc events (generally, toppling the dominoes that earlySetup stood)
-		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::actuallyRegisterMenuScreens);
-		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::actuallySetBlockEntityRenderers);
-		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::actuallySetRenderTypes);
 		
 		//I originally only used PlayerInteractEvent.LeftClickBlock in all situations. However, in Creative mode, this
 		//event is fired *after* sending the START_DESTROY_BLOCK action to the server, and there is no way to cancel the
@@ -126,7 +88,7 @@ public class ForgeClientInit extends PackagesClient {
 	
 	@Override
 	public void setupCustomModelLoaders() {
-		FMLJavaModLoadingContext.get().getModEventBus().addListener((ModelEvent.RegisterGeometryLoaders e) -> {
+		modBus.addListener((ModelEvent.RegisterGeometryLoaders e) -> {
 			e.register("forge_package_model_loader"      , new NoConfigGeometryLoader<>(ForgePackageModel::new));
 			e.register("forge_package_maker_model_loader", new NoConfigGeometryLoader<>(ForgePackageMakerModel::new));
 		});
@@ -135,19 +97,6 @@ public class ForgeClientInit extends PackagesClient {
 	@Override
 	public void sendActionPacket(ActionPacket packet) {
 		ForgeInit.inst().channel.sendToServer(packet);
-	}
-	
-	private void actuallyRegisterMenuScreens(FMLClientSetupEvent e) {
-		menuScreensToRegister.forEach(MenuScreenEntry::register);
-	}
-	
-	private void actuallySetBlockEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {
-		blockEntityRenderersToRegister.forEach(entry -> entry.register(event));
-	}
-	
-	@SuppressWarnings("removal") //ItemBlockRenderTypes is deprecated in favor of some bespoke forge json bullshit, no thanks
-	private void actuallySetRenderTypes(FMLClientSetupEvent e) {
-		renderTypesToRegister.forEach((handle, layer) -> ItemBlockRenderTypes.setRenderLayer(handle.get(), layer));
 	}
 	
 	//config

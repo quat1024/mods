@@ -1,14 +1,17 @@
 package agency.highlysuspect.quatlib.craftless;
 
 import agency.highlysuspect.quatlib.craftless.bridge.ResourceLocationBridge;
+import agency.highlysuspect.quatlib.craftless.facet.Latch;
 import agency.highlysuspect.quatlib.craftless.facet.Reg;
 import agency.highlysuspect.quatlib.craftless.facet.RegType;
 import agency.highlysuspect.quatlib.craftless.failure.FailureLogger;
 import agency.highlysuspect.quatlib.craftless.failure.FailureRoot;
 import agency.highlysuspect.quatlib.craftless.util.*;
+import net.minecraft.core.dispenser.DispenseItemBehavior;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -38,6 +41,7 @@ public abstract class QuatlibBase {
 	protected abstract PhysicalSide findSide();
 	
 	public abstract Reg<?> createReg(RegType<?> type);
+	public abstract void registerDispenserBehavior(Latch<? extends ItemLike> item, DispenseItemBehavior behavior);
 	public abstract <T extends BlockEntity> BlockEntityType<T> makeBlockEntityType(BlockEntityFactory<T> factory, Block... blocks);
 	public abstract <T extends AbstractContainerMenu> MenuType<T> makeMenuType(MyMenuSupplier<T> supplier);
 	
