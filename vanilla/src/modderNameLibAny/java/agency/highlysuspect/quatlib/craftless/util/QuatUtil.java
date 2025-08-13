@@ -2,6 +2,7 @@ package agency.highlysuspect.quatlib.craftless.util;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 
 import java.util.ArrayList;
@@ -15,6 +16,10 @@ public class QuatUtil {
 		.disableHtmlEscaping()
 		.setPrettyPrinting()
 		.create();
+	
+	public static final Direction[] DIRECTIONS_AND_NULL = new Direction[]{
+		Direction.DOWN, Direction.UP, Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST, null
+	};
 	
 	public static int clamp(int n, int min, int max) {
 		if(n < min) return min;

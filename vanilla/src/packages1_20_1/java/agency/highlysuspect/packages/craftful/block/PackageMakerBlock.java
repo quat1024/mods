@@ -1,5 +1,6 @@
 package agency.highlysuspect.packages.craftful.block;
 
+import agency.highlysuspect.packages.craftful.content.PLatches;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
@@ -50,7 +51,7 @@ public class PackageMakerBlock extends Block implements EntityBlock {
 	
 	@Override
 	public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-		return PBlockEntityTypes.PACKAGE_MAKER.get().create(pos, state);
+		return PLatches.BlockEntityTypes.PACKAGE_MAKER.get().create(pos, state);
 	}
 	
 	@Override

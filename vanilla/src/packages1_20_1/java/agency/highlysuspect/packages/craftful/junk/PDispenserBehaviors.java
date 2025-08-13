@@ -1,7 +1,7 @@
 package agency.highlysuspect.packages.craftful.junk;
 
 import agency.highlysuspect.packages.craftful.Packages;
-import agency.highlysuspect.packages.craftful.item.PItems;
+import agency.highlysuspect.packages.craftful.content.PLatches;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockSource;
 import net.minecraft.core.Direction;
@@ -15,7 +15,7 @@ import net.minecraft.world.level.block.DispenserBlock;
 
 public class PDispenserBehaviors {
 	public static void onInitialize() {
-		Packages.inst().registerDispenserBehavior(PItems.PACKAGE, new SimpleBlockPlacementDispenserBehavior());
+		Packages.inst().registerDispenserBehavior(PLatches.Items.PACKAGE, new SimpleBlockPlacementDispenserBehavior());
 	}
 	
 	//Copy-paste of ShulkerBoxDispenseBehavior, but it doesn't try to be smart about placing "on the ground"

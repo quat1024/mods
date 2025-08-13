@@ -1,9 +1,8 @@
 package agency.highlysuspect.packages.craftful.compat.emi;
 
 import agency.highlysuspect.packages.craftful.Packages;
-import agency.highlysuspect.packages.craftful.block.PBlocks;
 import agency.highlysuspect.packages.craftful.block.PackageMakerBlockEntity;
-import agency.highlysuspect.packages.craftful.item.PItems;
+import agency.highlysuspect.packages.craftful.content.PLatches;
 import agency.highlysuspect.packages.craftful.junk.PTags;
 import dev.emi.emi.api.EmiEntrypoint;
 import dev.emi.emi.api.EmiPlugin;
@@ -31,7 +30,7 @@ import java.util.Random;
 public class PackagesEmiPlugin implements EmiPlugin {
 	public static final EmiRecipeCategory PACKAGE_MAKER_CATEGORY = new EmiRecipeCategory(
 		Packages.rl("package_maker"),
-		EmiStack.of(PBlocks.PACKAGE_MAKER.get())
+		EmiStack.of(PLatches.Blocks.PACKAGE_MAKER.get())
 	) {
 		@Override
 		public Component getName() {
@@ -42,7 +41,7 @@ public class PackagesEmiPlugin implements EmiPlugin {
 	@Override
 	public void register(EmiRegistry registry) {
 		registry.addCategory(PACKAGE_MAKER_CATEGORY);
-		registry.addWorkstation(PACKAGE_MAKER_CATEGORY, EmiStack.of(PBlocks.PACKAGE_MAKER.get()));
+		registry.addWorkstation(PACKAGE_MAKER_CATEGORY, EmiStack.of(PLatches.Blocks.PACKAGE_MAKER.get()));
 		registry.addRecipe(new PackageRecipe());
 	}
 	
@@ -92,7 +91,7 @@ public class PackagesEmiPlugin implements EmiPlugin {
 		
 		@Override
 		public List<EmiStack> getOutputs() {
-			return List.of(EmiStack.of(PItems.PACKAGE.get()));
+			return List.of(EmiStack.of(PLatches.Items.PACKAGE.get()));
 		}
 		
 		@Override
@@ -131,7 +130,7 @@ public class PackagesEmiPlugin implements EmiPlugin {
 				case 0 -> EmiStack.of(frame);
 				case 1 -> EmiStack.of(inner);
 				case 2 -> EmiStack.of(DyeItem.byColor(dye));
-				case 3 -> EmiStack.of(PItems.PACKAGE.get().createCustomizedStack(frame, inner, dye));
+				case 3 -> EmiStack.of(PLatches.Items.PACKAGE.get().createCustomizedStack(frame, inner, dye));
 				default -> throw new IllegalArgumentException();
 			};
 		}

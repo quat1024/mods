@@ -1,8 +1,6 @@
 package agency.highlysuspect.packages.craftful.content;
 
 import agency.highlysuspect.packages.craftful.Packages;
-import agency.highlysuspect.packages.craftful.block.PBlocks;
-import agency.highlysuspect.packages.craftful.item.PItems;
 import agency.highlysuspect.quatlib.craftful.QuatlibMc;
 import agency.highlysuspect.quatlib.craftless.facet.Gen;
 import agency.highlysuspect.quatlib.craftless.facet.Id;
@@ -26,15 +24,15 @@ public class PackagesGen implements PGen {
 				.title(Component.translatable("itemGroup.packages.group"))
 				.icon(() -> {
 					try {
-						List<ItemStack> stacks = PBlocks.PACKAGE.get().lotsOfPackages();
+						List<ItemStack> stacks = PLatches.Blocks.PACKAGE.get().lotsOfPackages();
 						return stacks.get(new Random(System.currentTimeMillis()).nextInt(stacks.size()));
 					} catch (Exception e) { //trust no one not even yourself
-						return new ItemStack(PItems.PACKAGE_MAKER.get());
+						return new ItemStack(PLatches.Items.PACKAGE_MAKER.get());
 					}
 				})
 				.displayItems((params, out) -> {
-					out.accept(PItems.PACKAGE_MAKER.get());
-					PBlocks.PACKAGE.get().lotsOfPackages().forEach(out::accept);
+					out.accept(PLatches.Items.PACKAGE_MAKER.get());
+					PLatches.Blocks.PACKAGE.get().lotsOfPackages().forEach(out::accept);
 				})
 				.build()
 		);

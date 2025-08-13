@@ -2,6 +2,7 @@ package agency.highlysuspect.packages.craftful.block;
 
 import agency.highlysuspect.packages.craftful.Packages;
 import agency.highlysuspect.packages.craftful.PropsCommon;
+import agency.highlysuspect.packages.craftful.content.PLatches;
 import agency.highlysuspect.packages.craftful.item.PackageItem;
 import agency.highlysuspect.packages.craftful.junk.PackageContainer;
 import agency.highlysuspect.quatlib.craftless.util.QuatUtil;
@@ -77,7 +78,7 @@ public class PackageBlock extends Block implements EntityBlock {
 	
 	@Override
 	public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-		return PBlockEntityTypes.PACKAGE.get().create(pos, state);
+		return PLatches.BlockEntityTypes.PACKAGE.get().create(pos, state);
 	}
 	
 	//Behaviors.

@@ -1,10 +1,9 @@
 package agency.highlysuspect.packages.craftful.frg.client.model;
 
-import agency.highlysuspect.packages.craftful.block.PBlocks;
 import agency.highlysuspect.packages.craftful.client.PackageModelBakery;
 import agency.highlysuspect.packages.craftful.client.PackagesClient;
 import agency.highlysuspect.packages.craftful.client.PropsClient;
-import agency.highlysuspect.packages.craftful.junk.PUtil;
+import agency.highlysuspect.packages.craftful.content.PLatches;
 import agency.highlysuspect.quatlib.craftless.util.QuatUtil;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import net.minecraft.client.Minecraft;
@@ -56,8 +55,8 @@ public class BakedQuadPackageModelBakery implements PackageModelBakery<List<Bake
 		@Nullable TextureAtlasSprite innerSprite = innerState == null ? null : mgr.getBlockModel(innerState).getParticleIcon(ModelData.EMPTY);
 		
 		RandomSource random = new LegacyRandomSource(42);
-		for(Direction cullFace : PUtil.DIRECTIONS_AND_NULL) {
-			for(BakedQuad quad : baseModel.getQuads(PBlocks.PACKAGE.get().defaultBlockState(), cullFace, random, ModelData.EMPTY, null)) {
+		for(Direction cullFace : QuatUtil.DIRECTIONS_AND_NULL) {
+			for(BakedQuad quad : baseModel.getQuads(PLatches.Blocks.PACKAGE.get().defaultBlockState(), cullFace, random, ModelData.EMPTY, null)) {
 				if(quad.getTintIndex() == 1) {
 					if(faceColor != null) {
 						int tint = 0xFF000000 | faceColor.getMapColor().col;

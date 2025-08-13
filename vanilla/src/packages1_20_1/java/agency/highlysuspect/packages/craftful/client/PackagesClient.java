@@ -1,9 +1,7 @@
 package agency.highlysuspect.packages.craftful.client;
 
 import agency.highlysuspect.packages.craftful.Packages;
-import agency.highlysuspect.packages.craftful.block.PBlockEntityTypes;
-import agency.highlysuspect.packages.craftful.block.PBlocks;
-import agency.highlysuspect.packages.craftful.menu.PMenuTypes;
+import agency.highlysuspect.packages.craftful.content.PLatches;
 import agency.highlysuspect.packages.craftful.net.ActionPacket;
 import agency.highlysuspect.packages.craftful.net.PackageAction;
 import agency.highlysuspect.packages.craftless.client.PackagesBaseClient;
@@ -31,9 +29,9 @@ public abstract class PackagesClient extends PackagesBaseClient {
 		
 		setupCustomModelLoaders();
 		
-		QuatlibClientBase.inst().registerMenuScreen(PMenuTypes.PACKAGE_MAKER, PackageMakerScreen::new);
-		QuatlibClientBase.inst().setBlockEntityRenderer(PBlockEntityTypes.PACKAGE, PackageRenderer::new);
-		QuatlibClientBase.inst().setRenderType(PBlocks.PACKAGE_MAKER, RenderType.cutoutMipped());
+		QuatlibClientBase.inst().registerMenuScreen(PLatches.MenuTypes.PACKAGE_MAKER, PackageMakerScreen::new);
+		QuatlibClientBase.inst().setBlockEntityRenderer(PLatches.BlockEntityTypes.PACKAGE, PackageRenderer::new);
+		QuatlibClientBase.inst().setRenderType(PLatches.Blocks.PACKAGE_MAKER, RenderType.cutoutMipped());
 	}
 	
 	public void onConfigReload(ReadableConfig config) {

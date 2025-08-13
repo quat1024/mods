@@ -2,6 +2,7 @@ package agency.highlysuspect.packages.craftful.block;
 
 import agency.highlysuspect.packages.craftful.Packages;
 import agency.highlysuspect.packages.craftful.PropsCommon;
+import agency.highlysuspect.packages.craftful.content.PLatches;
 import agency.highlysuspect.packages.craftful.junk.PTags;
 import agency.highlysuspect.packages.craftful.junk.PackageContainer;
 import agency.highlysuspect.packages.craftful.junk.PackageStyle;
@@ -45,7 +46,7 @@ import java.util.stream.IntStream;
 
 public class PackageBlockEntity extends BlockEntity implements Container, Nameable {
 	public PackageBlockEntity(BlockPos pos, BlockState state) {
-		super(PBlockEntityTypes.PACKAGE.get(), pos, state);
+		super(PLatches.BlockEntityTypes.PACKAGE.get(), pos, state);
 	}
 	
 	private PackageStyle style = PackageStyle.ERROR_LOL;
@@ -355,7 +356,7 @@ public class PackageBlockEntity extends BlockEntity implements Container, Nameab
 	//<editor-fold desc="Nameable">
 	@Override
 	public Component getName() {
-		return hasCustomName() ? customName : Component.translatable(PBlocks.PACKAGE.get().getDescriptionId());
+		return hasCustomName() ? customName : Component.translatable(PLatches.Blocks.PACKAGE.get().getDescriptionId());
 	}
 	
 	@Override

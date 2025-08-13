@@ -1,7 +1,7 @@
 package agency.highlysuspect.packages.craftful.fab.mixin.particleslol;
 
-import agency.highlysuspect.packages.craftful.block.PBlocks;
 import agency.highlysuspect.packages.craftful.block.PackageBlockEntity;
+import agency.highlysuspect.packages.craftful.content.PLatches;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -34,7 +34,7 @@ public class MixinLivingEntity {
 	)
 	private BlockState packages$checkFallDamage$modifyParticleOptionArg(BlockState state) {
 		if(lastFallCheckPos != null &&
-			state.getBlock() == PBlocks.PACKAGE.get() &&
+			state.getBlock() == PLatches.Blocks.PACKAGE.get() &&
 			((Entity) (Object) this).level().getBlockEntity(lastFallCheckPos) instanceof PackageBlockEntity be) {
 			return be.getStyle().innerBlock().defaultBlockState();
 		} else return state;

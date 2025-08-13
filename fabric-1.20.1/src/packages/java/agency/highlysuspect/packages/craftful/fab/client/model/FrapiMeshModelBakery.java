@@ -1,8 +1,7 @@
 package agency.highlysuspect.packages.craftful.fab.client.model;
 
-import agency.highlysuspect.packages.craftful.block.PBlocks;
 import agency.highlysuspect.packages.craftful.client.PackageModelBakery;
-import agency.highlysuspect.packages.craftful.junk.PUtil;
+import agency.highlysuspect.packages.craftful.content.PLatches;
 import agency.highlysuspect.packages.craftful.fab.compat.frex.FrexCompat;
 import agency.highlysuspect.quatlib.craftless.util.QuatUtil;
 import net.fabricmc.fabric.api.renderer.v1.Renderer;
@@ -57,8 +56,8 @@ public class FrapiMeshModelBakery implements PackageModelBakery<Mesh> {
 		@Nullable TextureAtlasSprite innerSprite = innerState == null ? null : mgr.getBlockModel(innerState).getParticleIcon();
 	
 		RandomSource random = new LegacyRandomSource(42);
-		for(Direction cullFace : PUtil.DIRECTIONS_AND_NULL) {
-			for(BakedQuad quad : baseModel.getQuads(PBlocks.PACKAGE.get().defaultBlockState(), cullFace, random)) {
+		for(Direction cullFace : QuatUtil.DIRECTIONS_AND_NULL) {
+			for(BakedQuad quad : baseModel.getQuads(PLatches.Blocks.PACKAGE.get().defaultBlockState(), cullFace, random)) {
 				emitter.fromVanilla(quad, null, cullFace);
 				emitter.material(null);
 				

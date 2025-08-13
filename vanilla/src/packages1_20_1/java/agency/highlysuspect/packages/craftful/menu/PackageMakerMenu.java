@@ -2,6 +2,7 @@ package agency.highlysuspect.packages.craftful.menu;
 
 import agency.highlysuspect.packages.craftful.Packages;
 import agency.highlysuspect.packages.craftful.block.PackageMakerBlockEntity;
+import agency.highlysuspect.packages.craftful.content.PLatches;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Container;
@@ -22,7 +23,7 @@ public class PackageMakerMenu extends AbstractContainerMenu {
 	}
 	
 	public PackageMakerMenu(int syncId, Inventory playerInventory, Container container) {
-		super(PMenuTypes.PACKAGE_MAKER.get(), syncId);
+		super(PLatches.MenuTypes.PACKAGE_MAKER.get(), syncId);
 		this.container = container;
 		
 		addSlot(new FunkySlot(container, PackageMakerBlockEntity.FRAME_SLOT ,  16, 25, FRAME_BG, PackageMakerBlockEntity::matchesFrameSlot));

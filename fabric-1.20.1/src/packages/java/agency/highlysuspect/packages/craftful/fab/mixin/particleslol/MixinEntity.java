@@ -1,7 +1,7 @@
 package agency.highlysuspect.packages.craftful.fab.mixin.particleslol;
 
-import agency.highlysuspect.packages.craftful.block.PBlocks;
 import agency.highlysuspect.packages.craftful.block.PackageBlockEntity;
+import agency.highlysuspect.packages.craftful.content.PLatches;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
@@ -37,7 +37,7 @@ public class MixinEntity {
 	)
 	private BlockState packages$spawnSprintParticle$modifyParticleOptionArg(BlockState state) {
 		if(lastSprintParticlePos != null &&
-			state.getBlock() == PBlocks.PACKAGE.get() &&
+			state.getBlock() == PLatches.Blocks.PACKAGE.get() &&
 			level.getBlockEntity(lastSprintParticlePos) instanceof PackageBlockEntity be) {
 			return be.getStyle().innerBlock().defaultBlockState();
 		} else return state;

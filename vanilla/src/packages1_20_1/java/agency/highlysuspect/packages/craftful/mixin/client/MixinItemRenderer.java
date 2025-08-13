@@ -1,7 +1,7 @@
 package agency.highlysuspect.packages.craftful.mixin.client;
 
 import agency.highlysuspect.packages.craftful.client.PackageRenderer;
-import agency.highlysuspect.packages.craftful.item.PItems;
+import agency.highlysuspect.packages.craftful.content.PLatches;
 import agency.highlysuspect.packages.craftful.junk.PackageContainer;
 import agency.highlysuspect.quatlib.craftless.util.TwelveDirection;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -23,7 +23,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class MixinItemRenderer {
 	@Inject(method = "render", at = @At("HEAD"))
 	public void packages$renderItemVeryEarly(ItemStack stack, ItemDisplayContext ctx, boolean invert, PoseStack pose, MultiBufferSource bufs, int light, int overlay, BakedModel model, CallbackInfo ci) {
-		if(stack.getItem() == PItems.PACKAGE.get()) {
+		if(stack.getItem() == PLatches.Items.PACKAGE.get()) {
 			PackageContainer container = PackageContainer.fromItemStack(stack, true);
 			if(container == null) return;
 			

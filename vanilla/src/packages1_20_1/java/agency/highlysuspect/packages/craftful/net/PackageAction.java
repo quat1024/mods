@@ -1,6 +1,6 @@
 package agency.highlysuspect.packages.craftful.net;
 
-import agency.highlysuspect.packages.craftful.junk.PSoundEvents;
+import agency.highlysuspect.packages.craftful.content.PLatches;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.level.Level;
@@ -44,12 +44,12 @@ public enum PackageAction {
 	
 	public SoundEvent getSoundEvent() {
 		return (switch(this) {
-			case INSERT_ONE -> PSoundEvents.INSERT_ONE;
-			case TAKE_ONE -> PSoundEvents.TAKE_ONE;
-			case INSERT_STACK -> PSoundEvents.INSERT_STACK;
-			case TAKE_STACK -> PSoundEvents.TAKE_STACK;
-			case INSERT_ALL -> PSoundEvents.INSERT_ALL;
-			case TAKE_ALL -> PSoundEvents.TAKE_ALL;
+			case INSERT_ONE -> PLatches.SoundEvents.INSERT_ONE;
+			case TAKE_ONE -> PLatches.SoundEvents.TAKE_ONE;
+			case INSERT_STACK -> PLatches.SoundEvents.INSERT_STACK;
+			case TAKE_STACK -> PLatches.SoundEvents.TAKE_STACK;
+			case INSERT_ALL -> PLatches.SoundEvents.INSERT_ALL;
+			case TAKE_ALL -> PLatches.SoundEvents.TAKE_ALL;
 		}).get();
 	}
 	

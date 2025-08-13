@@ -2,8 +2,7 @@ package agency.highlysuspect.packages.craftful.block;
 
 import agency.highlysuspect.packages.craftful.Packages;
 import agency.highlysuspect.packages.craftful.PropsCommon;
-import agency.highlysuspect.packages.craftful.item.PItems;
-import agency.highlysuspect.packages.craftful.junk.PSoundEvents;
+import agency.highlysuspect.packages.craftful.content.PLatches;
 import agency.highlysuspect.packages.craftful.junk.PTags;
 import agency.highlysuspect.packages.craftful.junk.PackageMakerStyle;
 import agency.highlysuspect.packages.craftful.menu.PackageMakerMenu;
@@ -16,7 +15,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
@@ -38,7 +36,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class PackageMakerBlockEntity extends BlockEntity implements Nameable, WorldlyContainer, MenuProvider {
 	public PackageMakerBlockEntity(BlockPos pos, BlockState state) {
-		super(PBlockEntityTypes.PACKAGE_MAKER.get(), pos, state);
+		super(PLatches.BlockEntityTypes.PACKAGE_MAKER.get(), pos, state);
 	}
 	
 	//region Crafting logic
@@ -109,7 +107,7 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Wo
 		Block innerBlock = ((BlockItem) inner.getItem()).getBlock();
 		DyeColor dyeColor = ((DyeItem) dye.getItem()).getDyeColor();
 		
-		return PItems.PACKAGE.get().createCustomizedStack(frameBlock, innerBlock, dyeColor);
+		return PLatches.Items.PACKAGE.get().createCustomizedStack(frameBlock, innerBlock, dyeColor);
 	}
 	
 	///
@@ -147,7 +145,7 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Wo
 			
 			//doubt it's null, lol
 			if(level != null && !playedSound)	{
-				level.playSound(null, worldPosition, PSoundEvents.PACKAGE_MAKER_CRAFT.get(), SoundSource.BLOCKS, 1f, 1f);
+				level.playSound(null, worldPosition, PLatches.SoundEvents.PACKAGE_MAKER_CRAFT.get(), SoundSource.BLOCKS, 1f, 1f);
 				playedSound = true;
 			}
 		}
@@ -283,7 +281,7 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Wo
 	public AbstractContainerMenu createMenu(int syncId, Inventory inv, Player player) {
 		if(locked) {
 			player.displayClientMessage(Component.translatable("container.isLocked", getDisplayName()), true);
-			player.playNotifySound(SoundEvents.CHEST_LOCKED, SoundSource.BLOCKS, 1f, 1f);
+			player.playNotifySound(net.minecraft.sounds.SoundEvents.CHEST_LOCKED, SoundSource.BLOCKS, 1f, 1f);
 			return null;
 		}
 		return new PackageMakerMenu(syncId, inv, this);
@@ -293,7 +291,7 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Wo
 	
 	@Override
 	public Component getName() {
-		return hasCustomName() ? customName : Component.translatable(PBlocks.PACKAGE_MAKER.get().getDescriptionId());
+		return hasCustomName() ? customName : Component.translatable(PLatches.Blocks.PACKAGE_MAKER.get().getDescriptionId());
 	}
 	
 	@Override

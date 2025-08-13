@@ -1,6 +1,6 @@
 package agency.highlysuspect.packages.craftful.junk;
 
-import agency.highlysuspect.packages.craftful.item.PItems;
+import agency.highlysuspect.packages.craftful.content.PLatches;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.Container;
@@ -403,7 +403,7 @@ public class PackageContainer implements Container {
 	//"Public" somewhat reluctantly (tooltips, rendering, etc).
 	//Be careful when passing "true" to this method; do not write to the returned PackageContainer.
 	public static @Nullable PackageContainer fromItemStack(ItemStack stack, boolean computationOnly) {
-		if(stack.isEmpty() || stack.getItem() != PItems.PACKAGE.get()) return null;
+		if(stack.isEmpty() || stack.getItem() != PLatches.Items.PACKAGE.get()) return null;
 		CompoundTag tag = stack.getTag();
 		return tag == null ? null : new PackageContainer().readFromTag(tag.getCompound("BlockEntityTag").getCompound(KEY), computationOnly);
 	}
