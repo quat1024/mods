@@ -37,6 +37,11 @@ public class LangFacet {
 		return this;
 	}
 	
+	public LangFacet sound(Idable soundId) {
+		this.key = soundId.getId().toSubtitle();
+		return this;
+	}
+	
 	public LangFacet value(String value) {
 		this.value = value;
 		return this;

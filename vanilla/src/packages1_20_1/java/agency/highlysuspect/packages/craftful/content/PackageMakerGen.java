@@ -19,6 +19,10 @@ public class PackageMakerGen implements PGen {
 	public void gen(Ctx ctx, Consumer<Gen> more) {
 		if(ctx.dgen != null) {
 			ctx.add(enUs().block(PLatches.Blocks.PACKAGE_MAKER).value("Package Crafter"));
+			
+			ctx.soundsJson(PLatches.SoundEvents.PACKAGE_MAKER_CRAFT)
+				.effect("ui.stonecutter.take_result");
+			ctx.add(enUs()).sound(PLatches.SoundEvents.PACKAGE_MAKER_CRAFT).value("Package Crafter used");
 		}
 		
 		ctx.reg(PLatches.Blocks.PACKAGE_MAKER, this::constructBlock);

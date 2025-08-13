@@ -10,10 +10,7 @@ import agency.highlysuspect.quatlib.craftless.config.ConfigSection;
 import agency.highlysuspect.quatlib.craftless.facet.FacetBucket;
 import agency.highlysuspect.quatlib.craftless.facet.Gen;
 import agency.highlysuspect.quatlib.craftless.facet.dgen.DgenHelper;
-import agency.highlysuspect.quatlib.craftless.facet.facets.BlockEntityTypeFacet;
-import agency.highlysuspect.quatlib.craftless.facet.facets.DispenserBehaviorFacet;
-import agency.highlysuspect.quatlib.craftless.facet.facets.LangFacet;
-import agency.highlysuspect.quatlib.craftless.facet.facets.RegFacet;
+import agency.highlysuspect.quatlib.craftless.facet.facets.*;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 
@@ -33,12 +30,13 @@ public abstract class Packages extends PackagesBase {
 		LOG.info("RUNNING GENS!");
 		Gen.run(genCtx, new PackagesGen());
 		LOG.info("Got {} facets", facets.size());
-		RegFacet.handle(this, facets.removeFacets(RegFacet.class));
-		BlockEntityTypeFacet.handle(this, facets.removeFacets(BlockEntityTypeFacet.class));
-		DispenserBehaviorFacet.handle(facets.removeFacets(DispenserBehaviorFacet.class));
+		RegFacet.handle(this, facets.getFacets(RegFacet.class));
+		BlockEntityTypeFacet.handle(this, facets.getFacets(BlockEntityTypeFacet.class));
+		DispenserBehaviorFacet.handle(facets.getFacets(DispenserBehaviorFacet.class));
 		if(dgen != null) {
 			LOG.info("Handling datagen-relevant facets");
-			LangFacet.handle(dgen, facets.removeFacets(LangFacet.class));
+			LangFacet.handle(dgen, facets.getFacets(LangFacet.class));
+			SoundEventFacet.handle(dgen, facets.getFacets(SoundEventFacet.class));
 		}
 		LOG.info("Done with gens");
 		

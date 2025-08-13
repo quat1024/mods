@@ -4,6 +4,10 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
+/**
+ * Ideally all of the Facet metadata falls away to get garbage-collected.
+ * Usages of this class should probalby stay within one method basically.
+ */
 @SuppressWarnings("unchecked")
 public class FacetBucket {
 	private final Map<Class<?>, List<Object>> facets = new HashMap<>();
@@ -36,8 +40,8 @@ public class FacetBucket {
 	
 	// handling facets
 	
-	public <T> List<T> removeFacets(Class<T> facetKey) {
-		List<T> removed = (List<T>) facets.remove(assertFacetKey(facetKey));
+	public <T> List<T> getFacets(Class<T> facetKey) {
+		List<T> removed = (List<T>) facets.get(assertFacetKey(facetKey));
 		if(removed == null) return List.of();
 		else return removed;
 	}

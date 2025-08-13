@@ -1,4 +1,11 @@
 {
   "block.packages.package": "Package",
-  "block.packages.package_maker": "Package Crafter"
+  "block.packages.package_maker": "Package Crafter",
+  "packages.subtitle.insert_all": "Many items inserted",
+  "packages.subtitle.insert_one": "Item inserted",
+  "packages.subtitle.insert_stack": "Items inserted",
+  "packages.subtitle.package_maker_craft": "Package Crafter used",
+  "packages.subtitle.take_all": "Many items taken",
+  "packages.subtitle.take_one": "Item taken",
+  "packages.subtitle.take_stack": "Items taken"
 }

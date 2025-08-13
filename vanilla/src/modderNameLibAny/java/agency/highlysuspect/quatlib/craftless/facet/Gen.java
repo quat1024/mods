@@ -4,6 +4,8 @@ import agency.highlysuspect.quatlib.craftless.facet.dgen.DgenHelper;
 import agency.highlysuspect.quatlib.craftless.facet.facets.BlockEntityTypeFacet;
 import agency.highlysuspect.quatlib.craftless.facet.facets.DispenserBehaviorFacet;
 import agency.highlysuspect.quatlib.craftless.facet.facets.RegFacet;
+import agency.highlysuspect.quatlib.craftless.facet.facets.SoundEventFacet;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.item.Item;
 import org.jetbrains.annotations.Nullable;
 
@@ -53,6 +55,10 @@ public interface Gen {
 		
 		public DispenserBehaviorFacet dispenser(Latch<? extends Item> latch) {
 			return add(new DispenserBehaviorFacet()).latch(latch);
+		}
+		
+		public SoundEventFacet soundsJson(Latch<SoundEvent> latch) {
+			return add(new SoundEventFacet()).latch(latch);
 		}
 	}
 }

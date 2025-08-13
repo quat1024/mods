@@ -17,7 +17,31 @@ public class PackageGen implements PGen {
 	@Override
 	public void gen(Ctx ctx, Consumer<Gen> more) {
 		if(ctx.dgen != null) {
-			ctx.add(enUs().block(PLatches.Blocks.PACKAGE).value("Package"));
+			ctx.add(enUs()).block(PLatches.Blocks.PACKAGE).value("Package");
+			
+			ctx.soundsJson(PLatches.SoundEvents.INSERT_ONE)
+				.effect("block.calcite.place").volume(0.4);
+			ctx.add(enUs()).sound(PLatches.SoundEvents.INSERT_ONE).value("Item inserted");
+			
+			ctx.soundsJson(PLatches.SoundEvents.TAKE_ONE)
+				.effect("entity.item.pickup").volume(0.2);
+			ctx.add(enUs()).sound(PLatches.SoundEvents.TAKE_ONE).value("Item taken");
+			
+			ctx.soundsJson(PLatches.SoundEvents.INSERT_STACK)
+				.effect("block.calcite.place").volume(0.4).pitch(0.74);
+			ctx.add(enUs()).sound(PLatches.SoundEvents.INSERT_STACK).value("Items inserted");
+			
+			ctx.soundsJson(PLatches.SoundEvents.TAKE_STACK)
+				.effect("entity.item.pickup").volume(0.2);
+			ctx.add(enUs()).sound(PLatches.SoundEvents.TAKE_STACK).value("Items taken");
+			
+			ctx.soundsJson(PLatches.SoundEvents.INSERT_ALL)
+				.effect("block.bone_block.place").volume(0.8).pitch(0.7);
+			ctx.add(enUs()).sound(PLatches.SoundEvents.INSERT_ALL).value("Many items inserted");
+			
+			ctx.soundsJson(PLatches.SoundEvents.TAKE_ALL)
+				.effect("block.gilded_blackstone.break").volume(0.5).pitch(0.7);
+			ctx.add(enUs()).sound(PLatches.SoundEvents.TAKE_ALL).value("Many items taken");
 		}
 		
 		ctx.reg(PLatches.Blocks.PACKAGE, this::constructBlock);
