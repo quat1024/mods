@@ -1,6 +1,6 @@
 package agency.highlysuspect.packages.craftful.client;
 
-import agency.highlysuspect.packages.craftful.Packages;
+import agency.highlysuspect.quatlib.craftless.QuatlibBase;
 import agency.highlysuspect.quatlib.craftless.config.ConfigOpt;
 import agency.highlysuspect.quatlib.craftless.config.ConfigSection;
 
@@ -71,7 +71,7 @@ public class PropsClient {
 		schema.subsection("Pedantry").add(RED_BAR_WHEN_FULL);
 		
 		schema.subsection("Model").add(CACHE_MESHES, LIGHTING_CORRECTION);
-		if(Packages.inst().isForge()) {
+		if(QuatlibBase.inst().loader.isForgeish()) {
 			schema.getSectionByName("Model").add(FORGE_SWAP_RED_AND_BLUE);
 		}
 		

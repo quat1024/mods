@@ -8,6 +8,7 @@ import agency.highlysuspect.quatlib.craftless.facet.Reg;
 import agency.highlysuspect.quatlib.craftless.facet.RegType;
 import agency.highlysuspect.quatlib.craftless.util.BlockEntityFactory;
 import agency.highlysuspect.quatlib.craftless.util.MyMenuSupplier;
+import agency.highlysuspect.quatlib.craftless.util.PhysicalLoader;
 import agency.highlysuspect.quatlib.craftless.util.PhysicalSide;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.ModInitializer;
@@ -24,16 +25,18 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 
 public class QuatlibFabric extends QuatlibMc implements ModInitializer {
+	public QuatlibFabric() {
+		super(
+			FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT ? PhysicalSide.CLIENT : PhysicalSide.DEDICATED_SERVER,
+			PhysicalLoader.FABRIC
+		);
+	}
+	
 	@Override
 	public void onInitialize() {
 		//...do stuff...
 		
 		FabricLoader.getInstance().invokeEntrypoints("modder_name_lib:after", AfterQuatlibInitializer.class, AfterQuatlibInitializer::onInitialize);
-	}
-	
-	@Override
-	protected PhysicalSide findSide() {
-		return FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT ? PhysicalSide.CLIENT : PhysicalSide.DEDICATED_SERVER;
 	}
 	
 	@Override

@@ -65,11 +65,6 @@ public class ForgeInit extends Packages {
 	}
 	
 	@Override
-	public boolean isForge() {
-		return true;
-	}
-	
-	@Override
 	public void registerActionPacketHandler() {
 		channel.registerMessage(ActionPacket.SHORT_ID, ActionPacket.class, ActionPacket::write, ActionPacket::read, (action, ctxSupplier) -> {
 			NetworkEvent.Context ctx = ctxSupplier.get();

@@ -7,6 +7,7 @@ import agency.highlysuspect.quatlib.craftless.facet.Reg;
 import agency.highlysuspect.quatlib.craftless.facet.RegType;
 import agency.highlysuspect.quatlib.craftless.util.BlockEntityFactory;
 import agency.highlysuspect.quatlib.craftless.util.MyMenuSupplier;
+import agency.highlysuspect.quatlib.craftless.util.PhysicalLoader;
 import agency.highlysuspect.quatlib.craftless.util.PhysicalSide;
 import net.minecraft.core.dispenser.DispenseItemBehavior;
 import net.minecraft.world.flag.FeatureFlagSet;
@@ -29,7 +30,11 @@ import java.util.Map;
 @Mod(QuatlibBase.MODID)
 public class QuatlibNeoforge extends QuatlibMc {
 	public QuatlibNeoforge(IEventBus modBus) {
-		super();
+		super(
+			FMLEnvironment.dist.isClient() ? PhysicalSide.CLIENT : PhysicalSide.DEDICATED_SERVER,
+			PhysicalLoader.FORGE
+		);
+		
 		this.modBus = modBus;
 		
 		modBus.register(this);
@@ -37,11 +42,6 @@ public class QuatlibNeoforge extends QuatlibMc {
 	
 	public final IEventBus modBus;
 	private final Map<Latch<? extends ItemLike>, DispenseItemBehavior> dispenseBehaviorsToRegister = new HashMap<>();
-	
-	@Override
-	protected PhysicalSide findSide() {
-		return FMLEnvironment.dist.isClient() ? PhysicalSide.CLIENT : PhysicalSide.DEDICATED_SERVER;
-	}
 	
 	@Override
 	public Reg<?> createReg(RegType<?> type) {

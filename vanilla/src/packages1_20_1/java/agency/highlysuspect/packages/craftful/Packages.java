@@ -43,14 +43,6 @@ public abstract class Packages extends PackagesBase {
 		return new ResourceLocation(MODID, path);
 	}
 	
-	public boolean isForge() {
-		return false;
-	}
-	
-	public boolean isFabric() {
-		return false;
-	}
-	
 	public abstract void registerActionPacketHandler();
 	
 	@Override

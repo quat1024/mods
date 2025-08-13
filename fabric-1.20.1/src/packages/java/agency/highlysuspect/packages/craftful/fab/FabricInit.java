@@ -20,11 +20,6 @@ public class FabricInit extends Packages implements AfterQuatlibInitializer {
 	}
 	
 	@Override
-	public boolean isFabric() {
-		return true;
-	}
-	
-	@Override
 	public void registerActionPacketHandler() {
 		ServerPlayNetworking.registerGlobalReceiver(ActionPacket.LONG_ID, (server, player, handler, buf, resp) -> ActionPacket.read(buf).handle(player));
 	}
@@ -46,5 +41,4 @@ public class FabricInit extends Packages implements AfterQuatlibInitializer {
 			LOG, Util.ioPool()
 		);
 	}
-	
 }

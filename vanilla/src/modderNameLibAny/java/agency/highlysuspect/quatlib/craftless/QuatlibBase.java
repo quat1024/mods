@@ -19,12 +19,12 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import java.util.Objects;
 
 public abstract class QuatlibBase {
-	public QuatlibBase() {
+	public QuatlibBase(PhysicalSide side, PhysicalLoader loader) {
 		INST = this;
-		
-		side = findSide();
-		watcher = makeSharedConfigFileWatcher();
-		rlBridge = makeResourceLocationBridge();
+		this.side = side;
+		this.loader = loader;
+		this.watcher = makeSharedConfigFileWatcher();
+		this.rlBridge = makeResourceLocationBridge();
 	}
 	
 	public static final String MODID = "modder_name_lib";
@@ -32,13 +32,14 @@ public abstract class QuatlibBase {
 	public static final LogFacade LOG = new Slf4jLogFacade(NAME);
 	
 	public final PhysicalSide side;
+	public final PhysicalLoader loader;
+	
 	public final FailureRoot failures = new FailureRoot(NAME).addListener(new FailureLogger(LOG));
 	public final SharedConfigFileWatcher watcher;
 	public final ResourceLocationBridge<ResourceLocation> rlBridge;
 	
 	protected abstract SharedConfigFileWatcher makeSharedConfigFileWatcher();
 	protected abstract ResourceLocationBridge<ResourceLocation> makeResourceLocationBridge();
-	protected abstract PhysicalSide findSide();
 	
 	public abstract Reg<?> createReg(RegType<?> type);
 	public abstract void registerDispenserBehavior(Latch<? extends ItemLike> item, DispenseItemBehavior behavior);

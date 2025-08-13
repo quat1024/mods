@@ -14,7 +14,7 @@ This monorepo contains the source for all of my *Season 2* mods. They can be ide
   * [Curseforge](https://www.curseforge.com/minecraft/mc-mods/crowmap), [Modrinth](https://modrinth.com/mod/crowmap) .
   * *Season 1* codebase: [quat1024/Crowmap](https://github.com/quat1024/Crowmap)
 * *Packages* (fabric/forge 1.20.1)
-  * 512 items is all you need. The underpowered storage mod.
+  * 512 items is all you need. The underpowered barrels mod.
   * [Curseforge](https://www.curseforge.com/minecraft/mc-mods/packages), [Modrinth](https://modrinth.com/mod/packages)
   * *Season 1* codebase: [quat1024/packages](https://github.com/quat1024/packages)
 
@@ -38,12 +38,12 @@ In the top-level `build.gradle`, the global version number is set based off the 
 
 ## status
 
-~~contains no actual content mods lol~~ Contains the world's most complicated implementation of "rebind narrator" and crowmap.
+~~contains no actual content mods lol~~ ~~Contains the world's most complicated implementation of "rebind narrator" and crowmap.~~ Contains packages too, and I'm starting to push in 
 
 Wishlist:
 
 * [Datagen system](https://notes.highlysuspect.agency/another-datagen.html)
-  * I have a sketch of this right now (using it in Packages)
+  * I have a sketch of the Gen system in quatlib right now, using it in Packages. Not actually using it for datagen yet.
 * Make moddernamelib less "special" throughout the ecosystem. E.g. i should be able to make a second quatlib for my mods on very old versions
 * Automated publishing
 
