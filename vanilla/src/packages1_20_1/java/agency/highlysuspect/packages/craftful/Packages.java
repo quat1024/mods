@@ -4,7 +4,7 @@ import agency.highlysuspect.packages.craftful.content.PackagesGen;
 import agency.highlysuspect.packages.craftful.junk.PDispenserBehaviors;
 import agency.highlysuspect.packages.craftful.junk.PTags;
 import agency.highlysuspect.packages.craftful.junk.SidedProxy;
-import agency.highlysuspect.packages.craftful.platform.MyMenuSupplier;
+import agency.highlysuspect.quatlib.craftless.util.MyMenuSupplier;
 import agency.highlysuspect.packages.craftless.PackagesBase;
 import agency.highlysuspect.quatlib.craftless.config.ConfigSection;
 import agency.highlysuspect.quatlib.craftless.facet.FacetBucket;
@@ -33,19 +33,12 @@ public abstract class Packages extends PackagesBase {
 		LOG.info("fgffffffffff");
 		RegFacet.handle(this, facets.removeFacets(RegFacet.class));
 		BlockEntityTypeFacet.handle(this, facets.removeFacets(BlockEntityTypeFacet.class));
-		//LangFacet.handle(new FileGenner.DebugGenner(LOG), facets.removeFacets(LangFacet.class));
 		LOG.info("fgffffffffff");
-		
-		//PBlocks.onInitialize();
-		//PBlockEntityTypes.onInitialize();
 		
 		PDispenserBehaviors.onInitialize();
 		PTags.onInitialize();
 		
-//		PMenuTypes.onInitialize();
 		registerActionPacketHandler();
-		
-//		PSoundEvents.onInitialize();
 	}
 	
 	public static ResourceLocation rl(String path) {

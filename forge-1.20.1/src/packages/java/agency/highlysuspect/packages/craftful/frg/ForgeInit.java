@@ -5,7 +5,7 @@ import agency.highlysuspect.packages.craftful.block.PackageBlockEntity;
 import agency.highlysuspect.packages.craftful.block.PackageMakerBlockEntity;
 import agency.highlysuspect.packages.craftful.net.ActionPacket;
 import agency.highlysuspect.quatlib.craftless.facet.Latch;
-import agency.highlysuspect.packages.craftful.platform.MyMenuSupplier;
+import agency.highlysuspect.quatlib.craftless.util.MyMenuSupplier;
 import agency.highlysuspect.packages.craftless.PackagesBase;
 import agency.highlysuspect.quatlib.craftful.frg.ForgeBackedConfig_V1;
 import agency.highlysuspect.quatlib.craftless.config.ConfigSection;

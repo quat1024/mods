@@ -5,6 +5,7 @@ import agency.highlysuspect.packages.craftful.client.PackageModelBakery;
 import agency.highlysuspect.packages.craftful.client.PackagesClient;
 import agency.highlysuspect.packages.craftful.client.PropsClient;
 import agency.highlysuspect.packages.craftful.junk.PUtil;
+import agency.highlysuspect.quatlib.craftless.util.QuatUtil;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
@@ -122,10 +123,10 @@ public class BakedQuadPackageModelBakery implements PackageModelBakery<List<Bake
 		}
 		
 		void remapQuad(BakedQuad in, TextureAtlasSprite specialSprite, TextureAtlasSprite newSprite) {
-			float remappedMinU = PUtil.rangeRemap(minU, specialSprite.getU0(), specialSprite.getU1(), newSprite.getU0(), newSprite.getU1());
-			float remappedMaxU = PUtil.rangeRemap(maxU, specialSprite.getU0(), specialSprite.getU1(), newSprite.getU0(), newSprite.getU1());
-			float remappedMinV = PUtil.rangeRemap(minV, specialSprite.getV0(), specialSprite.getV1(), newSprite.getV0(), newSprite.getV1());
-			float remappedMaxV = PUtil.rangeRemap(maxV, specialSprite.getV0(), specialSprite.getV1(), newSprite.getV0(), newSprite.getV1());
+			float remappedMinU = QuatUtil.rangeRemap(minU, specialSprite.getU0(), specialSprite.getU1(), newSprite.getU0(), newSprite.getU1());
+			float remappedMaxU = QuatUtil.rangeRemap(maxU, specialSprite.getU0(), specialSprite.getU1(), newSprite.getU0(), newSprite.getU1());
+			float remappedMinV = QuatUtil.rangeRemap(minV, specialSprite.getV0(), specialSprite.getV1(), newSprite.getV0(), newSprite.getV1());
+			float remappedMaxV = QuatUtil.rangeRemap(maxV, specialSprite.getV0(), specialSprite.getV1(), newSprite.getV0(), newSprite.getV1());
 			
 			for(int i = 0; i < 4; i++) {
 				setU(in, i, Mth.equal(getU(in, i), minU) ? remappedMinU : remappedMaxU);

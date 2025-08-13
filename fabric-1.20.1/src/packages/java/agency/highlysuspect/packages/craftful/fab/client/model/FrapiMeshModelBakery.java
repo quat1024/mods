@@ -4,6 +4,7 @@ import agency.highlysuspect.packages.craftful.block.PBlocks;
 import agency.highlysuspect.packages.craftful.client.PackageModelBakery;
 import agency.highlysuspect.packages.craftful.junk.PUtil;
 import agency.highlysuspect.packages.craftful.fab.compat.frex.FrexCompat;
+import agency.highlysuspect.quatlib.craftless.util.QuatUtil;
 import net.fabricmc.fabric.api.renderer.v1.Renderer;
 import net.fabricmc.fabric.api.renderer.v1.RendererAccess;
 import net.fabricmc.fabric.api.renderer.v1.mesh.Mesh;
@@ -125,10 +126,10 @@ public class FrapiMeshModelBakery implements PackageModelBakery<Mesh> {
 		}
 		
 		void normalizeEmitter(QuadEmitter emitter, TextureAtlasSprite sprite) {
-			float remappedMinU = PUtil.rangeRemap(minU, sprite.getU0(), sprite.getU1(), 0, 1);
-			float remappedMaxU = PUtil.rangeRemap(maxU, sprite.getU0(), sprite.getU1(), 0, 1);
-			float remappedMinV = PUtil.rangeRemap(minV, sprite.getV0(), sprite.getV1(), 0, 1);
-			float remappedMaxV = PUtil.rangeRemap(maxV, sprite.getV0(), sprite.getV1(), 0, 1);
+			float remappedMinU = QuatUtil.rangeRemap(minU, sprite.getU0(), sprite.getU1(), 0, 1);
+			float remappedMaxU = QuatUtil.rangeRemap(maxU, sprite.getU0(), sprite.getU1(), 0, 1);
+			float remappedMinV = QuatUtil.rangeRemap(minV, sprite.getV0(), sprite.getV1(), 0, 1);
+			float remappedMaxV = QuatUtil.rangeRemap(maxV, sprite.getV0(), sprite.getV1(), 0, 1);
 			
 			for(int i = 0; i < 4; i++) {
 				float writeU = Mth.equal(emitter.u(i), minU) ? remappedMinU : remappedMaxU;

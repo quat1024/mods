@@ -7,7 +7,7 @@ import agency.highlysuspect.packages.craftful.junk.PSoundEvents;
 import agency.highlysuspect.packages.craftful.junk.PTags;
 import agency.highlysuspect.packages.craftful.junk.PackageMakerStyle;
 import agency.highlysuspect.packages.craftful.menu.PackageMakerMenu;
-import agency.highlysuspect.packages.craftful.platform.SoftImplement;
+import agency.highlysuspect.quatlib.craftless.util.SoftImplement;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;

@@ -1,4 +1,4 @@
-package agency.highlysuspect.packages.craftful.platform;
+package agency.highlysuspect.quatlib.craftless.util;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

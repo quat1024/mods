@@ -3,7 +3,8 @@ package agency.highlysuspect.packages.craftful.client;
 import agency.highlysuspect.packages.craftful.block.PackageBlock;
 import agency.highlysuspect.packages.craftful.block.PackageBlockEntity;
 import agency.highlysuspect.packages.craftful.junk.PackageContainer;
-import agency.highlysuspect.packages.craftful.junk.TwelveDirection;
+import agency.highlysuspect.quatlib.craftless.client.MyBlockEntityRendererProvider;
+import agency.highlysuspect.quatlib.craftless.util.TwelveDirection;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
@@ -11,7 +12,6 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
-import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
@@ -26,7 +26,7 @@ import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 
 public class PackageRenderer implements BlockEntityRenderer<PackageBlockEntity> {
-	public PackageRenderer(BlockEntityRendererProvider.Context context) {
+	public PackageRenderer(MyBlockEntityRendererProvider.MyContext context) {
 		textRenderer = context.getFont();
 	}
 	

@@ -3,7 +3,7 @@ package agency.highlysuspect.packages.craftful.mixin.client;
 import agency.highlysuspect.packages.craftful.client.PackageRenderer;
 import agency.highlysuspect.packages.craftful.item.PItems;
 import agency.highlysuspect.packages.craftful.junk.PackageContainer;
-import agency.highlysuspect.packages.craftful.junk.TwelveDirection;
+import agency.highlysuspect.quatlib.craftless.util.TwelveDirection;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.ItemRenderer;

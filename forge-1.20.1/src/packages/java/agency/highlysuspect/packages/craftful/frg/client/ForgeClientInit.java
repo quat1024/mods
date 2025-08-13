@@ -7,7 +7,7 @@ import agency.highlysuspect.packages.craftful.frg.client.model.ForgePackageMaker
 import agency.highlysuspect.packages.craftful.frg.client.model.ForgePackageModel;
 import agency.highlysuspect.packages.craftful.frg.client.model.NoConfigGeometryLoader;
 import agency.highlysuspect.packages.craftful.net.ActionPacket;
-import agency.highlysuspect.packages.craftful.platform.client.MyScreenConstructor;
+import agency.highlysuspect.quatlib.craftless.client.MyScreenConstructor;
 import agency.highlysuspect.quatlib.craftful.frg.ForgeBackedConfig_V1;
 import agency.highlysuspect.quatlib.craftless.config.ConfigSection;
 import agency.highlysuspect.quatlib.craftless.config.WritableConfig;
@@ -130,23 +130,6 @@ public class ForgeClientInit extends PackagesClient {
 			e.register("forge_package_model_loader"      , new NoConfigGeometryLoader<>(ForgePackageModel::new));
 			e.register("forge_package_maker_model_loader", new NoConfigGeometryLoader<>(ForgePackageMakerModel::new));
 		});
-	}
-	
-	///
-	
-	@Override
-	public <T extends AbstractContainerMenu, U extends Screen & MenuAccess<T>> void registerMenuScreen(Latch<MenuType<T>> type, MyScreenConstructor<T, U> cons) {
-		menuScreensToRegister.add(new MenuScreenEntry<>(type, cons));
-	}
-	
-	@Override
-	public <T extends BlockEntity> void setBlockEntityRenderer(Latch<? extends BlockEntityType<T>> type, BlockEntityRendererProvider<? super T> renderer) {
-		blockEntityRenderersToRegister.add(new BlockEntityRendererEntry<>(type, renderer));
-	}
-	
-	@Override
-	public void setRenderType(Latch<? extends Block> block, RenderType type) {
-		renderTypesToRegister.put(block, type);
 	}
 	
 	@Override

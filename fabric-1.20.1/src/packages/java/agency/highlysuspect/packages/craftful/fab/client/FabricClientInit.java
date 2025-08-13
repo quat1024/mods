@@ -7,38 +7,24 @@ import agency.highlysuspect.packages.craftful.fab.client.model.FrapiMeshPackageM
 import agency.highlysuspect.packages.craftful.fab.client.model.FrapiMeshPackageModel;
 import agency.highlysuspect.packages.craftful.fab.compat.frex.FrexCompat;
 import agency.highlysuspect.packages.craftful.net.ActionPacket;
-import agency.highlysuspect.packages.craftful.platform.client.MyScreenConstructor;
 import agency.highlysuspect.packages.craftless.PackagesBase;
 import agency.highlysuspect.packages.craftless.client.PackagesBaseClient;
 import agency.highlysuspect.quatlib.craftless.config.ConfigSection;
 import agency.highlysuspect.quatlib.craftless.config.WritableConfig;
 import agency.highlysuspect.quatlib.craftless.config.hdc.HalfDecentConfigFile;
 import agency.highlysuspect.quatlib.craftless.fab.AfterQuatlibClientInitializer;
-import agency.highlysuspect.quatlib.craftless.facet.Latch;
 import agency.highlysuspect.quatlib.craftless.util.Season1CrummyConfigUpgrader;
 import io.netty.buffer.Unpooled;
-import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
 import net.fabricmc.fabric.api.client.model.ModelLoadingRegistry;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.Util;
-import net.minecraft.client.gui.screens.MenuScreens;
-import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.gui.screens.inventory.MenuAccess;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
-import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.client.resources.model.UnbakedModel;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityType;
 
 import java.nio.file.Path;
 
@@ -58,22 +44,6 @@ public class FabricClientInit extends PackagesClient implements AfterQuatlibClie
 		//How convenient wow, the apis just magically line up, Thats crazy
 		AttackBlockCallback.EVENT.register(PClientBlockEventHandlers::onHoldLeftClick);
 		UseBlockCallback.EVENT.register(PClientBlockEventHandlers::onRightClick);
-	}
-	
-	@Override
-	public <T extends AbstractContainerMenu, U extends Screen & MenuAccess<T>> void registerMenuScreen(Latch<MenuType<T>> type, MyScreenConstructor<T, U> cons) {
-		MenuScreens.register(type.get(), cons::create);
-	}
-	
-	@Override
-	public <T extends BlockEntity> void setBlockEntityRenderer(Latch<? extends BlockEntityType<T>> type, BlockEntityRendererProvider<? super T> renderer) {
-		//BlockEntityRendererRegistry.register(type.get(), renderer); //frapi deprecated
-		BlockEntityRenderers.register(type.get(), renderer); //fabric-transitive-access-wideners
-	}
-	
-	@Override
-	public void setRenderType(Latch<? extends Block> block, RenderType type) {
-		BlockRenderLayerMap.INSTANCE.putBlock(block.get(), type);
 	}
 	
 	//models

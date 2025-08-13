@@ -19,7 +19,7 @@
 			"agency.highlysuspect.quatlib.craftful.fab.QuatlibFabric"
 		],
 		"client": [
-			"agency.highlysuspect.quatlib.craftful.fab.QuatlibFabricClient"
+			"agency.highlysuspect.quatlib.craftful.fab.client.QuatlibClientFabric"
 		]
 	},
 	"depends": {

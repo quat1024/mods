@@ -6,20 +6,11 @@ import agency.highlysuspect.packages.craftful.block.PBlocks;
 import agency.highlysuspect.packages.craftful.menu.PMenuTypes;
 import agency.highlysuspect.packages.craftful.net.ActionPacket;
 import agency.highlysuspect.packages.craftful.net.PackageAction;
-import agency.highlysuspect.packages.craftful.platform.client.MyScreenConstructor;
 import agency.highlysuspect.packages.craftless.client.PackagesBaseClient;
+import agency.highlysuspect.quatlib.craftless.client.QuatlibClientBase;
 import agency.highlysuspect.quatlib.craftless.config.ConfigSection;
 import agency.highlysuspect.quatlib.craftless.config.ReadableConfig;
-import agency.highlysuspect.quatlib.craftless.facet.Latch;
-import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.gui.screens.inventory.MenuAccess;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
-import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityType;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -38,12 +29,13 @@ public abstract class PackagesClient extends PackagesBaseClient {
 		
 		Packages.inst().proxy = new ClientProxy();
 		
+		//TODO: Facet system for these too.
+		
 		setupCustomModelLoaders();
 		
-		registerMenuScreen(PMenuTypes.PACKAGE_MAKER, PackageMakerScreen::new);
-		
-		setBlockEntityRenderer(PBlockEntityTypes.PACKAGE, PackageRenderer::new);
-		setRenderType(PBlocks.PACKAGE_MAKER, RenderType.cutoutMipped());
+		QuatlibClientBase.inst().registerMenuScreen(PMenuTypes.PACKAGE_MAKER, PackageMakerScreen::new);
+		QuatlibClientBase.inst().setBlockEntityRenderer(PBlockEntityTypes.PACKAGE, PackageRenderer::new);
+		QuatlibClientBase.inst().setRenderType(PBlocks.PACKAGE_MAKER, RenderType.cutoutMipped());
 	}
 	
 	public void onConfigReload(ReadableConfig config) {
@@ -61,9 +53,6 @@ public abstract class PackagesClient extends PackagesBaseClient {
 		Collections.sort(sortedBindings);
 	}
 	
-	public abstract <T extends AbstractContainerMenu, U extends Screen & MenuAccess<T>> void registerMenuScreen(Latch<MenuType<T>> type, MyScreenConstructor<T, U> cons);
-	public abstract <T extends BlockEntity> void setBlockEntityRenderer(Latch<? extends BlockEntityType<T>> type, BlockEntityRendererProvider<? super T> renderer);
-	public abstract void setRenderType(Latch<? extends Block> block, RenderType type);
 	public abstract void setupCustomModelLoaders();
 	public abstract void sendActionPacket(ActionPacket packet);
 	

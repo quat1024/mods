@@ -3,9 +3,9 @@ package agency.highlysuspect.packages.craftful.block;
 import agency.highlysuspect.packages.craftful.Packages;
 import agency.highlysuspect.packages.craftful.PropsCommon;
 import agency.highlysuspect.packages.craftful.item.PackageItem;
-import agency.highlysuspect.packages.craftful.junk.PUtil;
 import agency.highlysuspect.packages.craftful.junk.PackageContainer;
-import agency.highlysuspect.packages.craftful.junk.TwelveDirection;
+import agency.highlysuspect.quatlib.craftless.util.QuatUtil;
+import agency.highlysuspect.quatlib.craftless.util.TwelveDirection;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
@@ -133,9 +133,9 @@ public class PackageBlock extends Block implements EntityBlock {
 				case NORTH -> maxZ = minZ;
 				case SOUTH -> minZ = maxZ;
 			}
-			float x = PUtil.rangeRemap(rand.nextFloat(), 0, 1, minX, maxX);
-			float y = PUtil.rangeRemap(rand.nextFloat(), 0, 1, minY, maxY);
-			float z = PUtil.rangeRemap(rand.nextFloat(), 0, 1, minZ, maxZ);
+			float x = QuatUtil.rangeRemap(rand.nextFloat(), 0, 1, minX, maxX);
+			float y = QuatUtil.rangeRemap(rand.nextFloat(), 0, 1, minY, maxY);
+			float z = QuatUtil.rangeRemap(rand.nextFloat(), 0, 1, minZ, maxZ);
 			level.addParticle(ParticleTypes.FALLING_HONEY, x, y, z, 0, 0, 0);
 		}
 	}

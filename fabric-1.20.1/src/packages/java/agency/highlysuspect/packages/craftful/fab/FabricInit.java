@@ -3,7 +3,7 @@ package agency.highlysuspect.packages.craftful.fab;
 import agency.highlysuspect.packages.craftful.Packages;
 import agency.highlysuspect.packages.craftful.net.ActionPacket;
 import agency.highlysuspect.quatlib.craftless.facet.Latch;
-import agency.highlysuspect.packages.craftful.platform.MyMenuSupplier;
+import agency.highlysuspect.quatlib.craftless.util.MyMenuSupplier;
 import agency.highlysuspect.quatlib.craftless.config.ConfigSection;
 import agency.highlysuspect.quatlib.craftless.config.WritableConfig;
 import agency.highlysuspect.quatlib.craftless.config.hdc.HalfDecentConfigFile;

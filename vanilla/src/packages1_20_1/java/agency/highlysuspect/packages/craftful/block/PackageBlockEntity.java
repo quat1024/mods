@@ -6,7 +6,7 @@ import agency.highlysuspect.packages.craftful.junk.PTags;
 import agency.highlysuspect.packages.craftful.junk.PackageContainer;
 import agency.highlysuspect.packages.craftful.junk.PackageStyle;
 import agency.highlysuspect.packages.craftful.net.PackageAction;
-import agency.highlysuspect.packages.craftful.platform.SoftImplement;
+import agency.highlysuspect.quatlib.craftless.util.SoftImplement;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.ints.IntList;

@@ -1,4 +1,4 @@
-package agency.highlysuspect.packages.craftful.junk;
+package agency.highlysuspect.quatlib.craftless.util;
 
 import net.minecraft.core.Direction;
 import net.minecraft.util.StringRepresentable;
@@ -7,7 +7,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Locale;
 
-//Cut and paste this from Carved Melons without looking too closely at it lmao
 public enum TwelveDirection implements StringRepresentable {
 	UP_NORTH(Direction.UP, Direction.NORTH),
 	UP_SOUTH(Direction.UP, Direction.SOUTH),
