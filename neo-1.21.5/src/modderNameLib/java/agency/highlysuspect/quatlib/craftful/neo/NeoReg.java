@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 public class NeoReg<T> extends Reg<T> {
+	@SuppressWarnings("unchecked")
 	public NeoReg(ResourceKey<?> key) {
 		this.key = (ResourceKey<? extends Registry<T>>) key;
 	}

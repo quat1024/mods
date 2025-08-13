@@ -2,6 +2,7 @@ import java.time.*
 
 LocalDateTime now = LocalDateTime.ofInstant(Instant.now(), ZoneId.of("-05:00")) // Imagine living in Oh*o?
 String ver = "${now.year}.${now.monthValue}.${now.dayOfMonth}${versionDisambig}"
+logger.lifecycle("The current version is: {}", ver);
 allprojects {
 	it.version = ver
 }

@@ -81,7 +81,7 @@ public class QuatlibForge extends QuatlibMc {
 	}
 	
 	@SubscribeEvent
-	private void actuallyRegisterDispenserBehaviors(FMLCommonSetupEvent e) {
+	void actuallyRegisterDispenserBehaviors(FMLCommonSetupEvent e) {
 		e.enqueueWork(() -> {
 			dispenseBehaviorsToRegister.forEach((handle, behavior) -> DispenserBlock.registerBehavior(handle.get(), behavior));
 			dispenseBehaviorsToRegister.clear();
