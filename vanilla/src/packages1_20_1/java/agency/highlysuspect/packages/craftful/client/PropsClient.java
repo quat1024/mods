@@ -52,6 +52,13 @@ public class PropsClient {
 		"on your modloader. If you need to reset this to 'false', I'd be interested in hearing what mods you're using."
 	);
 	
+	public static final ConfigOpt<Boolean> STICKY_PACKAGE_PARTICLES = new ConfigOpt.BoolOpt(
+		"stickyPackageParticles", false,
+		"Old versions of Packages used honey block particles to denote sticky packages.",
+		"I removed this but you can bring it back by setting this to 'true'. Note that they create",
+		"sounds and are supremely annoying."
+	);
+	
 	public static ConfigSection visit(ConfigSection schema) {
 		schema.subsection("Keys",
 			"How do you want to interact with packages in the world?",
@@ -68,6 +75,8 @@ public class PropsClient {
 		if(QuatlibBase.inst().loader.isForgeish()) {
 			schema.getSectionByName("Model").add(FORGE_SWAP_RED_AND_BLUE);
 		}
+		
+		schema.subsection("Silliness").add(STICKY_PACKAGE_PARTICLES);
 		
 		return schema;
 	}

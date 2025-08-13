@@ -25,6 +25,11 @@ public class ClientProxy extends SidedProxy {
 	}
 	
 	@Override
+	public boolean stickyPackageParticles() {
+		return PackagesClient.inst().config.get(PropsClient.STICKY_PACKAGE_PARTICLES);
+	}
+	
+	@Override
 	public boolean useRedBarWhenFull() {
 		return PackagesClient.inst().config.get(PropsClient.RED_BAR_WHEN_FULL);
 	}

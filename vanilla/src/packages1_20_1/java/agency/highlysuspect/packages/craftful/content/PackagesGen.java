@@ -18,6 +18,7 @@ public class PackagesGen implements PGen {
 	public void gen(Ctx ctx, Consumer<Gen> more) {
 		more.accept(new PackageGen());
 		more.accept(new PackageMakerGen());
+		more.accept(new StickySyrupGen());
 		
 		ctx.reg(Latch.open(RegType.CREATIVE_TABS, new Id(Packages.MODID, "group")), () ->
 			QuatlibMc.inst().makeCreativeModeTabBuilder()
@@ -32,6 +33,7 @@ public class PackagesGen implements PGen {
 				})
 				.displayItems((params, out) -> {
 					out.accept(PLatches.Items.PACKAGE_MAKER.get());
+					out.accept(PLatches.Items.STICKY_SYRUP.get());
 					PLatches.Blocks.PACKAGE.get().lotsOfPackages().forEach(out::accept);
 				})
 				.build()

@@ -5,9 +5,9 @@ import agency.highlysuspect.packages.craftful.block.PackageBlock;
 import agency.highlysuspect.packages.craftful.block.PackageBlockEntity;
 import agency.highlysuspect.packages.craftful.block.PackageMakerBlock;
 import agency.highlysuspect.packages.craftful.block.PackageMakerBlockEntity;
+import agency.highlysuspect.packages.craftful.item.StickySyrupItem;
 import agency.highlysuspect.packages.craftful.item.PackageItem;
 import agency.highlysuspect.packages.craftful.menu.PackageMakerMenu;
-import agency.highlysuspect.quatlib.craftless.facet.Id;
 import agency.highlysuspect.quatlib.craftless.facet.Latch;
 import agency.highlysuspect.quatlib.craftless.facet.RegType;
 import net.minecraft.sounds.SoundEvent;
@@ -17,13 +17,14 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 
 public class PLatches {
 	public static class Blocks {
-		public static Latch<PackageBlock> PACKAGE = Latch.open(RegType.BLOCKS, new Id(Packages.MODID, "package"));
-		public static Latch<PackageMakerBlock> PACKAGE_MAKER = Latch.open(RegType.BLOCKS, new Id(Packages.MODID, "package_maker"));
+		public static Latch<PackageBlock> PACKAGE = Latch.open(RegType.BLOCKS, Packages.id("package"));
+		public static Latch<PackageMakerBlock> PACKAGE_MAKER = Latch.open(RegType.BLOCKS, Packages.id("package_maker"));
 	}
 	
 	public static class Items {
 		public static Latch<PackageItem> PACKAGE = Latch.open(RegType.ITEMS, Blocks.PACKAGE.id);
 		public static Latch<BlockItem> PACKAGE_MAKER = Latch.open(RegType.ITEMS, Blocks.PACKAGE_MAKER.id);
+		public static Latch<StickySyrupItem> STICKY_SYRUP = Latch.open(RegType.ITEMS, Packages.id("sticky_syrup"));
 	}
 	
 	public static class BlockEntityTypes {

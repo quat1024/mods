@@ -16,6 +16,10 @@ public class SidedProxy {
 		return true;
 	}
 	
+	public boolean stickyPackageParticles() {
+		return false;
+	}
+	
 	public boolean useRedBarWhenFull() {
 		return true;
 	}

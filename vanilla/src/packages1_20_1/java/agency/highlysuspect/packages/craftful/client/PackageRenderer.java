@@ -14,6 +14,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.Direction;
+import net.minecraft.locale.Language;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemDisplayContext;
@@ -80,7 +81,9 @@ public class PackageRenderer implements BlockEntityRenderer<PackageBlockEntity> 
 			detailLevel++;
 		}
 		
-		if(detailLevel > 0) drawText(matrices, vertexConsumers, light, container, detailLevel, Math.sqrt(distanceSq));
+		detailLevel = 2;
+		boolean sticky = blockEntity.canBeSticky();
+		if(detailLevel > 0) drawText(matrices, vertexConsumers, light, container, sticky, detailLevel, Math.sqrt(distanceSq));
 		
 		matrices.popPose();
 	}
@@ -150,7 +153,7 @@ public class PackageRenderer implements BlockEntityRenderer<PackageBlockEntity> 
 		}
 	}
 	
-	private void drawText(PoseStack matrices, MultiBufferSource vertexConsumers, int light, PackageContainer container, int detailLevel, double distance) {
+	private void drawText(PoseStack matrices, MultiBufferSource vertexConsumers, int light, PackageContainer container, boolean sticky, int detailLevel, double distance) {
 		if(Minecraft.getInstance().gameMode == null) return;
 		
 		int count = container.getCount();
@@ -167,8 +170,9 @@ public class PackageRenderer implements BlockEntityRenderer<PackageBlockEntity> 
 		} else text = String.valueOf(count);
 		
 		int color = (container.isFull() ? 0x00FF6600 : 0x00FFFFFF) | (distance - 0.5 >= Minecraft.getInstance().gameMode.getPickRange() ? 0x55000000 : 0xFF000000);
-		int shadowColor = (color & 0xFCFCFC) >> 2; //I um, okay, so, this is kind of a weird color algorithm. Wrote this like 2yrs ago lmao
+		int shadowColor = (color & 0xFCFCFC) >> 2; //Yoined from the default shadow rendering code apparently (thanks una)
 		
+		//deeply magical numbers
 		float scale;
 		if(detailLevel == 2 && max == 1) scale = 1/30f;
 		else if(detailLevel == 2) scale = 1/70f;
@@ -178,10 +182,30 @@ public class PackageRenderer implements BlockEntityRenderer<PackageBlockEntity> 
 		
 		matrices.pushPose();
 		
-		matrices.translate(6 / 16d + 0.05, 0, 0);
+		matrices.translate(6 / 16d + 0.05, 0, 0); //against the inner face of the package?
+		
+		if(detailLevel == 2 && sticky) {
+			String s = Language.getInstance().getOrDefault("packages.sticky");
+			matrices.pushPose();
+			//This probably made sense at some point
+			matrices.scale(-1, -1/100f, 1/100f);
+			matrices.translate(0, 25, 0);
+			matrices.mulPose(YP_90);
+			
+			int c = 0xF1CE96;
+			int cShadow = (c & 0xFCFCFC) >> 2;
+			
+			int minusHalfWidth = -textRenderer.width(s) / 2;
+			textRenderer.drawInBatch(s, minusHalfWidth + 1, 1, cShadow, false, matrices.last().pose(), vertexConsumers, Font.DisplayMode.NORMAL, 0, light);
+			matrices.translate(0, 0, -0.001);
+			textRenderer.drawInBatch(s, minusHalfWidth    , 0, c      , false, matrices.last().pose(), vertexConsumers, Font.DisplayMode.NORMAL, 0, light);
+			
+			matrices.popPose();
+		}
+		
 		matrices.scale(-1, -scale, scale);
-		matrices.translate(0, -4, 0);
-		matrices.mulPose(YP_90);
+		matrices.translate(0, -4, 0); //font height bias (centers text vertically)
+		matrices.mulPose(YP_90); //if this isn't here text gets spaghettified
 		
 		int minusHalfWidth = -textRenderer.width(text) / 2;
 		textRenderer.drawInBatch(text, minusHalfWidth + 1, 1, shadowColor, false, matrices.last().pose(), vertexConsumers, Font.DisplayMode.NORMAL, 0, light); //Background

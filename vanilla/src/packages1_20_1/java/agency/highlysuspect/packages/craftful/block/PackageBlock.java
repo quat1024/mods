@@ -117,6 +117,8 @@ public class PackageBlock extends Block implements EntityBlock {
 	
 	@Override
 	public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource rand) {
+		if(!Packages.inst().proxy.stickyPackageParticles()) return;
+		
 		Direction primaryFacing = state.getValue(FACING).primaryDirection;
 		if(rand.nextInt(primaryFacing == Direction.UP ? 15 : 5) == 0 && level.getBlockEntity(pos) instanceof PackageBlockEntity pkg && pkg.isSticky()) {
 			float minX = pos.getX() - 0.003f;

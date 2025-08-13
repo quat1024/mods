@@ -59,6 +59,9 @@ public class PackageBlockEntity extends BlockEntity implements Container, Nameab
 	//I don't think it protects against crushing the package with a piston...
 	private boolean mapmakerLockedTag;
 	
+	//Whether the sticky syrup was used on this package
+	private boolean syrupy;
+	
 	public PackageStyle getStyle() {
 		return style;
 	}
@@ -73,8 +76,12 @@ public class PackageBlockEntity extends BlockEntity implements Container, Nameab
 	
 	//Stickiness
 	public boolean canBeSticky() {
-		if(level == null) return false;
+		//If the sticky syrup was used, the package can be sticky
+		if(syrupy) return true;
 		
+		//Otherwise the package can be sticky if it's next to a sticky block
+		//(iff the in-world sticky packages option is enabled)
+		if(level == null || Packages.inst().config.get(PropsCommon.IN_WORLD_STICKY_PACKAGES)) return false;
 		for(Direction dir : Direction.values()) {
 			if(level.getBlockState(getBlockPos().relative(dir)).is(PTags.STICKY)) return true;
 		}
@@ -119,6 +126,19 @@ public class PackageBlockEntity extends BlockEntity implements Container, Nameab
 			player.displayClientMessage(Component.translatable("container.isLocked", getDisplayName()), true);
 			player.playNotifySound(SoundEvents.CHEST_LOCKED, SoundSource.BLOCKS, 1f, 1f);
 			return true; //consume the click anyway
+		}
+		
+		ItemStack held = player.getItemInHand(hand);
+		if(player.isShiftKeyDown() && held.is(PLatches.Items.STICKY_SYRUP.get())) {
+			syrupy ^= true;
+			if(syrupy) {
+				if(level != null) level.playSound(null, getBlockPos(), SoundEvents.HONEY_BLOCK_STEP, SoundSource.BLOCKS, 1f, 1f);
+				held.hurtAndBreak(1, player, p -> p.broadcastBreakEvent(hand));
+			} else {
+				if(level != null) level.playSound(null, getBlockPos(), SoundEvents.HONEY_BLOCK_BREAK, SoundSource.BLOCKS, 1f, 1f);
+			}
+			setChanged();
+			return true;
 		}
 		
 		boolean didAnything;
@@ -396,6 +416,7 @@ public class PackageBlockEntity extends BlockEntity implements Container, Nameab
 		if(customName != null) tag.putString("CustomName", Component.Serializer.toJson(customName));
 		
 		tag.put("StickyStack", stickyStack.save(new CompoundTag()));
+		tag.putBoolean("Syrupy", syrupy);
 		
 		//This is called bcLocked since it was originally developed for blanketcon
 		//Just gonna keep the nbt name because why not
@@ -414,6 +435,7 @@ public class PackageBlockEntity extends BlockEntity implements Container, Nameab
 		else customName = null;
 		
 		stickyStack = ItemStack.of(tag.getCompound("StickyStack"));
+		syrupy = tag.getBoolean("Syrupy"); //defaults to false if nonexistent
 		
 		mapmakerLockedTag = tag.contains("bcLocked") && tag.getBoolean("bcLocked");
 	}

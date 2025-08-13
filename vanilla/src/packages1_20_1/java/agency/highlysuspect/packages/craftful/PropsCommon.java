@@ -22,6 +22,13 @@ public class PropsCommon {
 		"lang keys to describe the behavior you create. See this very mod's en_us.json for some documentation on this."
 	);
 	
+	public static final ConfigOpt<Boolean> IN_WORLD_STICKY_PACKAGES = new ConfigOpt.BoolOpt(
+		"inWorldStickyPackages", false,
+		"If 'true', Packages will be considered sticky if they're placed next to a sticky block.",
+		"Sticky blocks are defined by the `packages:sticky` block tag, which defaults to slime and honey blocks.",
+		"(This was the default behavior before the Sticky Syrup item was added in the Season 2 update.)"
+	);
+	
 	public static final ConfigOpt<Boolean> DROP_EMPTY_PACKAGES_IN_CREATIVE = new ConfigOpt.BoolOpt(
 		"dropEmptyPackagesInCreative", true,
 		"In Creative mode, when you break a Package, it will always drop as an item on the floor - even if it's empty.",
@@ -30,7 +37,7 @@ public class PropsCommon {
 	);
 	
 	public static ConfigSection visit(ConfigSection schema) {
-		schema.subsection("Features").add(INVENTORY_INTERACTIONS, INTERACTION_SOUNDS, PACKAGE_MAKER_ALLOW_LIST_MODE);
+		schema.subsection("Features").add(INVENTORY_INTERACTIONS, INTERACTION_SOUNDS, PACKAGE_MAKER_ALLOW_LIST_MODE, IN_WORLD_STICKY_PACKAGES);
 		schema.subsection("Pedantry").add(DROP_EMPTY_PACKAGES_IN_CREATIVE);
 		return schema;
 	}
