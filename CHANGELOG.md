@@ -23,4 +23,10 @@ This isn't strictly needed on Neoforge, because you've always been able to confi
 
 ## Packages
 
+* New item: *Sticky Syrup*. Apply it to a package to make it *sticky*. Sticky packages remember their item even when they are empty.
+  * This replaces the old system of packages becoming sticky when they are next to a slime/honey block. Not many people knew about it!
+  * The old system is available behind a config option.
+* Tweak interactions with regard to sticky packages. (For example, you can insert items into an empty, sticky package, even if they aren't items from your hand.)
+* Remove the annoying honey particles from sticky packages. Sticky packages now can be distinguied by "sticky" text that appears when shifting.
+  * It is behind a client config option, if you want them back for some reason...
 * Slightly less willing to be placed vertically (you have to look up/down a bit farther)

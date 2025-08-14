@@ -121,42 +121,60 @@ public class PackageBlockEntity extends BlockEntity implements Container, Nameab
 	}
 	
 	//<editor-fold desc="Interactions">
-	public boolean performAction(Player player, InteractionHand hand, PackageAction action, boolean simulate) {
+	public boolean performAction(Player player, InteractionHand hand, PackageAction action, boolean clientsideSimulate) {
 		if(mapmakerLockedTag) {
 			player.displayClientMessage(Component.translatable("container.isLocked", getDisplayName()), true);
 			player.playNotifySound(SoundEvents.CHEST_LOCKED, SoundSource.BLOCKS, 1f, 1f);
 			return true; //consume the click anyway
 		}
 		
+		boolean didAnything = false;
+		SoundEvent soundToPlay = null;
+		float volumeToPlay = 1f;
+		float pitchToPlay = 1f;
+		
+		//Holding shift and using the sticky syrup.
 		ItemStack held = player.getItemInHand(hand);
 		if(player.isShiftKeyDown() && held.is(PLatches.Items.STICKY_SYRUP.get())) {
 			syrupy ^= true;
 			if(syrupy) {
-				if(level != null) level.playSound(null, getBlockPos(), SoundEvents.HONEY_BLOCK_STEP, SoundSource.BLOCKS, 1f, 1f);
+				soundToPlay = PLatches.SoundEvents.STICKY_SYRUP_APPLY.get();
 				held.hurtAndBreak(1, player, p -> p.broadcastBreakEvent(hand));
 			} else {
-				if(level != null) level.playSound(null, getBlockPos(), SoundEvents.HONEY_BLOCK_BREAK, SoundSource.BLOCKS, 1f, 1f);
+				soundToPlay = PLatches.SoundEvents.STICKY_SYRUP_CLEAR.get();
+				if(level != null)
+					level.playSound(null, getBlockPos(), PLatches.SoundEvents.STICKY_SYRUP_CLEAR.get(), SoundSource.BLOCKS, 1f, 1f);
 			}
-			setChanged();
-			return true;
-		}
-		
-		boolean didAnything;
-		if(action.isInsert()) didAnything = playerInsert(player, hand, action, simulate);
-		else {
-			didAnything = playerTakeDropLeftovers(player, hand, action, simulate);
-			//If no real items were taken, try clearing the sticky stack
-			if(!didAnything && !stickyStack.isEmpty()) {
-				didAnything = true;
+			didAnything = true;
+		} else if(action.isInsert()) {
+			didAnything = playerInsert(player, hand, action, clientsideSimulate);
+			if(didAnything) {
+				soundToPlay = action.getSoundEvent();
+				volumeToPlay = action.getSoundVolume();
+				pitchToPlay = action.getSoundPitch(level);
+			}
+		} else {
+			didAnything = playerTakeDropLeftovers(player, hand, action, clientsideSimulate);
+			if(didAnything) {
+				soundToPlay = action.getSoundEvent();
+				volumeToPlay = action.getSoundVolume();
+				pitchToPlay = action.getSoundPitch(level);
+			} else if(!stickyStack.isEmpty()) {
+				//If no real items were taken, try clearing the sticky stack
 				stickyStack = ItemStack.EMPTY;
+				didAnything = true;
+				soundToPlay = PLatches.SoundEvents.STICKY_SYRUP_CLEAR.get();
 			}
 		}
 		
 		updateStickyStack0();
 		
-		if(didAnything && level != null && Packages.inst().config.get(PropsCommon.INTERACTION_SOUNDS) && !player.hasEffect(MobEffects.INVISIBILITY)) { //hehe
-			SoundEvent event = action.getSoundEvent();
-			if(event != null) level.playSound(null, getBlockPos(), event, SoundSource.BLOCKS, action.getSoundVolume(), action.getSoundPitch(level));
+		if(!clientsideSimulate && didAnything) {
+			setChanged();
+		}
+		
+		if(level != null && soundToPlay != null && Packages.inst().config.get(PropsCommon.INTERACTION_SOUNDS) && !player.hasEffect(MobEffects.INVISIBILITY)) { //hehe
+			level.playSound(player, getBlockPos(), soundToPlay, SoundSource.BLOCKS, volumeToPlay, pitchToPlay);
 		}
 		
 		return didAnything;
@@ -171,8 +189,8 @@ public class PackageBlockEntity extends BlockEntity implements Container, Nameab
 	 * @return "true" if any items changed.
 	 */
 	private boolean playerInsert(Player player, InteractionHand hand, PackageAction action, boolean simulate) {
-		int handSlot = handToSlotId(player, hand);
 		if(!action.isInsert()) throw new IllegalArgumentException("playerInsert only supports insertion actions, not " + action);
+		int handSlot = handToSlotId(player, hand);
 		
 		if(action == PackageAction.INSERT_ALL) {
 			//Insert the stack of items that the player is holding, followed by stacks from the rest of the player's inventory.
@@ -189,11 +207,11 @@ public class PackageBlockEntity extends BlockEntity implements Container, Nameab
 		}
 		
 		int x = action == PackageAction.INSERT_ONE ? 1 : Integer.MAX_VALUE;
-		if(container.isEmpty()) {
+		if(stickyStack.isEmpty() && container.isEmpty()) {
 			//Only insert items from the player's hand slot, to avoid surprises.
 			return insert0(player, handSlot, x, simulate) > 0;
 		} else {
-			//Start with the player's hand slot, but iterate through the rest of the inventory, to look for more similar items.
+			//Start with the player's hand slot, but iterate through the rest of the inventory to look for more similar items.
 			IntIterator iterator = handSlotFirst(player, handSlot).intIterator();
 			while(iterator.hasNext()) {
 				int inserted = insert0(player, iterator.nextInt(), x, simulate);
@@ -206,8 +224,19 @@ public class PackageBlockEntity extends BlockEntity implements Container, Nameab
 	//Inserts items from the player's slot into the package, then places any leftovers back into the slot.
 	private int insert0(Player player, int slot, int maxAmountToInsert, boolean simulate) {
 		ItemStack toInsert = player.getInventory().getItem(slot).copy();
-		ItemStack leftover = container.insert(toInsert, maxAmountToInsert, simulate);
-		if(!simulate) player.getInventory().setItem(slot, leftover);
+		
+		//TODO(season2) Giant hack. Basically if the stickystack is set, prevent inserting nonmatching items into
+		// the package even if the package is empty. Aka, what a "sticky" feature is supposed to do...
+		// The corresponding code for automated interactions lives in canPlaceItem.
+		// (This code should really live inside PackageContainer#matches tbqh)
+		boolean respectsSticky = stickyStack.isEmpty() || ItemStack.isSameItemSameTags(stickyStack, toInsert);
+		ItemStack leftover;
+		if(respectsSticky) {
+			leftover = container.insert(toInsert, maxAmountToInsert, simulate);
+			if(!simulate) player.getInventory().setItem(slot, leftover);
+		} else {
+			leftover = toInsert.copy(); //none of them fit
+		}
 		return toInsert.getCount() - (leftover.isEmpty() ? 0 : leftover.getCount());
 	}
 	

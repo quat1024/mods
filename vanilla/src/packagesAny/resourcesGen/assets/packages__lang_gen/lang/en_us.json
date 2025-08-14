@@ -7,6 +7,8 @@
   "packages.subtitle.insert_one": "Item inserted",
   "packages.subtitle.insert_stack": "Items inserted",
   "packages.subtitle.package_maker_craft": "Package Crafter used",
+  "packages.subtitle.sticky_syrup_apply": "Sticky Syrup applied",
+  "packages.subtitle.sticky_syrup_clear": "Sticky Syrup wiped off",
   "packages.subtitle.take_all": "Many items taken",
   "packages.subtitle.take_one": "Item taken",
   "packages.subtitle.take_stack": "Items taken"

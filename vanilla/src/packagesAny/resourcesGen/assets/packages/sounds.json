@@ -70,5 +70,23 @@
       }
     ],
     "subtitle": "packages.subtitle.package_maker_craft"
+  },
+  "sticky_syrup_apply": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "block.honey_block.step"
+      }
+    ],
+    "subtitle": "packages.subtitle.sticky_syrup_apply"
+  },
+  "sticky_syrup_clear": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "block.honey_block.break"
+      }
+    ],
+    "subtitle": "packages.subtitle.sticky_syrup_clear"
   }
 }

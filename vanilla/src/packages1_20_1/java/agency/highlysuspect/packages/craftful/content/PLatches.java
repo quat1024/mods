@@ -38,11 +38,15 @@ public class PLatches {
 	
 	public static class SoundEvents {
 		public static Latch<SoundEvent> PACKAGE_MAKER_CRAFT = RegType.SOUND_EVENTS.latch(Packages.id("package_maker_craft"));
+		
 		public static Latch<SoundEvent> INSERT_ONE = RegType.SOUND_EVENTS.latch(Packages.id("insert_one"));
 		public static Latch<SoundEvent> TAKE_ONE = RegType.SOUND_EVENTS.latch(Packages.id("take_one"));
 		public static Latch<SoundEvent> INSERT_STACK = RegType.SOUND_EVENTS.latch(Packages.id("insert_stack"));
 		public static Latch<SoundEvent> TAKE_STACK = RegType.SOUND_EVENTS.latch(Packages.id("take_stack"));
 		public static Latch<SoundEvent> INSERT_ALL = RegType.SOUND_EVENTS.latch(Packages.id("insert_all"));
 		public static Latch<SoundEvent> TAKE_ALL = RegType.SOUND_EVENTS.latch(Packages.id("take_all"));
+		
+		public static Latch<SoundEvent> STICKY_SYRUP_APPLY = RegType.SOUND_EVENTS.latch(Packages.id("sticky_syrup_apply"));
+		public static Latch<SoundEvent> STICKY_SYRUP_CLEAR = RegType.SOUND_EVENTS.latch(Packages.id("sticky_syrup_clear"));
 	}
 }
