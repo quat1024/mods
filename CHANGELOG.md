@@ -31,3 +31,4 @@ This isn't strictly needed on Neoforge, because you've always been able to confi
   * It is behind a client config option, if you want them back for some reason...
 * Stickiness might actually work on Forge!!!!! (lmao) it wasn't being enforced through the `IItemHandler`. Probably needs more testing
 * Slightly less willing to be placed vertically (you have to look up/down a bit farther)
+* Migrate off deprecated `fabric-api` module for registering custom models
