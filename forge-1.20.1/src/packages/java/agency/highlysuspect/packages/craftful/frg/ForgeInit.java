@@ -90,7 +90,7 @@ public class ForgeInit extends Packages {
 			e.addCapability(Packages.rl("a"), new ICapabilityProvider() {
 				@Override
 				public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
-					return ForgeCapabilities.ITEM_HANDLER.orEmpty(cap, LazyOptional.of(() -> new PackageItemHandler(pkg.getContainer())).cast());
+					return ForgeCapabilities.ITEM_HANDLER.orEmpty(cap, LazyOptional.of(() -> new PackageItemHandler(pkg)).cast());
 				}
 			});
 		} else if(e.getObject() instanceof PackageMakerBlockEntity pmbe) {

@@ -29,4 +29,5 @@ This isn't strictly needed on Neoforge, because you've always been able to confi
 * Tweak interactions with regard to sticky packages. (For example, you can insert items into an empty, sticky package, even if they aren't items from your hand.)
 * Remove the annoying honey particles from sticky packages. Sticky packages now can be distinguied by "sticky" text that appears when shifting.
   * It is behind a client config option, if you want them back for some reason...
+* Stickiness might actually work on Forge!!!!! (lmao) it wasn't being enforced through the `IItemHandler`. Probably needs more testing
 * Slightly less willing to be placed vertically (you have to look up/down a bit farther)
