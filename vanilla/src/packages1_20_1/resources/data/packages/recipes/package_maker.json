@@ -15,9 +15,9 @@
     "C": {
       "tag": "c:wooden_chests"
     },
-		"I": {
-			"item": "minecraft:copper_block"
-		}
+    "I": {
+      "item": "minecraft:copper_block"
+    }
   },
   "result": {
     "item": "packages:package_maker"

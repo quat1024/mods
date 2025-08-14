@@ -1,5 +1,17 @@
 # notebook
 
+## blockproperties `strength(float, float)`
+
+first param sets `destroyTime`, second sets `explosionResistance`
+
+# wishlist
+
+things to abstract away...
+
+* "extendo tooltips". like the package maker gui slots.
+
+# tooling
+
 ## why didn't `MixinExtension` work on neoforge?
 
 Seems to assume one gradle project maps roughly into one jar. You "add mixin configs" *at the top-level*. This is a problem for me, because i have a `quatlib` source-set and a `rebind_narrator` source-set which both contain different mixin config files. but `MixinExtension` assumes each mixin config exists in each compilation task.

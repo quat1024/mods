@@ -14,6 +14,10 @@ https://www.curseforge.com/minecraft/mc-mods/amecs/files/
 
 Harvested out of `amecs-1.3.10`'s jar-in-jar system
 
+## Emi
+
+https://modrinth.com/mod/emi/version/1.1.22+1.20.1+fabric
+
 ## `modmenu-14.0.0-rc.2`
 
 https://modrinth.com/mod/modmenu, this one is for 1.21.5 fabric

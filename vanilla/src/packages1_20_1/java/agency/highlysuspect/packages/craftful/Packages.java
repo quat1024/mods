@@ -27,13 +27,14 @@ public abstract class Packages extends PackagesBase {
 		@Nullable DgenHelper dgen = QuatlibBase.inst().dgen.createHelper(MODID);
 		Gen.Ctx genCtx = new Gen.Ctx(facets, dgen);
 		
-		LOG.info("RUNNING GENS!");
+		LOG.info("Running PackagesGen");
 		Gen.run(genCtx, new PackagesGen());
 		
 		LOG.info("Got {} facets", facets.size());
 		RegFacet.handle(this, facets.getFacets(RegFacet.class));
 		BlockEntityTypeFacet.handle(this, facets.getFacets(BlockEntityTypeFacet.class));
 		DispenserBehaviorFacet.handle(facets.getFacets(DispenserBehaviorFacet.class));
+		
 		if(dgen != null) {
 			LOG.info("Handling datagen-relevant facets");
 			TagFacet.handle(dgen, facets.getFacets(TagFacet.class));
