@@ -95,8 +95,8 @@ public class PackagesNeoClient extends PackagesClient {
 	@Override
 	public void setupCustomModelLoaders() {
 		modBus.addListener((ModelEvent.RegisterGeometryLoaders e) -> {
-			e.register(PackagesNeo.rl("forge_package_model_loader")      , new NoConfigGeometryLoader<>(ForgePackageModel::new));
-			e.register(PackagesNeo.rl("forge_package_maker_model_loader"), new NoConfigGeometryLoader<>(ForgePackageMakerModel::new));
+			e.register(PackagesNeo.rl("package_model_loader")      , new NoConfigGeometryLoader<>(ForgePackageModel::new));
+			e.register(PackagesNeo.rl("package_maker_model_loader"), new NoConfigGeometryLoader<>(ForgePackageMakerModel::new));
 		});
 	}
 	

@@ -1,4 +1,4 @@
 {
 	"parent": "modder_name_lib:block/dummy",
-	"loader": "packages:forge_package_maker_model_loader"
+	"loader": "packages:package_maker_model_loader"
 }
