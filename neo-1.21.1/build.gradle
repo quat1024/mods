@@ -12,5 +12,6 @@ modSetup.go {
 	mods {
 		rebind_narrator
 		crowmap
+		packages
 	}
 }

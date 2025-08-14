@@ -11,5 +11,15 @@ displayName = "${name}"
 description = "${description}"
 authors = "${author}"
 
-#[[mixins]]
-#config = "rebind_narrator.mixins.json"
+[[mixins]]
+config = "${modid}.mixins.json"
+
+[[mixins]]
+config = "${modid}.${loader}.mixins.json"
+
+[[dependencies.${modid}]]
+modId="modder_name_lib"
+type="required"
+versionRange="*"
+ordering="AFTER"
+side="BOTH"

@@ -1,9 +1,6 @@
 package agency.highlysuspect.quatlib.craftful.neo;
 
-import agency.highlysuspect.quatlib.craftless.config.ConfigOpt;
-import agency.highlysuspect.quatlib.craftless.config.ConfigSection;
-import agency.highlysuspect.quatlib.craftless.config.SectOrOpt;
-import agency.highlysuspect.quatlib.craftless.config.WritableConfig;
+import agency.highlysuspect.quatlib.craftless.config.*;
 import agency.highlysuspect.quatlib.craftless.config.sn.Sn;
 import agency.highlysuspect.quatlib.craftless.config.sn.SnParser;
 import agency.highlysuspect.quatlib.craftless.config.sn.SnWriter;
@@ -15,12 +12,7 @@ import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.event.config.ModConfigEvent;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 
 /**
@@ -64,6 +56,8 @@ public class NeoBackedConfig_V1 implements WritableConfig {
 	//mapping from ConfigOpts to the actual values they represent.
 	//lazily-populated, may be null if the option hasn't been loaded yet.
 	private Map<ConfigOpt<?>, Object> parsedValues;
+	//reload hooks
+	private final List<Consumer<ReadableConfig>> reloadHooks = new ArrayList<>(1);
 	
 	//error context
 	private final CtxChain ctx;
@@ -167,6 +161,13 @@ public class NeoBackedConfig_V1 implements WritableConfig {
 		
 		liveValues.forEach((opt, live) -> getFreshIfValid(opt, live).ifPresent(it -> newParsed.put(opt, it)));
 		parsedValues = newParsed;
+		
+		for(Consumer<ReadableConfig> hook : reloadHooks) hook.accept(this);
+	}
+	
+	public NeoBackedConfig_V1 addReloadHook(Consumer<ReadableConfig> hook) {
+		reloadHooks.add(hook);
+		return this;
 	}
 	
 	public void registerConfigReloadListeners(IEventBus modBus, ModConfigSpec builtSpec) {
