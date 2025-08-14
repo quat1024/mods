@@ -59,7 +59,7 @@ public class QuatlibNeoforge extends QuatlibMc {
 	@SuppressWarnings("DataFlowIssue")
 	@Override
 	public <T extends BlockEntity> BlockEntityType<T> makeBlockEntityType(BlockEntityFactory<T> factory, Block... blocks) {
-		return BlockEntityType.Builder.of(factory::create).build(null);
+		return BlockEntityType.Builder.of(factory::create, blocks).build(null);
 	}
 	
 	@Override
