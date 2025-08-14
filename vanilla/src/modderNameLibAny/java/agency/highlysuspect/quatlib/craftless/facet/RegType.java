@@ -17,7 +17,7 @@ public class RegType<T> {
 	
 	private final String displayName;
 	
-	protected RegType(String displayName) {
+	public RegType(String displayName) {
 		this.displayName = displayName;
 	}
 	

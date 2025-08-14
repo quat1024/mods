@@ -2,7 +2,7 @@ package agency.highlysuspect.packages.craftful.frg.client;
 
 import agency.highlysuspect.packages.craftful.client.PClientBlockEventHandlers;
 import agency.highlysuspect.packages.craftful.client.PackagesClient;
-import agency.highlysuspect.packages.craftful.frg.ForgeInit;
+import agency.highlysuspect.packages.craftful.frg.PackagesForge;
 import agency.highlysuspect.packages.craftful.frg.client.model.ForgePackageMakerModel;
 import agency.highlysuspect.packages.craftful.frg.client.model.ForgePackageModel;
 import agency.highlysuspect.packages.craftful.frg.client.model.NoConfigGeometryLoader;
@@ -27,13 +27,13 @@ import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.ModContainer;
 import net.minecraftforge.fml.config.ModConfig;
 
-public class ForgeClientInit extends PackagesClient {
+public class PackagesForgeClient extends PackagesClient {
 	protected final IEventBus modBus;
 	protected final ModContainer modContainer;
 	
-	public ForgeClientInit() {
-		modBus = ForgeInit.inst().modBus;
-		modContainer = ForgeInit.inst().modContainer;
+	public PackagesForgeClient() {
+		modBus = PackagesForge.inst().modBus;
+		modContainer = PackagesForge.inst().modContainer;
 		
 		earlySetup();
 		
@@ -96,7 +96,7 @@ public class ForgeClientInit extends PackagesClient {
 	
 	@Override
 	public void sendActionPacket(ActionPacket packet) {
-		ForgeInit.inst().channel.sendToServer(packet);
+		PackagesForge.inst().channel.sendToServer(packet);
 	}
 	
 	//config

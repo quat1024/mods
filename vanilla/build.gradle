@@ -17,7 +17,7 @@ vanillaSetup.go {
 			vars.description = "Maps update anywhere in your inventory."
 		}
 		packages {
-			versions += ["1.20.1"]
+			versions += ["1.20.1", "1.21.1"]
 			vars.description = "512 items is all you need. The underpowered barrels mod."
 		}
 	}
@@ -35,6 +35,7 @@ repositories {
 
 dependencies {
 	packages1_20_1CompileOnly "dev.emi:emi-xplat-mojmap:1.1.22+1.20.1:api"
+	packages1_21_1CompileOnly "dev.emi:emi-xplat-mojmap:1.1.22+1.21.1:api"
 }
 
 List<Map.Entry<String, MinecraftProvider.Result>> sortedcrafts = vanillaSetup.getMinecrafts().entrySet().stream()

@@ -33,13 +33,13 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 @Mod("packages")
-public class ForgeInit extends Packages {
+public class PackagesForge extends Packages {
 	public final SimpleChannel channel = NetworkRegistry.newSimpleChannel(rl("n"), () -> "0", "0"::equals, "0"::equals);
 	
 	public final ModContainer modContainer;
 	public final IEventBus modBus;
 	
-	public ForgeInit() {
+	public PackagesForge() {
 		super();
 		
 		this.modContainer = ModLoadingContext.get().getActiveContainer();
@@ -54,7 +54,7 @@ public class ForgeInit extends Packages {
 		//If i was forge i would simply have client entrypoints
 		if(FMLEnvironment.dist == Dist.CLIENT) {
 			try {
-				Class.forName("agency.highlysuspect.packages.craftful.frg.client.ForgeClientInit").getConstructor().newInstance();
+				Class.forName("agency.highlysuspect.packages.craftful.frg.client.PackagesForgeClient").getConstructor().newInstance();
 			} catch (ReflectiveOperationException e) {
 				throw failures.context()
 					.cause(e)
@@ -103,7 +103,7 @@ public class ForgeInit extends Packages {
 		}
 	}
 	
-	public static ForgeInit inst() {
-		return (ForgeInit) PackagesBase.INST;
+	public static PackagesForge inst() {
+		return (PackagesForge) PackagesBase.INST;
 	}
 }

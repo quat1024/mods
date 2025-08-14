@@ -1,0 +1,42 @@
+{
+	"block.packages.package.nonempty": "%s (%s)",
+	"block.packages.package.nonempty.reentrant": "(%s)",
+	"block.packages.package.nonempty.contents": "%sx %s",
+	
+	"packages.style_tooltip.hold_for_composition": "Hold [%s] for Composition",
+	"packages.style_tooltip.shift": "Shift",
+	"packages.style_tooltip.frame": "%s Frame",
+	"packages.style_tooltip.inner": "%s Core",
+	"packages.style_tooltip.both": "%s Frame and Core",
+	"packages.style_tooltip.color": "%s Front",
+	
+	"packages.contents_tooltip.utimately": "-> %s",
+	
+	"packages.zzzzzzzzz.hello.1": "(NOTE TO PEOPLE POKING AROUND IN THIS FILE: the number of lines in the below slot-tooltip keys is dynamic.)",
+	"packages.zzzzzzzzz.hello.2": "(if you would like to add more lines, simply add more language keys with increasing numbers.)",
+	"packages.zzzzzzzzz.hello.3": "(setting the language key to the string ZZZ will cause it to act as an end-of-list signal, if you want to make it shorter)",
+	"packages.package_maker.frame": "Frame",
+	"packages.package_maker.frame.1": "Choose a theme for the border of the Package.",
+	"packages.package_maker.frame.2": "Automation can insert from the top.",
+	"packages.package_maker.inner": "Core",
+	"packages.package_maker.inner.1": "Choose a theme for the sides of the Package.",
+	"packages.package_maker.inner.2": "Automation can insert from the side.",
+	"packages.package_maker.dye": "Dye",
+	"packages.package_maker.dye.1": "Choose a color for the front of the Package.",
+	"packages.package_maker.dye.2": "Automation can insert from the top or side.",
+	"packages.package_maker.extra": "Extra",
+	"packages.package_maker.extra.1": "Add a copper ingot.",
+	"packages.package_maker.extra.2": "Automation can insert from the top or side.",
+	"packages.package_maker.output": "Result",
+	"packages.package_maker.output.1": "Automation can extract from the bottom.",
+
+	"packages.sticky_syrup_tooltip.hold_for_info": "Hold [%s] for Info",
+	"packages.sticky_syrup_tooltip.1": "Sneak-use on a Package to make it sticky.",
+	"packages.sticky_syrup_tooltip.2": "Sticky Packages remember their contents,",
+	"packages.sticky_syrup_tooltip.3": "even after the last item is removed.",
+	"packages.sticky": "sticky",
+
+	"packages.package_maker.craft_button": "Create",
+	
+	"tag.item.packages.things_you_need_for_package_crafting": "Package Crafting Ingredients"
+}

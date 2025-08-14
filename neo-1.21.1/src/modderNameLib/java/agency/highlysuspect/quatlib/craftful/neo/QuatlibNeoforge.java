@@ -13,6 +13,7 @@ import net.minecraft.core.dispenser.DispenseItemBehavior;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.DispenserBlock;
@@ -64,6 +65,11 @@ public class QuatlibNeoforge extends QuatlibMc {
 	@Override
 	public <T extends AbstractContainerMenu> MenuType<T> makeMenuType(MyMenuSupplier<T> supplier) {
 		return new MenuType<>(supplier::create, FeatureFlagSet.of()); //Access widened by forge
+	}
+	
+	@Override
+	public CreativeModeTab.Builder makeCreativeModeTabBuilder() {
+		return CreativeModeTab.builder(); //neo-added
 	}
 	
 	@SubscribeEvent

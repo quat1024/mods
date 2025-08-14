@@ -27,7 +27,7 @@ import net.minecraft.resources.ResourceLocation;
 
 import java.nio.file.Path;
 
-public class FabricClientInit extends PackagesClient implements AfterQuatlibClientInitializer {
+public class PackagesClientFabric extends PackagesClient implements AfterQuatlibClientInitializer {
 	private final UnbakedModel packageModel = new FrapiMeshPackageModel();
 	private final UnbakedModel packageMakerModel = new FrapiMeshPackageMakerModel();
 	
@@ -105,7 +105,7 @@ public class FabricClientInit extends PackagesClient implements AfterQuatlibClie
 		).addReloadHook(this::onConfigReload); // <-------- TODO this reload hook API is crap
 	}
 	
-	public static FabricClientInit inst() {
-		return (FabricClientInit) PackagesBaseClient.INST;
+	public static PackagesClientFabric inst() {
+		return (PackagesClientFabric) PackagesBaseClient.INST;
 	}
 }

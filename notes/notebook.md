@@ -4,6 +4,22 @@
 
 first param sets `destroyTime`, second sets `explosionResistance`
 
+## blockproperties "full copy" vs "legacy copy"
+
+Looks new in 1.21.1
+
+Legacy copy copies `destroyTime, explosionResistance, hasCollision, isRandomlyTicking, lightEmission, mapColor, soundType, friction, speedFactor, dynamicShape, canOcclude, isAir, ignitedByLava, liquid, forceSolidOff, forceSolidOn, pushReaction, requiresCorrectToolForDrops, offsetFunction, spawnTerrainParticles, requiredFeatures, emissiveRendering, instrument, replaceable`
+
+Full copy additionally gets `jumpFactor, isRedstoneConductor, isValidSpawn, hasPostProcess, isSuffocating, isViewBlocking, drops`
+
+## Block#codec is a footgun (as of 1.21.1)
+
+You'll get inscrutable errors like "`This registry can't create intrusive holders`". If you must, just use `ResourceLocation.CODEC` and `xmap` it to read/write from `BuiltInRegistries`.
+
+## ItemStack#save footgun
+
+`ItemStack#save` crashes when called on `ItemStack.EMPTY`. Use `saveOptional` instead.
+
 # wishlist
 
 things to abstract away...

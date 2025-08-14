@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "package": "agency.highlysuspect.packages.craftful.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+		
+  ],
+  "client": [
+		"client.MixinItemRenderer",
+		"client.MixinMinecraft"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

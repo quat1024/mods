@@ -12,11 +12,13 @@ import agency.highlysuspect.quatlib.craftless.util.PhysicalLoader;
 import agency.highlysuspect.quatlib.craftless.util.PhysicalSide;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.dispenser.DispenseItemBehavior;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.DispenserBlock;
@@ -52,6 +54,11 @@ public class QuatlibFabric extends QuatlibMc implements ModInitializer {
 	public <T extends BlockEntity> BlockEntityType<T> makeBlockEntityType(BlockEntityFactory<T> factory, Block... blocks) {
 		//access-widened by fabric api
 		return BlockEntityType.Builder.of(factory::create, blocks).build(null);
+	}
+	
+	@Override
+	public CreativeModeTab.Builder makeCreativeModeTabBuilder() {
+		return FabricItemGroup.builder();
 	}
 	
 	@Override

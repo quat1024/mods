@@ -1,0 +1,14 @@
+{
+	"sources": [
+		{
+			"type": "directory",
+			"source": "package_special",
+			"prefix": "package_special/"
+		},
+		{
+			"type": "directory",
+			"source": "package_gui_slot_icons",
+			"prefix": "package_gui_slot_icons/"
+		}
+	]
+}

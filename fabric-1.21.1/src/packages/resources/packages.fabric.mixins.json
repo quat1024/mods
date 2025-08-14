@@ -1,0 +1,16 @@
+{
+	"required": true,
+	"package": "agency.highlysuspect.packages.craftful.fab.mixin",
+	"compatibilityLevel": "JAVA_17",
+	"mixins": [
+		"particleslol.MixinEntity",
+		"particleslol.MixinLivingEntity"
+	],
+	"client": [
+		"particleslol.AccessorTextureSheetParticle",
+		"particleslol.MixinTerrainParticle"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}
