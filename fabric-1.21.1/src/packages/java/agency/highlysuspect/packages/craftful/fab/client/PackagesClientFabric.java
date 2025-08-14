@@ -13,6 +13,8 @@ import agency.highlysuspect.quatlib.craftless.config.ConfigSection;
 import agency.highlysuspect.quatlib.craftless.config.WritableConfig;
 import agency.highlysuspect.quatlib.craftless.config.hdc.HalfDecentConfigFile;
 import agency.highlysuspect.quatlib.craftless.fab.AfterQuatlibClientInitializer;
+import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin;
+import net.fabricmc.fabric.api.client.model.loading.v1.ModelModifier;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
@@ -25,9 +27,6 @@ import net.minecraft.resources.ResourceLocation;
 import java.nio.file.Path;
 
 public class PackagesClientFabric extends PackagesClient implements AfterQuatlibClientInitializer {
-	private final UnbakedModel packageModel = new FrapiMeshPackageModel();
-	private final UnbakedModel packageMakerModel = new FrapiMeshPackageMakerModel();
-	
 	@Override
 	public void onInitializeClient() {
 		earlySetup();
@@ -49,29 +48,29 @@ public class PackagesClientFabric extends PackagesClient implements AfterQuatlib
 		ModelResourceLocation packageInventory = new ModelResourceLocation(Packages.rl("package"), "inventory");
 		ModelResourceLocation packageMakerInventory = new ModelResourceLocation(Packages.rl("package_maker"), "inventory");
 		
-		//block models (packages:special/package)
-		//note that assets/packages/models/special/package.json actually does exist, but on fabric modelresourceproviders take priority
-		//TODO (Should also get off the deprecated API on 1.20.1
-//		ModelLoadingRegistry.INSTANCE.registerResourceProvider(res -> (id, ctx) -> {
-//			if(id.getNamespace().isEmpty() || id.getNamespace().charAt(0) != 'p') return null; //Is This Actually Faster... who knows...
-//
-//			if(specialPackage.equals(id)) return packageModel;
-//			if(specialPackageMaker.equals(id)) return packageMakerModel;
-//
-//			return null;
-//		});
-//
-//		//item models (packages:item/package#inventory)
-//		//for blocks, the blockstate path is hardcoded, but i can point it at whatever model i want
-//		//items don't have that, the item model path is hardcoded and i need this api in order to load a non-json item model
-//		ModelLoadingRegistry.INSTANCE.registerVariantProvider(res -> (id, ctx) -> {
-//			if(id.getNamespace().isEmpty() || id.getNamespace().charAt(0) != 'p') return null; //Is This Actually Faster... who knows...
-//
-//			if(packageInventory.equals(id)) return packageModel;
-//			if(packageMakerInventory.equals(id)) return packageMakerModel;
-//
-//			return null;
-//		});
+		ModelLoadingPlugin.register((mlcontext) -> {
+			UnbakedModel packageUnbaked = new FrapiMeshPackageModel();
+			UnbakedModel packageMakerUnbaked = new FrapiMeshPackageMakerModel();
+			
+			//Point the special model IDs at the special unbaked models
+			mlcontext.resolveModel().register(ctx -> {
+				if(specialPackage.equals(ctx.id())) return packageUnbaked;
+				if(specialPackageMaker.equals(ctx.id())) return packageMakerUnbaked;
+				return null;
+			});
+			
+			//Ensure the special models are referenced? (probably not needed)
+			mlcontext.addModels(specialPackage, specialPackageMaker);
+			
+			//Point the item models at them too
+			//(basically blockstate files can point the block at packages:special/package,
+			//but there are no "itemstates" to do the same for items, at leaast not in this version...)
+			mlcontext.modifyModelBeforeBake().register(ModelModifier.OVERRIDE_PHASE, (model, ctx) -> {
+				if(packageInventory.equals(ctx.topLevelId())) return packageUnbaked;
+				if(packageMakerInventory.equals(ctx.topLevelId())) return packageMakerUnbaked;
+				return model;
+			});
+		});
 	}
 	
 	//networking

@@ -1,5 +1,63 @@
 # notebook
 
+## fabric Packages item models
+
+(also applies to Templates 2)
+
+ModelLoadingPlugin's `modifyModelBeforeBake` event is kind of designed for wrapping existing models, rather than only for replacing them. Wrapping is the more flexible operation. For example Packages and Templates both do dynamic retexturing of an existing model; they *could* be implemented by letting vanilla load the base model and wrapping it in a custom unbakedmodel which performs the retexturing. (They're not implemented like that atm.)
+
+If you want an entirely code-created model for an item, if the corresponding `assets/modid/models/item/xxx.json` file does not exist, vanilla will still print a warning about a missing model. The code-driven model replacement will then get the oppoertunity to wrap or replace the vanilla missing-texture cube.
+
+To avoid the unsightly warning you can just create the file. The contents of that model don't matter if you are replacing the whole model anyway. I created a `modder_name_lib:block/dummy.json` model to use as the parent for all of these dummy models. (Of course `minecraft:block/block` works fine too but i wanted to be specific about my intentions)
+
+## Mojang And The Fucking Letter `S`
+
+* `data/modid/advancementS` -> `data/modid/advancement`
+* `data/modid/recipeS` -> `data/modid/recipe`
+* `data/modid/loot_tableS/blockS/` -> `data/modid/loot_table/blockS`
+
+Yes you keep the `S` on `blocks` in the loot_table~~s~~ folder. Mojang needs something to do next update, after all.
+
+## recipes
+
+Of course it would take 5 seconds to make it backward compatible. But nah.
+
+```json
+"result": {
+  "item": "packages:sticky_syrup"
+}
+```
+
+to
+
+```json
+"result": {
+  "id": "packages:sticky_syrup"
+}
+```
+
+## Actually kind of nice things about components (1.21.1)
+
+I still think the `Codec` class itself is tedious, TODO figure out if there's a way to manually write toNbt/fromNbt style functions lol. Part of the appeal is that the same system is used to write NBT and JSON though.
+
+`StreamCodec` is a new class that has nothing to do with `Codec` really. First generic is the type of `ByteBuf` the stream codec uses to de/serialize the second generic. Fortunately you don't have to play codec games and can implement the interface directly.
+
+### Block entity components
+
+Basically an "implicit component" is a component that *you* save to NBT yourself. It doesn't use the component's codec system although of course you can use the codec to save and load. It also lives as a field in your block entity instead of living in the data component map. I feel like it's also kind of good for "mutable" components, e.g. a component representing "the contents of a chest", which can be frozen into an immutable representation when it's time to save the component to disk or to an item. I feel like we're in a `getStateFromMeta/getMetaFromState` period wrt block entity components... maybe "implicit components" are a system mojang cooked up to incrementally make the change without changing NBT for mapmakers.
+
+`collectImplicitComponents` is like `getStateFromMeta`. You enhance the new system (components) using the data gathered from the old system (local block entity fields, your nbt tag). `applyImplicitComponents` does the reverse; you take data from the components system and slap it back onto your local fields.
+
+Also implicit components are important because i'm not sure how to actually *set* a single component from a block entity? I don't see an equiv of `ItemStack#set` for block entities. So implicit components are probably the best way to use components from a block entity
+
+### Components and loot tables
+
+I think block entity components shine in relation to items. Say you want block entity NBT to be saved to the item and restored when the player places the item again. In 1.20.1 usually this is done with the `BlockEntityTag` NBT tag on items, any NBT you carefully copy there with the `copy_nbt` loot function will be automatically copied onto a new block entity when it's placed (..but only on the server, resulting in a clientside flash of the default block entity, unless you fix it). In 1.21 you can copy components directly onto the item with the `copy_components` loot function, and they will be restored in the same way (`BlockItem#updateBlockEntityComponents` (static) -> `BlockEntity#applyComponentsFromItemStack` (final) -> `BlockEntity#applyComponents` (final) -> `BlockEntity#applyImplicitComponents` (yours to override)) on both sides.
+
+### N.b.
+
+Just because your component is a Java record doesn't mean you can forget about `equals` and `hashCode`. My component had an `ItemStack` as one of the fields and it could not stack with other copies of itself because the ItemStacks were different. 
+
 ## blockproperties `strength(float, float)`
 
 first param sets `destroyTime`, second sets `explosionResistance`

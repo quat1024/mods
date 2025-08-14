@@ -92,13 +92,6 @@ public class PackageBlock extends Block implements EntityBlock {
 		if(customName != null) {
 			pkg.setCustomName(customName);
 		}
-		
-//		if(world.isClientSide) {
-//			//Load the tag clientside. Fixes some flickering (wrong style/count) when placing the item.
-//			//Kinda surprised the game doesn't do this itself; BlockEntityTag magic is explicitly only done server-side.
-//			CompoundTag blockEntityTag = BlockItem.getBlockEntityData(stack);
-//			if(blockEntityTag != null) pkg.load(blockEntityTag);
-//		}
 	}
 	
 	@Override

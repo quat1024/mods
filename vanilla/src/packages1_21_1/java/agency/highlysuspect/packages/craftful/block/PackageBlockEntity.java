@@ -15,6 +15,8 @@ import it.unimi.dsi.fastutil.ints.IntList;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponentMap;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
@@ -39,12 +41,7 @@ import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.IntStream;
 
 public class PackageBlockEntity extends BlockEntity implements Container, Nameable {
@@ -67,10 +64,6 @@ public class PackageBlockEntity extends BlockEntity implements Container, Nameab
 	
 	public PackageStyle getStyle() {
 		return style;
-	}
-	
-	public void setStyle(PackageStyle style) {
-		this.style = style;
 	}
 	
 	public PackageContainer getContainer() {
@@ -433,8 +426,8 @@ public class PackageBlockEntity extends BlockEntity implements Container, Nameab
 	
 	//<editor-fold desc="RenderAttachmentBlockEntity">
 	@SuppressWarnings("unused")
-	@SoftImplement("net.fabricmc.fabric.api.rendering.data.v1.RenderAttachmentBlockEntity")
-	public Object getRenderAttachmentData() {
+	@SoftImplement("net.fabricmc.fabric.api.blockview.v2.RenderDataBlockEntity")
+	public Object getRenderData() {
 		return getStyle();
 	}
 	//</editor-fold>
@@ -443,8 +436,10 @@ public class PackageBlockEntity extends BlockEntity implements Container, Nameab
 	
 	@Override
 	public void saveAdditional(CompoundTag tag, HolderLookup.Provider what) {
-		tag.put("PackageContents", container.toPackageContents().toTag());
-		tag.put("PackageStyle", style.toTag(what));
+		super.saveAdditional(tag, what);
+		
+		style.save(tag);
+		container.toPackageContents().save(tag);
 		
 		if(customName != null) tag.putString("CustomName", Component.Serializer.toJson(customName, what));
 		
@@ -454,23 +449,49 @@ public class PackageBlockEntity extends BlockEntity implements Container, Nameab
 		//This is called bcLocked since it was originally developed for blanketcon
 		//Just gonna keep the nbt name because why not
 		if(mapmakerLockedTag) tag.putBoolean("bcLocked", true);
-		
-		super.saveAdditional(tag, what);
 	}
 	
 	@Override
 	public void loadAdditional(CompoundTag tag, HolderLookup.Provider what) {
 		super.loadAdditional(tag, what);
-		container.mutateFromPackageContents(ImmutablePackageContents.fromTag(tag.get("PackageContents")));
-		style = PackageStyle.fromTag(tag.getCompound("PackageStyle"), what);
 		
-		if(tag.contains("CustomName", 8)) customName = Component.Serializer.fromJson(tag.getString("CustomName"), what);
-		else customName = null;
+		style = PackageStyle.load(tag);
+		container.mutateFromPackageContents(ImmutablePackageContents.load(tag));
+		
+		//copying from BeaconBlockEntity a little
+		if(tag.contains("CustomName", 8))
+			customName = parseCustomNameSafe(tag.getString("CustomName"), what);
 		
 		stickyStack = ItemStack.parseOptional(what, tag.getCompound("StickyStack"));
 		syrupy = tag.getBoolean("Syrupy"); //defaults to false if nonexistent
-		
 		mapmakerLockedTag = tag.contains("bcLocked") && tag.getBoolean("bcLocked");
+	}
+	
+	/// //////COMPONENT TESTING ZONE ////////
+	//mainly cribbing from DecoratedPotBlockEntity
+	
+	@Override
+	protected void collectImplicitComponents(DataComponentMap.Builder builder) {
+		super.collectImplicitComponents(builder);
+		builder.set(PackageStyle.DATA_COMPONENT_TYPE, style);
+		builder.set(ImmutablePackageContents.DATA_COMPONENT_TYPE, container.toPackageContents());
+		builder.set(DataComponents.CUSTOM_NAME, customName);
+	}
+	
+	@Override
+	protected void applyImplicitComponents(DataComponentInput in) {
+		super.applyImplicitComponents(in);
+		this.style = in.getOrDefault(PackageStyle.DATA_COMPONENT_TYPE, PackageStyle.ERROR_LOL);
+		this.container.mutateFromPackageContents(in.getOrDefault(ImmutablePackageContents.DATA_COMPONENT_TYPE, ImmutablePackageContents.EMPTY));
+		this.customName = in.get(DataComponents.CUSTOM_NAME);
+	}
+	
+	@Override
+	public void removeComponentsFromTag(CompoundTag tag) {
+		super.removeComponentsFromTag(tag);
+		tag.remove("PackageStyle");
+		tag.remove("PackageContents");
+		tag.remove("CustomName");
 	}
 	
 	@Nullable
@@ -481,6 +502,6 @@ public class PackageBlockEntity extends BlockEntity implements Container, Nameab
 	
 	@Override
 	public CompoundTag getUpdateTag(HolderLookup.Provider what) {
-		return saveWithoutMetadata(what);
+		return saveCustomOnly(what);
 	}
 }

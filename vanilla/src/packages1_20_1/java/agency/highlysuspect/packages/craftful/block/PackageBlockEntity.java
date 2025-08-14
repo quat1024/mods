@@ -430,8 +430,8 @@ public class PackageBlockEntity extends BlockEntity implements Container, Nameab
 	
 	//<editor-fold desc="RenderAttachmentBlockEntity">
 	@SuppressWarnings("unused")
-	@SoftImplement("net.fabricmc.fabric.api.rendering.data.v1.RenderAttachmentBlockEntity")
-	public Object getRenderAttachmentData() {
+	@SoftImplement("net.fabricmc.fabric.api.blockview.v2.RenderDataBlockEntity")
+	public Object getRenderData() {
 		return getStyle();
 	}
 	//</editor-fold>

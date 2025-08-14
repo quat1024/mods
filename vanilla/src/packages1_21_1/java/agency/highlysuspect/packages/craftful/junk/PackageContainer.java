@@ -57,18 +57,10 @@ public class PackageContainer implements Container {
 		return count;
 	}
 	
-	public record TooltipStats(ItemStack rootContents, int fullyMultipliedCount, boolean amplified) {}
-	
 	public boolean isFull() {
 		int maxCount = maxStackAmountAllowed(getFilterStack()) * SLOT_COUNT;
 		if(maxCount == 0) return true; //if the package isn't supposed to contain this item
 		return getCount() == maxCount;
-	}
-	
-	public float fillPercentage() {
-		int maxCount = maxStackAmountAllowed(getFilterStack()) * SLOT_COUNT;
-		if(maxCount == 0) return 1;
-		return getCount() / (float) maxCount;
 	}
 	
 	//Whether you're ever allowed to put this item into a Package.
@@ -82,14 +74,6 @@ public class PackageContainer implements Container {
 	//TODO: leaky abstraction, see comment in canPlaceItem
 	public int maxStackAmountAllowed(ItemStack stack) {
 		return PackageRules.DEFAULT.maxPerSlot(stack);
-	}
-	
-	//The amount of layers of nested Packages.
-	//TODO: Expensive, and on hot code paths
-	private int calcRecursionLevel() {
-		ImmutablePackageContents recur = getFilterStack().get(ImmutablePackageContents.DATA_COMPONENT_TYPE);
-		if(recur == null) return 0;
-		else return 1 + recur.calcRecursionLevel();
 	}
 	
 	//"true" if the itemstack is suitable for insertion into this Package.
@@ -284,6 +268,7 @@ public class PackageContainer implements Container {
 		return cont;
 	}
 	
+	//Mainly for preserving the ContainerListener
 	@Deprecated
 	public void mutateFromPackageContents(@Nullable ImmutablePackageContents imm) {
 		clearContent();
@@ -308,7 +293,7 @@ public class PackageContainer implements Container {
 	/**
 	 * Ensures that the modified PackageContainer is written back to the itemstack.
 	 */
-	@Deprecated //Useful method, but most of its usages really should live in ImmutablePackageContents.
+	@Deprecated //Useful method, but its usages really should live in ImmutablePackageContents.
 	//Like we're spreading the package contents out over 8 slots just to use the shitty insertion code in this class,
 	//and then collecting them back into an immutablepackagecontents. Why?
 	public static <T> T mutateItemStack(ItemStack stack, Function<PackageContainer, T> action, T ifNoContainer) {

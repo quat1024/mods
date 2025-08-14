@@ -7,6 +7,11 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.level.block.ShulkerBoxBlock;
 
+/**
+ * TODO: Kind of a stub class right now, meant to hold some of the gameplay rules.
+ *  Inserting into an itemstack package has different rules than an in-world package, e.g. itemstacks don't have a concept of stickiness.
+ *  That's the idea. Maybe in the future, upgraded packages with more space or whatever as well.
+ */
 public class PackageRules {
 	public static final PackageRules DEFAULT = new PackageRules();
 	

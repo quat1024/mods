@@ -20,6 +20,6 @@
     }
   },
   "result": {
-    "item": "packages:package_maker"
+    "id": "packages:package_maker"
   }
 }

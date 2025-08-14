@@ -2,11 +2,11 @@ package agency.highlysuspect.packages.craftful.junk;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
@@ -14,6 +14,7 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 
@@ -47,13 +48,17 @@ public record PackageStyle(@NotNull Block frameBlock, @NotNull Block innerBlock,
 	
 	public static final DataComponentType<PackageStyle> DATA_COMPONENT_TYPE =
 		new DataComponentType.Builder<PackageStyle>().persistent(CODEC).networkSynchronized(STREAM_CODEC).build();
-		
-	public static PackageStyle fromTag(CompoundTag tag, HolderLookup.Provider what) {
-		return CODEC.parse(NbtOps.INSTANCE, tag).result().orElse(ERROR_LOL);
+	
+	//styled after PotDecorations
+	public CompoundTag save(CompoundTag in) {
+		in.put("PackageStyle", CODEC.encodeStart(NbtOps.INSTANCE, this).getOrThrow());
+		return in;
 	}
 	
-	@Deprecated
-	public CompoundTag toTag(HolderLookup.Provider what) {
-		return (CompoundTag) CODEC.encodeStart(NbtOps.INSTANCE, this).getOrThrow();
+	public static PackageStyle load(@Nullable CompoundTag in) {
+		if(in == null) return ERROR_LOL;
+		Tag t = in.get("PackageStyle");
+		if(t == null) return null;
+		else return CODEC.parse(NbtOps.INSTANCE, t).result().orElse(ERROR_LOL);
 	}
 }

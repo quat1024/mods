@@ -151,6 +151,7 @@ public class VanillaSetupPlugin implements Plugin<Project> {
 				mod.versionAgnosticSourceSet.getResources().srcDir(mod.versionAgnosticGeneratedResources);
 				mod.perVersionSourceSets.forEach((minecraftVersion, set) -> {
 					mod.perVersionGeneratedResources.put(minecraftVersion, set.getResources().getSrcDirs().iterator().next().toPath().resolveSibling("resourcesGen").toFile());
+					mod.perVersionSourceSets.get(minecraftVersion).getResources().srcDir(mod.perVersionGeneratedResources.get(minecraftVersion));
 				});
 			}
 			//put quatlib on compilation classpath of mods that use it

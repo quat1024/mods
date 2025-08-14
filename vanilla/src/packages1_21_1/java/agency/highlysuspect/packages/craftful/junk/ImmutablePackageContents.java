@@ -3,11 +3,13 @@ package agency.highlysuspect.packages.craftful.junk;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.component.DataComponentType;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -75,19 +77,19 @@ public record ImmutablePackageContents(ItemStack stack, int count) {
 	
 	///
 	
-	public Optional<ItemStack> stackForSerialization() {
+	private Optional<ItemStack> stackForSerialization() {
 		return stack.isEmpty() ? Optional.empty() : Optional.of(stack.copyWithCount(1));
 	}
 	
 	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-	public static ImmutablePackageContents rehydrate(Optional<ItemStack> stackOpt, int realCount) {
+	private static ImmutablePackageContents rehydrate(Optional<ItemStack> stackOpt, int realCount) {
 		if(realCount == 0) return EMPTY;
 		if(stackOpt.isEmpty()) return EMPTY;
 		
 		ItemStack stack = stackOpt.get();
 		if(stack.isEmpty()) return EMPTY;
 		
-		return new ImmutablePackageContents(stack, realCount);
+		return new ImmutablePackageContents(stack, realCount); //Not copying the stack should be fine, it was just deserialized from something
 	}
 	
 	public static final Codec<ImmutablePackageContents> CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -119,12 +121,31 @@ public record ImmutablePackageContents(ItemStack stack, int count) {
 	public static final DataComponentType<ImmutablePackageContents> DATA_COMPONENT_TYPE =
 		new DataComponentType.Builder<ImmutablePackageContents>().persistent(CODEC).networkSynchronized(STREAM_CODEC).build();
 	
-	@Deprecated
-	public Tag toTag() {
-		return CODEC.encodeStart(NbtOps.INSTANCE, this).getOrThrow();
+	//styled after PotDecorations
+	public CompoundTag save(CompoundTag in) {
+		in.put("PackageContents", CODEC.encodeStart(NbtOps.INSTANCE, this).getOrThrow());
+		return in;
 	}
 	
-	public static ImmutablePackageContents fromTag(Tag tag) {
-		return CODEC.parse(NbtOps.INSTANCE, tag).getOrThrow();
+	public static ImmutablePackageContents load(@Nullable CompoundTag in) {
+		if(in == null) return EMPTY;
+		Tag t = in.get("PackageContents");
+		if(t == null) return null;
+		else return CODEC.parse(NbtOps.INSTANCE, t).result().orElse(EMPTY);
+	}
+	
+	//Need to override equals() and hashCode() because of the ItemStack, it doesn't implement either one.
+	
+	@Override
+	public boolean equals(Object o) {
+		if(o == null || getClass() != o.getClass()) return false;
+		
+		ImmutablePackageContents other = (ImmutablePackageContents) o;
+		return count == other.count && ItemStack.isSameItemSameComponents(stack, other.stack);
+	}
+	
+	@Override
+	public int hashCode() {
+		return 31 * ItemStack.hashItemAndComponents(stack) + count;
 	}
 }
