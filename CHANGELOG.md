@@ -23,6 +23,8 @@ This isn't strictly needed on Neoforge, because you've always been able to confi
 
 ## Packages
 
+* Now available for 1.21.1 Fabric as well as 1.20.1.
+* Now available for 1.21.1 Neoforge as well as Forge 1.20.1.
 * New item: *Sticky Syrup*. Apply it to a package to make it *sticky*. Sticky packages remember their item even when they are empty.
   * This replaces the old system of packages becoming sticky when they are next to a slime/honey block. Not many people knew about it!
   * The old system is available behind a config option.
@@ -30,5 +32,5 @@ This isn't strictly needed on Neoforge, because you've always been able to confi
 * Remove the annoying honey particles from sticky packages. Sticky packages now can be distinguied by "sticky" text that appears when shifting.
   * It is behind a client config option, if you want them back for some reason...
 * Stickiness might actually work on Forge!!!!! (lmao) it wasn't being enforced through the `IItemHandler`. Probably needs more testing
-* Slightly less willing to be placed vertically (you have to look up/down a bit farther)
-* Migrate off deprecated `fabric-api` module for registering custom models
+* Slightly less willing to be placed vertically. You have to look up/down a bit farther.
+* On 1.20.1, migrate off of a deprecated `fabric-api` method for registering custom models.

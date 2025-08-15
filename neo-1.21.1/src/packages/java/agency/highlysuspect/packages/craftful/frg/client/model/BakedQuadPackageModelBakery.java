@@ -142,14 +142,15 @@ public class BakedQuadPackageModelBakery implements PackageModelBakery<List<Bake
 	}
 	
 	//Here's where things get fun!!! Forge has a BakedQuadBuilder but it is turbo useless for this btw
-	//TODO(season2, 1.21.1): Investigate neo's IQuadTransformer system instead
-	
+	//XXXX(season2, 1.21.1): Investigate neo's IQuadTransformer system instead
+	// -> Investigated it. Can't use it because I also need to delete quads. The system is pretty rudimentary though
 	private static final int vertexStride, vertexColorOffset, vertexUOffset, vertexVOffset; //Int offsets not byte offsets btw
 	static {
 		vertexStride = IQuadTransformer.STRIDE;
 		vertexColorOffset = IQuadTransformer.COLOR;
 		vertexUOffset = IQuadTransformer.UV0;
-		vertexVOffset = IQuadTransformer.UV2;
+		vertexVOffset = vertexUOffset + 1; //the v is stored directly after the u
+		//n.b. In vanilla the "uv2" is used for lightmap coords, nothing to do with texture uv
 	}
 	
 	private static void setTintColor(BakedQuad in, int color1, int color2, int color3, int color4) {
