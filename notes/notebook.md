@@ -58,6 +58,32 @@ I think block entity components shine in relation to items. Say you want block e
 
 Just because your component is a Java record doesn't mean you can forget about `equals` and `hashCode`. My component had an `ItemStack` as one of the fields and it could not stack with other copies of itself because the ItemStacks were different. 
 
+## Ok let's actually try the fabric transfer API
+
+In Packages I'm interested in removing the vanilla eight-slot `Container` code because it is a RIGHT MESS. Even in-inventory interactions which have nothing to do with slots end up using the eight-slot code. It's not great,
+
+I remember trying this before (~incorporeal 3 era?) and hating it. Might be different now...
+
+Advice from https://wiki.fabricmc.net/tutorial:transfer-api_transactions
+
+* use `Transaction` in code that opens and closes transactions, and use `TransactionContext` when dealing with someone else's transaction
+  * I seem to remember `Transaction` being global state, only one global tx open at a time
+* The class `SnapshotParticipant` helps you implement rollbackable objects
+
+Fabric transfer API is more immutable than itemstacks. Somewhat awkward `ItemVariant` is like an immutable countless itemstack.
+
+Probably makes sense to read the fluid documentation first as an introduction
+
+Important methods in `Storage` are `insert` and `extract`, which both take "a max amount to insert or extract" and return "the amount which actually was inserted or extracted"
+
+### Bridging the worlds of mutable slots
+
+Ok so: the item stuff operates on a higher level of abstraction than "slots" by default. Actually pretty great for me when i implement a barrels mod :cool:
+
+If you want a "slotted" container there is stuff like `InventoryStorage` which assumes all the slots are independent of each other. Not good for a barrels mod (inserting into slot 1 can block off access to slot 2 because the items have to match)
+
+If you are implementing an inventory GUI with slots and those slots are independent of each other, they recommend using a vanilla container and wrapping it with `InventoryStorage.of`. This allows you to use the vanilla mutable-stack inventory code common to Menus and Screens, but still wrap it in fabric-transfer-api stuff on the back end. Vanilla helpers like `SimpleInventory` can make this even less tricky
+
 ## blockproperties `strength(float, float)`
 
 first param sets `destroyTime`, second sets `explosionResistance`

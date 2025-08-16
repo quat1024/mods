@@ -12,35 +12,36 @@ import net.minecraft.world.level.block.ShulkerBoxBlock;
  *  Inserting into an itemstack package has different rules than an in-world package, e.g. itemstacks don't have a concept of stickiness.
  *  That's the idea. Maybe in the future, upgraded packages with more space or whatever as well.
  */
-public class PackageRules {
-	public static final PackageRules DEFAULT = new PackageRules();
+public interface PackageRules {
+	PackageRules DEFAULT = new PackageRules() {};
 	
-	public int slotCount() {
+	default int packageSlotCount() {
 		return 8;
 	}
 	
-	public int recursionLimit() {
+	default int packageRecursionLimit() {
 		return 3;
 	}
 	
 	//The amount of items per-internal-slot that a Package is allowed to hold, if it contained `stack`.
 	//Packages normally hold eight stacks of items, but to nerf nesting a bit, packages can only hold eight nonempty packages.
-	//TODO: leaky abstraction, see comment in canPlaceItem
-	//TODO(season2): prev comment applies to PackageContainer
-	//TODO(seaosn2): Should return 0 when stack is not allowed in package
-	public int maxPerSlot(ItemStack stack) {
-		if(stack.is(PTags.BANNED_FROM_PACKAGE)) return 0;
+	//TODO: leaky abstraction, see comment in canPlaceItem (season2: applies to PackageContainer)
+	//TODO(seaosn2): Maybe should return 0 when stack is not allowed in package?
+	default int maxPerPackageSlot(ItemStack stack) {
+		if(!allowedInPackageAtAll(stack)) return 0;
 		
+		//Nerf nesting
 		ImmutablePackageContents pkg = stack.get(ImmutablePackageContents.DATA_COMPONENT_TYPE);
 		if(pkg != null && pkg.count() > 0) return 1;
+		
 		else return Math.min(stack.getMaxStackSize(), 64);
 	}
 	
-	public int maxInTotal(ItemStack stack) {
-		return maxPerSlot(stack) * slotCount();
+	default int maxInPackageTotal(ItemStack stack) {
+		return maxPerPackageSlot(stack) * packageSlotCount();
 	}
 	
-	public boolean allowedInPackageAtAll(ItemStack stack) {
+	default boolean allowedInPackageAtAll(ItemStack stack) {
 		if(stack.is(PTags.BANNED_FROM_PACKAGE)) return false;
 		
 		//Item#canFitInsideContainerItems is a vanilla API for "is this item allowed to go inside containers".
@@ -72,11 +73,11 @@ public class PackageRules {
 		if(cont == null) return true;
 		
 		//And packages are only allowed if they aren't nested too deeply.
-		else return cont.calcRecursionLevel() < recursionLimit();
+		else return cont.calcRecursionLevel() < packageRecursionLimit();
 	}
 	
 	//TODO: subclass this to implement stickystacks
-	public boolean allowedToInsert(ItemStack stack) {
+	default boolean allowedToInsertInPackage(ItemStack stack) {
 		return allowedInPackageAtAll(stack);
 	}
 }

@@ -73,7 +73,7 @@ public class PackageContainer implements Container {
 	//Packages normally hold eight stacks of items, but to nerf nesting a bit, packages can only hold eight nonempty packages.
 	//TODO: leaky abstraction, see comment in canPlaceItem
 	public int maxStackAmountAllowed(ItemStack stack) {
-		return PackageRules.DEFAULT.maxPerSlot(stack);
+		return PackageRules.DEFAULT.maxPerPackageSlot(stack);
 	}
 	
 	//"true" if the itemstack is suitable for insertion into this Package.

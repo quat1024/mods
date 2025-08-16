@@ -34,3 +34,5 @@ This isn't strictly needed on Neoforge, because you've always been able to confi
 * Stickiness might actually work on Forge!!!!! (lmao) it wasn't being enforced through the `IItemHandler`. Probably needs more testing
 * Slightly less willing to be placed vertically. You have to look up/down a bit farther.
 * On 1.20.1, migrate off of a deprecated `fabric-api` method for registering custom models.
+
+On NeoForge, enable the "NeoForge Light Pipeline" in `Mods` -> `NeoForge` -> `Client settings` -> `NeoForge Light Pipeline`. This will improve the apperance of the Package Crafter.

@@ -51,12 +51,12 @@ public record ImmutablePackageContents(ItemStack stack, int count) {
 	}
 	
 	public boolean isFull(PackageRules rules) {
-		int maxCount = rules.maxInTotal(stack);
+		int maxCount = rules.maxInPackageTotal(stack);
 		return maxCount == 0 || count == maxCount;
 	}
 	
 	public float fillPercentage(PackageRules rules) {
-		int maxCount = rules.maxInTotal(stack);
+		int maxCount = rules.maxInPackageTotal(stack);
 		if(maxCount == 0) return 1;
 		else return count / (float) maxCount;
 	}
@@ -65,15 +65,56 @@ public record ImmutablePackageContents(ItemStack stack, int count) {
 		return stack.isEmpty() || count == 0;
 	}
 	
-	public boolean allowedToInsert(ItemStack other, PackageRules rules) {
-		return rules.allowedToInsert(other) &&
-			(isEmpty() || other.isEmpty() || ItemStack.isSameItemSameComponents(stack, other));
-	}
-	
 	///
 	
 	//TODO: put insertion/removal methods in here too
 	// right now i'm still piggying off the PackageContents implementation
+	
+	public boolean allowedToInsert(ItemStack other, PackageRules rules) {
+		return rules.allowedToInsertInPackage(other) &&
+			(isEmpty() || other.isEmpty() || ItemStack.isSameItemSameComponents(stack, other));
+	}
+	
+	public record InsertionResult(ImmutablePackageContents newContents, int insertedAmount) {
+		private static InsertionResult none(ImmutablePackageContents x) {
+			return new InsertionResult(x, 0);
+		}
+	}
+	public InsertionResult withInsertion(ItemStack other, int maxToInsert, PackageRules rules) {
+		//allowedToInsert checks that 'stack' and 'other' are compatible
+		if(other.isEmpty() || !allowedToInsert(other, rules)) return InsertionResult.none(this);
+		
+		//how much space is left in the package
+		int remainingSpace = rules.maxInPackageTotal(stack) - count;
+		if(remainingSpace <= 0) return InsertionResult.none(this); //no room
+		
+		//how much will actually be inserted
+		int toInsert = Math.min(remainingSpace, Math.min(other.getCount(), maxToInsert));
+		if(toInsert == 0) return InsertionResult.none(this);
+		
+		return new InsertionResult(
+			new ImmutablePackageContents(stack, count + toInsert),
+			toInsert
+		);
+	}
+	
+	public record TakeResult(ImmutablePackageContents newContents, int takenAmount) {
+		private static TakeResult none(ImmutablePackageContents x) {
+			return new TakeResult(x, 0);
+		}
+	}
+	public TakeResult withTake(int maxToTake, PackageRules rules) {
+		if(isEmpty() || maxToTake == 0) return TakeResult.none(this);
+		
+		int toTake = Math.min(count, maxToTake);
+		int leftover = count - toTake;
+		return new TakeResult(leftover == 0 ? ImmutablePackageContents.EMPTY : new ImmutablePackageContents(stack, leftover), toTake);
+	}
+	
+	public TakeResult withFilteredTake(ItemStack filter, int maxToTake, PackageRules rules) {
+		if(!isEmpty() && !filter.isEmpty() && !ItemStack.isSameItemSameComponents(stack, filter)) return TakeResult.none(this);
+		else return withTake(maxToTake, rules);
+	}
 	
 	///
 	
