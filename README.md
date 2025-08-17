@@ -13,7 +13,7 @@ This monorepo contains the source for all of my *Season 2* mods. They can be ide
   * Maps update anywhere in your inventory. 
   * [Curseforge](https://www.curseforge.com/minecraft/mc-mods/crowmap), [Modrinth](https://modrinth.com/mod/crowmap) .
   * *Season 1* codebase: [quat1024/Crowmap](https://github.com/quat1024/Crowmap)
-* *Packages* (fabric/forge 1.20.1)
+* *Packages* (fabric/forge 1.20.1, fabric/neoforge 1.21.1)
   * 512 items is all you need. The underpowered barrels mod.
   * [Curseforge](https://www.curseforge.com/minecraft/mc-mods/packages), [Modrinth](https://modrinth.com/mod/packages)
   * *Season 1* codebase: [quat1024/packages](https://github.com/quat1024/packages)
