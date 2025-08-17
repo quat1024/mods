@@ -224,8 +224,8 @@ public class PackageItem extends BlockItem {
 		//really checking if the *slot* matches the *container*, but slot doesnt have a handy method for that
 		if(!container.matches(slot.getItem())) return false;
 		
-		int remainingSpaceInSlot = Math.max(0, slot.getMaxStackSize() - slot.getItem().getCount());
-		if(remainingSpaceInSlot == 0) return false; //No room to add any more items.
+		int remainingSpaceInSlot = slot.getMaxStackSize(slot.getItem()) - slot.getItem().getCount();
+		if(remainingSpaceInSlot <= 0) return false; //No room to add any more items.
 		
 		//Intentionally using getFilterStack().getMaxStackSize() here, instead of PackageContainer#getMaxStackSize(),
 		//because for cases where you have a package of packages, I want to deposit the slot-side concept of "one stack" (all of them)

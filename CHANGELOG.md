@@ -29,10 +29,17 @@ This isn't strictly needed on Neoforge, because you've always been able to confi
   * This replaces the old system of packages becoming sticky when they are next to a slime/honey block. Not many people knew about it!
   * The old system is available behind a config option.
 * Tweak interactions with regard to sticky packages. (For example, you can insert items into an empty, sticky package, even if they aren't items from your hand.)
-* Remove the annoying honey particles from sticky packages. Sticky packages now can be distinguied by "sticky" text that appears when shifting.
+* Remove the annoying honey particles from sticky packages. Sticky packages can now be distinguied by "sticky" text that appears when shifting.
   * It is behind a client config option, if you want them back for some reason...
-* Stickiness might actually work on Forge!!!!! (lmao) it wasn't being enforced through the `IItemHandler`. Probably needs more testing
+* Stickiness might actually work on Forge!!!!! (lmao) it wasn't being enforced through the `IItemHandler`.
 * Slightly less willing to be placed vertically. You have to look up/down a bit farther.
+* Fix an issue where items which stacked to 16 could be deleted using Packages inventory interactions.
 * On 1.20.1, migrate off of a deprecated `fabric-api` method for registering custom models.
+* On 1.21.1, `PackageBlockEntity` no longer implements vanilla `Container`! Instead, modloader-specific inventory mechanisms are used.
+  * On NeoForge, the Package exposes an `ItemHandler` capability. On Fabric, the Package exposes an `ItemStorage` API. 
+  * This was a rather large change so I'd like to test it before backporting it to 1.20.1.
+* On 1.21.1, the Package *item* also exposes these modloader-specific inventories.
+  * This means other mods which can, e.g., pull blocks out of shulker boxes in your inventory, may be able to pull items out of Packages too.
+  * This feature needs more testing.
 
 On NeoForge, enable the "NeoForge Light Pipeline" in `Mods` -> `NeoForge` -> `Client settings` -> `NeoForge Light Pipeline`. This will improve the apperance of the Package Crafter.

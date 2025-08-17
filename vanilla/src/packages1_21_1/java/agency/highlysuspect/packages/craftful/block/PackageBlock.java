@@ -16,11 +16,11 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -101,7 +101,13 @@ public class PackageBlock extends Block implements EntityBlock {
 	
 	@Override
 	public int getAnalogOutputSignal(BlockState state, Level world, BlockPos pos) {
-		return AbstractContainerMenu.getRedstoneSignalFromBlockEntity(world.getBlockEntity(pos));
+		//return AbstractContainerMenu.getRedstoneSignalFromBlockEntity(world.getBlockEntity(pos)); //No longer a Container
+		if(world.getBlockEntity(pos) instanceof PackageBlockEntity be) {
+			float fillPercentage = be.getContents().fillPercentage(be.getRules());
+			return Mth.lerpDiscrete(fillPercentage, 0, 15);
+		}
+		
+		else return 0;
 	}
 	
 	@Override

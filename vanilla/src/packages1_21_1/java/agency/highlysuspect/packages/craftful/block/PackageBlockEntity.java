@@ -144,6 +144,13 @@ public class PackageBlockEntity extends BlockEntity implements Nameable, Package
 		return this;
 	}
 	
+	//PackageRules. Most of the rules are the same as the default but this is where stickyStack logic happens
+	@Override
+	public boolean allowedToInsertInPackage(ItemStack stack) {
+		if(!stickyStack.isEmpty() && !ItemStack.isSameItemSameComponents(stickyStack, stack)) return false;
+		return PackageRules.super.allowedToInsertInPackage(stack);
+	}
+	
 	//<editor-fold desc="Interactions">
 	public boolean performAction(Player player, InteractionHand hand, PackageAction action, boolean clientsideSimulate) {
 		if(mapmakerLockedTag) {
