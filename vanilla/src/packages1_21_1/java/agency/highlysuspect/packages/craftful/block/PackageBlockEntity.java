@@ -22,6 +22,7 @@ import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.Clearable;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.Nameable;
 import net.minecraft.world.effect.MobEffects;
@@ -40,7 +41,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 import java.util.stream.IntStream;
 
-public class PackageBlockEntity extends BlockEntity implements Nameable, PackageRules, PackageContainer2 {
+public class PackageBlockEntity extends BlockEntity implements Nameable, Clearable, PackageRules, PackageContainer2 {
 	public PackageBlockEntity(BlockPos pos, BlockState state) {
 		super(PLatches.BlockEntityTypes.PACKAGE.get(), pos, state);
 	}
@@ -425,6 +426,12 @@ public class PackageBlockEntity extends BlockEntity implements Nameable, Package
 		this.customName = customName;
 	}
 	//</editor-fold>
+	
+	//Clearable (from vanilla; used primarily by /fill, /setblock etc)
+	@Override
+	public void clearContent() {
+		immutableContents = ImmutablePackageContents.EMPTY;
+	}
 	
 	//<editor-fold desc="RenderAttachmentBlockEntity">
 	@SuppressWarnings("unused")
