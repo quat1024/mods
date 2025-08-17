@@ -2,7 +2,8 @@ package agency.highlysuspect.packages.craftful.client;
 
 import agency.highlysuspect.packages.craftful.block.PackageBlock;
 import agency.highlysuspect.packages.craftful.block.PackageBlockEntity;
-import agency.highlysuspect.packages.craftful.junk.PackageContainer;
+import agency.highlysuspect.packages.craftful.junk.ImmutablePackageContents;
+import agency.highlysuspect.packages.craftful.junk.PackageRules;
 import agency.highlysuspect.quatlib.craftless.client.MyBlockEntityRendererProvider;
 import agency.highlysuspect.quatlib.craftless.util.TwelveDirection;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -62,11 +63,8 @@ public class PackageRenderer implements BlockEntityRenderer<PackageBlockEntity> 
 		applyRotation(matrices, packageTwelveDir);
 		
 		/// Item
-		PackageContainer container = blockEntity.getContainer();
-		ItemStack stack = container.getFilterStack();
-		if(stack.isEmpty()) stack = blockEntity.getStickyStack();
-		
-		if(!stack.isEmpty()) drawItem(matrices, vertexConsumers, stack, light);
+		ItemStack stackToDisplay = blockEntity.getItemStackForDisplay();
+		if(!stackToDisplay.isEmpty()) drawItem(matrices, vertexConsumers, stackToDisplay, light);
 		
 		/// Text
 		int detailLevel = player.isShiftKeyDown() ? 1 : 0;
@@ -82,7 +80,16 @@ public class PackageRenderer implements BlockEntityRenderer<PackageBlockEntity> 
 		}
 		
 		boolean sticky = blockEntity.canBeSticky();
-		if(detailLevel > 0) drawText(matrices, vertexConsumers, light, container, sticky, detailLevel, Math.sqrt(distanceSq));
+		if(detailLevel > 0) {
+			ImmutablePackageContents contents = blockEntity.getContents();
+			PackageRules rules = blockEntity.getRules();
+			
+			int count = contents.count();
+			int maxPerSlot = rules.maxPerPackageSlot(stackToDisplay);
+			boolean full = contents.isFull(rules);
+			
+			drawText(matrices, vertexConsumers, light, count, maxPerSlot, full, sticky, detailLevel, Math.sqrt(distanceSq));
+		}
 		
 		matrices.popPose();
 	}
@@ -108,9 +115,10 @@ public class PackageRenderer implements BlockEntityRenderer<PackageBlockEntity> 
 		ps.last().pose().rotate(MAGIC_QUATS[dir.ordinal()]);
 	}
 	
+	//default recursion limit is 3
 	//+1 because depth is increased before rendering the item
 	//+1 again because RECURSION_LIMIT doesnt count the final item at the very bottom (i dont think)
-	private static final int MAX_ITEM_RENDER_DEPTH = PackageContainer.RECURSION_LIMIT + 2;
+	private static final int MAX_ITEM_RENDER_DEPTH = 5;
 	private static final Matrix4f[] ITEM_TRANSFORMATIONS = new Matrix4f[MAX_ITEM_RENDER_DEPTH];
 	static {
 		for(int depth = 0; depth < ITEM_TRANSFORMATIONS.length; depth++) {
@@ -152,26 +160,23 @@ public class PackageRenderer implements BlockEntityRenderer<PackageBlockEntity> 
 		}
 	}
 	
-	private void drawText(PoseStack matrices, MultiBufferSource vertexConsumers, int light, PackageContainer container, boolean sticky, int detailLevel, double distance) {
-		int count = container.getCount();
-		int max = container.maxStackAmountAllowed(container.getFilterStack());
-		
+	private void drawText(PoseStack matrices, MultiBufferSource vertexConsumers, int light, int count, int maxPerSlot, boolean isFull, boolean sticky, int detailLevel, double distance) {
 		String text;
 		if(detailLevel == 2) {
-			if(max == 1) text = count + "x1";
+			if(maxPerSlot <= 1) text = count + "x1";
 			else {
-				int stacks = count / max;
-				int leftover = count % max;
-				text = stacks + "x" + max + " + " + leftover;
+				int stacks = count / maxPerSlot;
+				int leftover = count % maxPerSlot;
+				text = stacks + "x" + maxPerSlot + " + " + leftover;
 			}
 		} else text = String.valueOf(count);
 		
-		int color = (container.isFull() ? 0x00FF6600 : 0x00FFFFFF) | (distance - 0.5 >= Minecraft.getInstance().player.blockInteractionRange() ? 0x55000000 : 0xFF000000);
+		int color = (isFull ? 0x00FF6600 : 0x00FFFFFF) | (distance - 0.5 >= Minecraft.getInstance().player.blockInteractionRange() ? 0x55000000 : 0xFF000000);
 		int shadowColor = (color & 0xFCFCFC) >> 2; //Yoined from the default shadow rendering code apparently (thanks una)
 		
 		//deeply magical numbers
 		float scale;
-		if(detailLevel == 2 && max == 1) scale = 1/30f;
+		if(detailLevel == 2 && maxPerSlot == 1) scale = 1/30f;
 		else if(detailLevel == 2) scale = 1/70f;
 		else if(count < 10) scale = 1/15f;
 		else if(count < 100) scale = 1/23f;

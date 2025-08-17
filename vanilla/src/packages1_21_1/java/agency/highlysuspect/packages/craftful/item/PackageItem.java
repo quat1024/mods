@@ -3,7 +3,6 @@ package agency.highlysuspect.packages.craftful.item;
 import agency.highlysuspect.packages.craftful.Packages;
 import agency.highlysuspect.packages.craftful.PropsCommon;
 import agency.highlysuspect.packages.craftful.junk.ImmutablePackageContents;
-import agency.highlysuspect.packages.craftful.junk.PackageContainer;
 import agency.highlysuspect.packages.craftful.junk.PackageRules;
 import agency.highlysuspect.packages.craftful.junk.PackageStyle;
 import net.minecraft.ChatFormatting;
@@ -19,8 +18,10 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.block.Block;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.Objects;
 
 public class PackageItem extends BlockItem {
 	public PackageItem(Block block, Properties settings) {
@@ -31,6 +32,10 @@ public class PackageItem extends BlockItem {
 		ItemStack i = new ItemStack(this);
 		i.set(PackageStyle.DATA_COMPONENT_TYPE, new PackageStyle(frame, inner, color));
 		return i;
+	}
+	
+	public @NotNull ImmutablePackageContents getContents(ItemStack stack) {
+		return Objects.requireNonNull(stack.get(ImmutablePackageContents.DATA_COMPONENT_TYPE), "PackageItem should have ImmutablePackageContents data component");
 	}
 	
 	private int nameReentrancy = 0;
@@ -65,20 +70,18 @@ public class PackageItem extends BlockItem {
 	
 	@Override
 	public void appendHoverText(ItemStack stack, TooltipContext ctx, List<Component> tooltip, TooltipFlag mistake) {
-		ImmutablePackageContents contents = stack.get(ImmutablePackageContents.DATA_COMPONENT_TYPE);
-		if(contents != null) {
-			ImmutablePackageContents.TooltipStats stats = contents.computeTooltipStats();
-			//If there's at least one layer of nontrivial nesting going on, advertise how many items there are if the entire package was unrolled.
-			if(stats.amplified() && !stats.rootContents().isEmpty()) {
-				tooltip.add(
-					Component.translatable("packages.contents_tooltip.utimately",
-						Component.translatable("block.packages.package.nonempty.contents",
-							stats.fullyMultipliedCount(),
-							stats.rootContents().getHoverName()
-						).withStyle(ChatFormatting.DARK_RED)
-					).withStyle(ChatFormatting.DARK_GRAY)
-				);
-			}
+		ImmutablePackageContents contents = getContents(stack);
+		ImmutablePackageContents.TooltipStats stats = contents.computeTooltipStats();
+		//If there's at least one layer of nontrivial nesting going on, advertise how many items there are if the entire package was unrolled.
+		if(stats.amplified() && !stats.rootContents().isEmpty()) {
+			tooltip.add(
+				Component.translatable("packages.contents_tooltip.utimately",
+					Component.translatable("block.packages.package.nonempty.contents",
+						stats.fullyMultipliedCount(),
+						stats.rootContents().getHoverName()
+					).withStyle(ChatFormatting.DARK_RED)
+				).withStyle(ChatFormatting.DARK_GRAY)
+			);
 		}
 		
 		if(Packages.inst().proxy.hasShiftDownForTooltip()) {
@@ -110,21 +113,19 @@ public class PackageItem extends BlockItem {
 	@Override
 	public boolean isBarVisible(ItemStack stack) {
 		if(stack.getCount() != 1) return false; //Clips with the number and looks bad, and stacked packages aren't interactable anyway.
-		return !stack.getOrDefault(ImmutablePackageContents.DATA_COMPONENT_TYPE, ImmutablePackageContents.EMPTY).isEmpty();
+		return !getContents(stack).isEmpty();
 	}
 	
 	@Override
 	public int getBarWidth(ItemStack stack) {
-		ImmutablePackageContents contents = stack.get(ImmutablePackageContents.DATA_COMPONENT_TYPE);
-		if(contents == null) return 0;
+		ImmutablePackageContents contents = getContents(stack);
 		return Math.min((int) (1 + 12 * contents.fillPercentage(PackageRules.DEFAULT)), 13);
 	}
 	
 	@Override
 	public int getBarColor(ItemStack stack) {
-		ImmutablePackageContents contents = stack.get(ImmutablePackageContents.DATA_COMPONENT_TYPE);
-		if(contents == null) return 0xFF00FF;
-		else if(Packages.inst().proxy.useRedBarWhenFull() && contents.isFull(PackageRules.DEFAULT)) return 0xD5636A; //Nice tomato-ey red color
+		ImmutablePackageContents contents = getContents(stack);
+		if(Packages.inst().proxy.useRedBarWhenFull() && contents.isFull(PackageRules.DEFAULT)) return 0xD5636A; //Nice tomato-ey red color
 		else return 0x6666FF; //Same color as the bundle's bar
 	}
 	
@@ -141,26 +142,31 @@ public class PackageItem extends BlockItem {
 		//instead of putting one inside the other. They can always be nested in-world.
 		if(ItemStack.isSameItemSameComponents(me, other)) return false;
 		
-		else return PackageContainer.mutateItemStack(me, container -> {
-			if(other.isEmpty() && !container.isEmpty()) {
-				//The package contains items, but the slot is empty. Take one stack of items from the package and deposit it into the slot.
-				return dropIntoSlot(player, container, slot);
-			} else if(!other.isEmpty()) {
-				//The slot is not empty. Try to sponge up items from the slot into the package.
-				boolean absorbSuccess = absorbFromSlot(player, container, slot);
-				if(absorbSuccess) return true;
-				else if(container.matches(other) && container.isFull()) {
-					//If we're here, we're in a situation where the player clicked a slot that has an item matching the package's contents,
-					//but we couldn't draw any of the items into the package because it was full.
-					//In this case, we should replenish the slot's contents with more items from the package.
-					int remainingSpaceInSlot = Math.max(0, other.getMaxStackSize() - other.getCount());
-					if(remainingSpaceInSlot != 0) {
-						return dropIntoSlot(player, container, slot);
-					}
+		//NEW LOGIC
+		
+		ImmutablePackageContents myContents = getContents(me);
+		PackageRules rules = PackageRules.DEFAULT; //TODO (far future): Different packages with different rules?
+		
+		if(other.isEmpty() && !myContents.isEmpty()) {
+			//The package contains items, but the slot is empty. Take one stack of items from the package and deposit it into the slot.
+			return dropIntoSlot2(player, slot, me, myContents, rules);
+		} else if(!other.isEmpty()) {
+			//Slot is not empty, try to sponge up items from the slot into the package.
+			boolean absorbSuccess = absorbFromSlot2(player, slot, me, myContents, rules);
+			if(absorbSuccess) return true;
+			
+			//If !absorbSuccess, no package insertion was done so myContents is not stale.
+			//If we're here, we're in a situation where the player clicked a slot that has an item matching the package's contents,
+			//but we couldn't draw any of the items into the package because it was full.
+			//In this case, we should replenish the slot's contents with more items from the package.
+			if(myContents.canStackWith(other) && myContents.isFull(rules)) {
+				if(other.getMaxStackSize() - other.getCount() > 0) { //If there's room in the slot to drop items
+					return dropIntoSlot2(player, slot, me, myContents, rules);
 				}
 			}
-			return false;
-		}, false);
+		}
+		
+		return false;
 	}
 	
 	@Override
@@ -175,30 +181,30 @@ public class PackageItem extends BlockItem {
 		//instead of putting one inside the other. They can always be nested in-world.
 		if(ItemStack.isSameItemSameComponents(me, other)) return false;
 		
-		//Otherwise try to eat up those items.
-		else return PackageContainer.mutateItemStack(me, container -> {
-			if(container.matches(other)) {
-				ItemStack insertionLeftover = container.insert(other, Integer.MAX_VALUE, false);
-				if(insertionLeftover.getCount() != other.getCount()) { //If the amount of items changed
-					//We can't directly set the ItemStack on the player's cursor, but we can leverage how `insertionLeftover` and
-					//`other` both have the same item and nbt tags.
-					other.setCount(insertionLeftover.getCount());
-					player.playSound(SoundEvents.BUNDLE_INSERT, 0.8f, 0.8f + player.level().getRandom().nextFloat() * 0.4f);
-					return true;
-				}
+		//NEW LOGIC
+		ImmutablePackageContents myContents = getContents(me);
+		PackageRules rules = PackageRules.DEFAULT;
+		
+		//here "other" is the itemstack on the player's cursor. Can't modify it but can change the size
+		if(myContents.canStackWith(other)) {
+			ImmutablePackageContents.InsertionResult insertionResult = myContents.withInsertion(other, Integer.MAX_VALUE, rules);
+			if(insertionResult.insertedAmount() > 0) {
+				other.shrink(insertionResult.insertedAmount());
+				player.playSound(SoundEvents.BUNDLE_INSERT, 0.8f, 0.8f + player.level().getRandom().nextFloat() * 0.4f);
+				me.set(ImmutablePackageContents.DATA_COMPONENT_TYPE, insertionResult.newContents());
+				return true;
 			}
-			return false;
-		}, false);
+		}
+		return false;
 	}
 	
 	//Mop up items from a slot into the PackageContainer. Always grabs as much as it can.
-	//Assumes that the contents of `slot` can stack with the contents of the PackageContainer.
-	private boolean absorbFromSlot(Player player, PackageContainer container, Slot slot) {
-		if(slot.getItem().isEmpty()) return false;
-		if(!container.matches(slot.getItem())) return false;
-		if(!container.allowedInPackageAtAll(slot.getItem())) return false; //todo this shouldn't be an ad-hoc check...... reh!
+	private boolean absorbFromSlot2(Player player, Slot slot, ItemStack me, ImmutablePackageContents myOldContents, PackageRules rules) {
+		if(slot.getItem().isEmpty() || !myOldContents.canStackWith(slot.getItem()) || !rules.allowedInPackageAtAll(slot.getItem()))
+			return false;
 		
-		int remainingSpaceInPackage = container.maxStackAmountAllowed(slot.getItem()) * 8 - container.getCount(); //todo break this out into a method on packagecontainer probably
+		int remainingSpaceInPackage = rules.maxInPackageTotal(slot.getItem()) - myOldContents.count();
+		if(remainingSpaceInPackage <= 0) return false;
 		
 		//pull it out of the slot... this happens for real, no take backsies past this point
 		//for a slot with !allowModification (which, in practice, is crafting slots) the second argument is used as a threshold.
@@ -208,42 +214,57 @@ public class PackageItem extends BlockItem {
 		ItemStack grabbedFromSlot = slot.safeTake(remainingSpaceInPackage, remainingSpaceInPackage, player);
 		if(grabbedFromSlot.isEmpty()) return false;
 		
-		ItemStack insertionLeftover = container.insert(grabbedFromSlot, Integer.MAX_VALUE, false);
+		ImmutablePackageContents.InsertionResult insertionResult = myOldContents.withInsertion(grabbedFromSlot, Integer.MAX_VALUE, rules);
 		
-		if(!insertionLeftover.isEmpty()) {
-			//TODO: what happens if `insert` returns nonempty stack? what cases might this come up in?
-			Packages.LOG.warn("Non-empty stack (" + insertionLeftover + ") appeared in absorbFromSlot action from player " + player.getScoreboardName() + ". Can you file an issue about what caused this?");
+		//check that all of the items were actually inserted
+		if(grabbedFromSlot.getCount() != insertionResult.insertedAmount()) {
+			Packages.LOG.warn("In an absorbFromSlot action from {}, I picked up {} items from a slot but {} fit in the package. Item loss or duplication may have occured. Can you file an issue about what caused this? Thanks.", player.getScoreboardName(), grabbedFromSlot.getCount(), insertionResult.insertedAmount());
 		}
 		
+		//sound
 		player.playSound(SoundEvents.BUNDLE_INSERT, 0.8f, 0.8f + player.level().getRandom().nextFloat() * 0.4f);
+		
+		//update my data component
+		me.set(ImmutablePackageContents.DATA_COMPONENT_TYPE, insertionResult.newContents());
 		return true;
 	}
 	
 	//Drop a stack of items from a PackageContainer into a slot.
-	private boolean dropIntoSlot(Player player, PackageContainer container, Slot slot) {
-		//really checking if the *slot* matches the *container*, but slot doesnt have a handy method for that
-		if(!container.matches(slot.getItem())) return false;
+	//Returns whether it did anything
+	private boolean dropIntoSlot2(Player player, Slot slot, ItemStack me, ImmutablePackageContents myOldContents, PackageRules rules) {
+		if(myOldContents.isEmpty() || !myOldContents.canStackWith(slot.getItem())) return false;
 		
-		int remainingSpaceInSlot = Math.max(0, slot.getMaxStackSize() - slot.getItem().getCount());
-		if(remainingSpaceInSlot == 0) return false; //No room to add any more items.
+		int remainingSpaceInSlot;
+		if(slot.getItem().isEmpty()) {
+			remainingSpaceInSlot = slot.getMaxStackSize(myOldContents.stack());
+		} else {
+			remainingSpaceInSlot = slot.getMaxStackSize(slot.getItem()) - slot.getItem().getCount();
+		}
+		if(remainingSpaceInSlot <= 0) return false; //No more space in slot
 		
-		//Intentionally using getFilterStack().getMaxStackSize() here, instead of PackageContainer#getMaxStackSize(),
+		//Intentionally using stack().getMaxStackSize() here, instead of using the PackageRules,
 		//because for cases where you have a package of packages, I want to deposit the slot-side concept of "one stack" (all of them)
 		//and not the package's idea of "one stack" (one of them).
-		int oneStackFromPackage = container.getFilterStack().getMaxStackSize();
+		int oneStackFromPackage = Math.min(myOldContents.stack().getMaxStackSize(), myOldContents.count());
 		
 		int amountToDrop = Math.min(remainingSpaceInSlot, oneStackFromPackage);
-		ItemStack toPlace = container.take(amountToDrop, true);
-		if(slot.mayPlace(toPlace)) {
-			toPlace = container.take(amountToDrop, false);
-			ItemStack slotInsertionLeftover = slot.safeInsert(toPlace);
+		
+		ImmutablePackageContents.TakeResult takeResult = myOldContents.withTake(amountToDrop, rules);
+		if(takeResult.takenAmount() > 0 && slot.mayPlace(myOldContents.stack())) {
+			//add the item into the slot for real
+			ItemStack slotInsertionLeftover = slot.safeInsert(myOldContents.stack().copyWithCount(takeResult.takenAmount()));
 			
+			//check that the entire stack was inserted
 			if(!slotInsertionLeftover.isEmpty()) {
 				//TODO: what happens if `safeInsert` returns nonempty stack? what cases might this come up in?
-				Packages.LOG.warn("Non-empty stack (" + slotInsertionLeftover + ") appeared in dropIntoSlot action from player " + player.getScoreboardName() + ". Can you file an issue about what caused this? Thanks.");
+				Packages.LOG.warn("Non-empty stack (" + slotInsertionLeftover + ") appeared in dropIntoSlot action from player " + player.getScoreboardName() + ". Item loss or duplication may have happened. Can you file an issue about what caused this? Thanks.");
 			}
 			
+			//sound
 			player.playSound(SoundEvents.BUNDLE_REMOVE_ONE, 0.8f, 0.8f + player.level().getRandom().nextFloat() * 0.4f);
+			
+			//update my data component
+			me.set(ImmutablePackageContents.DATA_COMPONENT_TYPE, takeResult.newContents());
 			return true;
 		}
 		return false;

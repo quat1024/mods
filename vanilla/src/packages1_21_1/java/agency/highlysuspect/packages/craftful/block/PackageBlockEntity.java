@@ -3,10 +3,7 @@ package agency.highlysuspect.packages.craftful.block;
 import agency.highlysuspect.packages.craftful.Packages;
 import agency.highlysuspect.packages.craftful.PropsCommon;
 import agency.highlysuspect.packages.craftful.content.PLatches;
-import agency.highlysuspect.packages.craftful.junk.ImmutablePackageContents;
-import agency.highlysuspect.packages.craftful.junk.PTags;
-import agency.highlysuspect.packages.craftful.junk.PackageContainer;
-import agency.highlysuspect.packages.craftful.junk.PackageStyle;
+import agency.highlysuspect.packages.craftful.junk.*;
 import agency.highlysuspect.packages.craftful.net.PackageAction;
 import agency.highlysuspect.quatlib.craftless.util.SoftImplement;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
@@ -25,7 +22,6 @@ import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.Nameable;
 import net.minecraft.world.effect.MobEffects;
@@ -44,13 +40,15 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 import java.util.stream.IntStream;
 
-public class PackageBlockEntity extends BlockEntity implements Container, Nameable {
+public class PackageBlockEntity extends BlockEntity implements Nameable, PackageRules, PackageContainer2 {
 	public PackageBlockEntity(BlockPos pos, BlockState state) {
 		super(PLatches.BlockEntityTypes.PACKAGE.get(), pos, state);
 	}
 	
 	private PackageStyle style = PackageStyle.ERROR_LOL;
-	private final PackageContainer container = new PackageContainer().addListener(c -> this.setChanged());
+	//@Deprecated
+	//private final PackageContainer container = new PackageContainer().addListener(c -> this.setChanged());
+	private ImmutablePackageContents immutableContents = ImmutablePackageContents.EMPTY;
 	private ItemStack stickyStack = ItemStack.EMPTY;
 	
 	private Component customName;
@@ -64,10 +62,6 @@ public class PackageBlockEntity extends BlockEntity implements Container, Nameab
 	
 	public PackageStyle getStyle() {
 		return style;
-	}
-	
-	public PackageContainer getContainer() {
-		return container;
 	}
 	
 	//Stickiness
@@ -100,20 +94,54 @@ public class PackageBlockEntity extends BlockEntity implements Container, Nameab
 		//If the package is not allowed to be sticky, clear the sticky stack
 		if(!canBeSticky()) {
 			stickyStack = ItemStack.EMPTY;
+			return true; //TODO(season2): return whether it actually changed
+		}
+		
+		//At this point we're allowed to be sticky.
+		//If there is no sticky stack and the package is nonempty, pick up the stickystack from the package.
+		if(stickyStack.isEmpty() && !immutableContents.isEmpty()) {
+			stickyStack = immutableContents.stack().copy();
 			return true;
 		}
 		
-		//If the package is allowed to be sticky, but doesn't have a filter stack, pick one.
-		//Empty containers will return ItemStack.EMPTY here
-		if(stickyStack.isEmpty() || (!stickyStack.isEmpty() && !container.isEmpty())) {
-			stickyStack = container.getFilterStack().copy();
-			return !stickyStack.isEmpty(); //return whether i picked up a new sticky stack
-		}
+		//TODO: old logic was like this for some reason
+//		if(stickyStack.isEmpty() || (!stickyStack.isEmpty() && !immutableContents.isEmpty())) {
+//			stickyStack = immutableContents.stack().copy();
+//			return !stickyStack.isEmpty(); //return whether i picked up a new sticky stack
+//		}
 		return false;
 	}
 	
 	public ItemStack getStickyStack() {
 		return stickyStack;
+	}
+	
+	public ItemStack getItemStackForDisplay() {
+		if(immutableContents.isEmpty()) return getStickyStack();
+		else return immutableContents.stack().copyWithCount(immutableContents.count());
+		// ^ Pass the count to the ItemStack in case the item renders differently based off its stack size?
+		// Feature of some mods/resource packs I think.
+	}
+	
+	//PackageContainer2
+	@Override
+	public ImmutablePackageContents getContents() {
+		return immutableContents;
+	}
+	
+	@Override
+	public void setContentsNonCommitted(ImmutablePackageContents newContents) {
+		immutableContents = newContents;
+	}
+	
+	@Override
+	public void commitContents() {
+		setChanged();
+	}
+	
+	@Override
+	public PackageRules getRules() {
+		return this;
 	}
 	
 	//<editor-fold desc="Interactions">
@@ -191,7 +219,7 @@ public class PackageBlockEntity extends BlockEntity implements Container, Nameab
 		if(action == PackageAction.INSERT_ALL) {
 			//Insert the stack of items that the player is holding, followed by stacks from the rest of the player's inventory.
 			//If the player and package is not holding anything, look for the item type the player has the most of, and choose that.
-			int favoriteSlot = player.getItemInHand(hand).isEmpty() && container.isEmpty() ? slotWithALot(player).orElse(handSlot) : handSlot;
+			int favoriteSlot = player.getItemInHand(hand).isEmpty() && immutableContents.isEmpty() ? slotWithALot(player).orElse(handSlot) : handSlot;
 			
 			boolean didAnything = false;
 			IntIterator iterator = handSlotFirst(player, favoriteSlot).intIterator();
@@ -203,7 +231,7 @@ public class PackageBlockEntity extends BlockEntity implements Container, Nameab
 		}
 		
 		int x = action == PackageAction.INSERT_ONE ? 1 : Integer.MAX_VALUE;
-		if(stickyStack.isEmpty() && container.isEmpty()) {
+		if(stickyStack.isEmpty() && immutableContents.isEmpty()) {
 			//Only insert items from the player's hand slot, to avoid surprises.
 			return insert0(player, handSlot, x, simulate) > 0;
 		} else {
@@ -218,32 +246,44 @@ public class PackageBlockEntity extends BlockEntity implements Container, Nameab
 	}
 	
 	//Inserts items from the player's slot into the package, then places any leftovers back into the slot.
+	//Returns the amount of items that were inserted.
 	private int insert0(Player player, int slot, int maxAmountToInsert, boolean simulate) {
-		ItemStack toInsert = player.getInventory().getItem(slot).copy();
+		ItemStack toInsert = player.getInventory().getItem(slot);
 		
-		//TODO(season2) Giant hack. Basically if the stickystack is set, prevent inserting nonmatching items into
-		// the package even if the package is empty. Aka, what a "sticky" feature is supposed to do...
-		// The corresponding code for automated interactions lives in canPlaceItem.
-		// (This code should really live inside PackageContainer#matches tbqh)
-		boolean respectsSticky = stickyStack.isEmpty() || ItemStack.isSameItemSameComponents(stickyStack, toInsert);
-		ItemStack leftover;
-		if(respectsSticky) {
-			leftover = container.insert(toInsert, maxAmountToInsert, simulate);
-			if(!simulate) player.getInventory().setItem(slot, leftover);
-		} else {
-			leftover = toInsert.copy(); //none of them fit
+		//withInsertion copies the itemstack before saving it to the PackageContents
+		ImmutablePackageContents.InsertionResult result = immutableContents.withInsertion(toInsert, maxAmountToInsert, getRules());
+		if(!simulate) {
+			immutableContents = result.newContents();
+			toInsert.shrink(result.insertedAmount()); //works because the stack wasn't copied
 		}
-		return toInsert.getCount() - (leftover.isEmpty() ? 0 : leftover.getCount());
+		
+		return result.insertedAmount();
+		
+		//OLD HACKY LOGIC
+//		//TODO(season2) Giant hack. Basically if the stickystack is set, prevent inserting nonmatching items into
+//		// the package even if the package is empty. Aka, what a "sticky" feature is supposed to do...
+//		// The corresponding code for automated interactions lives in canPlaceItem.
+//		// (This code should really live inside PackageContainer#matches tbqh)
+//		boolean respectsSticky = stickyStack.isEmpty() || ItemStack.isSameItemSameComponents(stickyStack, toInsert);
+//		ItemStack leftover;
+//		if(respectsSticky) {
+//			leftover = container.insert(toInsert, maxAmountToInsert, simulate);
+//			if(!simulate) player.getInventory().setItem(slot, leftover);
+//		} else {
+//			leftover = toInsert.copy(); //none of them fit
+//		}
+//		return toInsert.getCount() - leftover.getCount();
 	}
 	
-	//Picks one of the slots containing the item type that the player has the most of.
+	//Picks one of the slots containing an item type that the player has the most of..
+	//The item must fit in the package.
 	private Optional<Integer> slotWithALot(Player player) {
 		//Make a frequency table of items
 		Map<Item, MutableInt> runningTotal = new HashMap<>();
 		for(int i = 0; i < player.getInventory().getContainerSize(); i++) {
 			ItemStack here = player.getInventory().getItem(i);
 			if(here.isEmpty()) continue;
-			if(!container.allowedInPackageAtAll(here)) continue;
+			if(!getRules().allowedToInsertInPackage(here)) continue;
 			runningTotal.computeIfAbsent(here.getItem(), __ -> new MutableInt(0)).add(here.getCount());
 		}
 		
@@ -272,32 +312,50 @@ public class PackageBlockEntity extends BlockEntity implements Container, Nameab
 			case TAKE_ONE -> 1;
 			case TAKE_STACK -> {
 				ItemStack held = player.getItemInHand(hand);
-				if(!held.isEmpty() && container.matches(held)) {
+				if(!held.isEmpty() && immutableContents.canStackWith(held)) {
 					//First, try to complete the stack in the player's hand without going over.
 					int completionAmount = held.getMaxStackSize() - held.getCount();
 					if(completionAmount > 0) yield completionAmount;
 				}
-				yield container.maxStackAmountAllowed(container.getFilterStack());
+				//otherwise remove one stack of items (measured by the package rules)
+				yield getRules().maxPerPackageSlot(immutableContents.stack());
 			}
 			case TAKE_ALL -> Integer.MAX_VALUE;
 			default -> throw new IllegalArgumentException("take() only supports taking actions, not " + action);
 		};
 		
-		ItemStack toGiveOverstack = container.take(maxAmountToTake, simulate);
-		if(toGiveOverstack.isEmpty()) return new PlayerTakeResult(false, Collections.emptyList());
+		ImmutablePackageContents.TakeResult result = immutableContents.withTake(maxAmountToTake, getRules());
+		if(result.takenAmount() == 0) return new PlayerTakeResult(false, List.of());
 		
-		//TODO: Simulate adding items to player inventories and returning an accurate leftovers list, instead of faking it
-		// This isn't very important
-		if(simulate) return new PlayerTakeResult(true, Collections.emptyList());
+		//awkward: using the ItemStack from the old ImmutableContents, just in case it was shrunk to empty
+		ItemStack toGiveOverstack = immutableContents.stack().copyWithCount(result.takenAmount());
 		
-		List<ItemStack> toGive = PackageContainer.flattenOverstack(toGiveOverstack);
-		List<ItemStack> leftovers = new ArrayList<>();
-		for(ItemStack stack : toGive) {
-			if(!player.getInventory().add(stack)) leftovers.add(stack);
+		if(simulate) {
+			//TODO: Simulate adding items to player inventories and returning an accurate leftovers list, instead of faking it
+			// This isn't very important
+			return new PlayerTakeResult(true, Collections.emptyList());
+		} else {
+			immutableContents = result.newContents();
+			
+			List<ItemStack> toGive = flattenOverstack(toGiveOverstack);
+			List<ItemStack> leftovers = new ArrayList<>();
+			for(ItemStack stack : toGive) {
+				if(!player.getInventory().add(stack)) leftovers.add(stack);
+			}
+			return new PlayerTakeResult(true, leftovers);
 		}
-		return new PlayerTakeResult(true, leftovers);
 	}
 	public record PlayerTakeResult(boolean successful, List<ItemStack> leftovers) {}
+	
+	//Eg. 160x cobblestone -> [64x cobblestone, 64x cobblestone, 32x cobblestone]. Mutates its argument.
+	static List<ItemStack> flattenOverstack(ItemStack mutOverstack) {
+		List<ItemStack> result = new ArrayList<>();
+		while(!mutOverstack.isEmpty()) {
+			//split(amt) takes min(stack.getCount(), amt)
+			result.add(mutOverstack.split(mutOverstack.getMaxStackSize()));
+		}
+		return result;
+	}
 	
 	@SuppressWarnings("SameParameterValue") //simulate == false, see above to-do comment
 	private boolean playerTakeDropLeftovers(Player player, InteractionHand hand, PackageAction action, boolean simulate) {
@@ -338,80 +396,17 @@ public class PackageBlockEntity extends BlockEntity implements Container, Nameab
 	}
 	//</editor-fold>
 	
-	//<editor-fold desc="Container">
-	@Override
-	public int getContainerSize() {
-		return container.getContainerSize();
-	}
-	
-	@Override
-	public boolean isEmpty() {
-		return container.isEmpty();
-	}
-	
-	@Override
-	public ItemStack getItem(int slot) {
-		return container.getItem(slot);
-	}
-	
-	@Override
-	public ItemStack removeItem(int slot, int amount) {
-		return container.removeItem(slot, amount);
-	}
-	
-	@Override
-	public ItemStack removeItemNoUpdate(int slot) {
-		return container.removeItemNoUpdate(slot);
-	}
-	
-	@Override
-	public void setItem(int slot, ItemStack stack) {
-		container.setItem(slot, stack);
-	}
-	
-	@Override
-	public int getMaxStackSize() {
-		return container.getMaxStackSize();
-	}
-	
-	@Override
-	public boolean stillValid(Player player) {
-		return container.stillValid(player);
-	}
-	
-	@Override
-	public boolean canPlaceItem(int slot, ItemStack stack) {
-		if(!stickyStack.isEmpty() && !ItemStack.isSameItemSameComponents(stickyStack, stack)) return false;
-		return container.canPlaceItem(slot, stack);
-	}
-	
-	@Override
-	public void clearContent() {
-		container.clearContent();
-	}
-	
 	@Override
 	public void setChanged() {
 		updateStickyStack0();
 		super.setChanged();
 		if(level != null && !level.isClientSide) level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
 	}
-	//</editor-fold>
 	
 	//<editor-fold desc="Nameable">
 	@Override
 	public Component getName() {
 		return hasCustomName() ? customName : Component.translatable(PLatches.Blocks.PACKAGE.get().getDescriptionId());
-	}
-	
-	@Override
-	public boolean hasCustomName() {
-		return customName != null;
-	}
-	
-	@Override
-	public Component getDisplayName() {
-		return getName();
 	}
 	
 	@Override
@@ -439,7 +434,7 @@ public class PackageBlockEntity extends BlockEntity implements Container, Nameab
 		super.saveAdditional(tag, what);
 		
 		style.save(tag);
-		container.toPackageContents().save(tag);
+		immutableContents.save(tag);
 		
 		if(customName != null) tag.putString("CustomName", Component.Serializer.toJson(customName, what));
 		
@@ -456,7 +451,7 @@ public class PackageBlockEntity extends BlockEntity implements Container, Nameab
 		super.loadAdditional(tag, what);
 		
 		style = PackageStyle.load(tag);
-		container.mutateFromPackageContents(ImmutablePackageContents.load(tag));
+		immutableContents = ImmutablePackageContents.load(tag);
 		
 		//copying from BeaconBlockEntity a little
 		if(tag.contains("CustomName", 8))
@@ -474,7 +469,7 @@ public class PackageBlockEntity extends BlockEntity implements Container, Nameab
 	protected void collectImplicitComponents(DataComponentMap.Builder builder) {
 		super.collectImplicitComponents(builder);
 		builder.set(PackageStyle.DATA_COMPONENT_TYPE, style);
-		builder.set(ImmutablePackageContents.DATA_COMPONENT_TYPE, container.toPackageContents());
+		builder.set(ImmutablePackageContents.DATA_COMPONENT_TYPE, immutableContents);
 		builder.set(DataComponents.CUSTOM_NAME, customName);
 	}
 	
@@ -482,7 +477,7 @@ public class PackageBlockEntity extends BlockEntity implements Container, Nameab
 	protected void applyImplicitComponents(DataComponentInput in) {
 		super.applyImplicitComponents(in);
 		this.style = in.getOrDefault(PackageStyle.DATA_COMPONENT_TYPE, PackageStyle.ERROR_LOL);
-		this.container.mutateFromPackageContents(in.getOrDefault(ImmutablePackageContents.DATA_COMPONENT_TYPE, ImmutablePackageContents.EMPTY));
+		this.immutableContents = in.getOrDefault(ImmutablePackageContents.DATA_COMPONENT_TYPE, ImmutablePackageContents.EMPTY);
 		this.customName = in.get(DataComponents.CUSTOM_NAME);
 	}
 	

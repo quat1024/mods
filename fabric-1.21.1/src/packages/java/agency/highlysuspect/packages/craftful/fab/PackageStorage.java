@@ -16,16 +16,21 @@ public class PackageStorage extends SnapshotParticipant<ImmutablePackageContents
 	
 	public final PackageContainer2 container;
 	
+	//called when tx system is about to do something that might need to be rolled back
+	//creating snapshiots is easy since i already use an immutable type to represent the contents of a package
 	@Override
 	protected ImmutablePackageContents createSnapshot() {
 		return container.getContents();
 	}
 	
+	//called when tx system is rolling back a snapshot
 	@Override
 	protected void readSnapshot(ImmutablePackageContents snapshot) {
 		container.setContentsNonCommitted(snapshot);
 	}
 	
+	//called when the tx system has reached a resolution, and the last setContentsNonCommitted call
+	//contains the final state. note that setContentsNonCommitted is called below too!
 	@Override
 	protected void onFinalCommit() {
 		container.commitContents();
@@ -38,7 +43,7 @@ public class PackageStorage extends SnapshotParticipant<ImmutablePackageContents
 		
 		ImmutablePackageContents.InsertionResult result = container.getContents().withInsertion(stackToInsert, maxAmountSmall, container.getRules());
 		if(result.insertedAmount() > 0) {
-			updateSnapshots(transaction);
+			updateSnapshots(transaction); //calls createSnapshot and pushes it to the stack of backup states, to be reverted to if the transaction fails
 			container.setContentsNonCommitted(result.newContents());
 		}
 		return result.insertedAmount();
@@ -64,7 +69,8 @@ public class PackageStorage extends SnapshotParticipant<ImmutablePackageContents
 	
 	@Override
 	public ItemVariant getResource() {
-		return ItemVariant.of(container.getContents().stack());
+		ImmutablePackageContents contents = container.getContents();
+		return contents.isEmpty() ? ItemVariant.blank() : ItemVariant.of(contents.stack());
 	}
 	
 	@Override

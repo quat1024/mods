@@ -1,5 +1,13 @@
 # notebook
 
+## `Slot#getMaxStackSize()` footgun?
+
+Mojang lets datapacks change the stack size of items. The maximum stack size is 99. Player inventory slots can hold any item in the game, so `Slot#getMaxStackSize` may return 99.
+
+Instead use `Slot#getMaxStackSize(ItemStack)`. It will return `Math.min(getMaxStackSize(), stack.getMaxStackSize())` which is the correct behavior.
+
+This discrepancy has always been in the game I think (e.g. of course `Slot#getMaxStackSize()` will report 64, even if you plan to put snowballs in the slot) but the 99-stacks make it happen to everything, not just stacks-to-16s and unstackables.
+
 ## fabric Packages item models
 
 (also applies to Templates 2)

@@ -3,6 +3,8 @@ package agency.highlysuspect.packages.craftful.frg;
 import agency.highlysuspect.packages.craftful.Packages;
 import agency.highlysuspect.packages.craftful.content.PLatches;
 import agency.highlysuspect.packages.craftful.frg.net.ActionPacketNeo;
+import agency.highlysuspect.packages.craftful.junk.ItemStackPackageContainer2;
+import agency.highlysuspect.packages.craftful.junk.PackageRules;
 import agency.highlysuspect.packages.craftless.PackagesBase;
 import agency.highlysuspect.quatlib.craftful.neo.NeoBackedConfig_V1;
 import agency.highlysuspect.quatlib.craftless.config.ConfigSection;
@@ -58,6 +60,12 @@ public class PackagesNeo extends Packages {
 			PLatches.BlockEntityTypes.PACKAGE.get(),
 			(be, side) -> new PackageItemHandler(be));
 		
+		//TODO: some way to test this
+		e.registerItem(Capabilities.ItemHandler.ITEM,
+			(stack, __) -> new PackageItemHandler(new ItemStackPackageContainer2(stack, PackageRules.DEFAULT)),
+			PLatches.Items.PACKAGE.get());
+		
+		//Neo doesn't automatically wrap vanilla inventories in IItemHandler. But SidedInvWrapper does.
 		e.registerBlockEntity(Capabilities.ItemHandler.BLOCK,
 			PLatches.BlockEntityTypes.PACKAGE_MAKER.get(),
 			SidedInvWrapper::new);

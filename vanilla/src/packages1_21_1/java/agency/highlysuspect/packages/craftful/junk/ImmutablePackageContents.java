@@ -18,6 +18,20 @@ import java.util.Optional;
 public record ImmutablePackageContents(ItemStack stack, int count) {
 	public static ImmutablePackageContents EMPTY = new ImmutablePackageContents(ItemStack.EMPTY, 0);
 	
+	//discouraged; use create() to properly return EMPTY
+	public ImmutablePackageContents(ItemStack stack, int count) {
+		this.stack = stack;
+		this.count = count;
+	}
+	
+	public static ImmutablePackageContents create(ItemStack stack, int count) {
+		if(count < 0) throw new IllegalArgumentException("Attempt to create PackageContents with count " + count + " for ItemStack " + stack);
+		
+		if(count == 0 || stack.isEmpty()) return EMPTY;
+		if(stack.getCount() != 1) stack = stack.copyWithCount(1);
+		return new ImmutablePackageContents(stack, count);
+	}
+	
 	public record TooltipStats(ItemStack rootContents, int fullyMultipliedCount, boolean amplified) {}
 	public TooltipStats computeTooltipStats() {
 		List<ImmutablePackageContents> containers = new ArrayList<>();
@@ -65,14 +79,14 @@ public record ImmutablePackageContents(ItemStack stack, int count) {
 		return stack.isEmpty() || count == 0;
 	}
 	
+	public boolean canStackWith(ItemStack other) {
+		return isEmpty() || other.isEmpty() || ItemStack.isSameItemSameComponents(stack, other);
+	}
+	
 	///
 	
-	//TODO: put insertion/removal methods in here too
-	// right now i'm still piggying off the PackageContents implementation
-	
 	public boolean allowedToInsert(ItemStack other, PackageRules rules) {
-		return rules.allowedToInsertInPackage(other) &&
-			(isEmpty() || other.isEmpty() || ItemStack.isSameItemSameComponents(stack, other));
+		return rules.allowedToInsertInPackage(other) && canStackWith(other);
 	}
 	
 	public record InsertionResult(ImmutablePackageContents newContents, int insertedAmount) {
@@ -84,18 +98,21 @@ public record ImmutablePackageContents(ItemStack stack, int count) {
 		//allowedToInsert checks that 'stack' and 'other' are compatible
 		if(other.isEmpty() || !allowedToInsert(other, rules)) return InsertionResult.none(this);
 		
-		//how much space is left in the package
-		int remainingSpace = rules.maxInPackageTotal(stack) - count;
+		//how much space is left in the package for this item
+		int remainingSpace = rules.maxInPackageTotal(other) - count;
 		if(remainingSpace <= 0) return InsertionResult.none(this); //no room
 		
 		//how much will actually be inserted
 		int toInsert = Math.min(remainingSpace, Math.min(other.getCount(), maxToInsert));
 		if(toInsert == 0) return InsertionResult.none(this);
 		
-		return new InsertionResult(
-			new ImmutablePackageContents(stack, count + toInsert),
-			toInsert
-		);
+		int newCount = count + toInsert;
+		
+		if(isEmpty()) {
+			return new InsertionResult(create(other.copyWithCount(1), newCount), toInsert);
+		} else {
+			return new InsertionResult(create(stack, newCount), toInsert);
+		}
 	}
 	
 	public record TakeResult(ImmutablePackageContents newContents, int takenAmount) {
@@ -107,8 +124,7 @@ public record ImmutablePackageContents(ItemStack stack, int count) {
 		if(isEmpty() || maxToTake == 0) return TakeResult.none(this);
 		
 		int toTake = Math.min(count, maxToTake);
-		int leftover = count - toTake;
-		return new TakeResult(leftover == 0 ? ImmutablePackageContents.EMPTY : new ImmutablePackageContents(stack, leftover), toTake);
+		return new TakeResult(create(stack, count - toTake), toTake);
 	}
 	
 	public TakeResult withFilteredTake(ItemStack filter, int maxToTake, PackageRules rules) {
@@ -124,13 +140,8 @@ public record ImmutablePackageContents(ItemStack stack, int count) {
 	
 	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 	private static ImmutablePackageContents rehydrate(Optional<ItemStack> stackOpt, int realCount) {
-		if(realCount == 0) return EMPTY;
-		if(stackOpt.isEmpty()) return EMPTY;
-		
-		ItemStack stack = stackOpt.get();
-		if(stack.isEmpty()) return EMPTY;
-		
-		return new ImmutablePackageContents(stack, realCount); //Not copying the stack should be fine, it was just deserialized from something
+		//Not copying the stack should be fine, it was just deserialized from something
+		return stackOpt.map(stack -> create(stack, realCount)).orElse(EMPTY);
 	}
 	
 	public static final Codec<ImmutablePackageContents> CODEC = RecordCodecBuilder.create(i -> i.group(
