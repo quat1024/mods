@@ -25,7 +25,7 @@
         "type": "event",
         "name": "block.calcite.place",
         "volume": 0.4,
-        "pitch": 0.74
+        "pitch": 0.75
       }
     ],
     "subtitle": "packages.subtitle.insert_stack"

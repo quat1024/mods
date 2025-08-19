@@ -23,12 +23,15 @@ public abstract class Packages extends PackagesBase {
 		super.earlySetup();
 		
 		//TODO: gen testing
-		FacetBucket facets = new FacetBucket();
 		@Nullable DgenHelper dgen = QuatlibBase.inst().dgen.createHelper(MODID);
-		Gen.Ctx genCtx = new Gen.Ctx(facets, dgen);
+		Gen.Ctx genCtx = new Gen.Ctx(dgen);
 		
 		LOG.info("Running PackagesGen");
 		Gen.run(genCtx, new PackagesGen());
+		
+		LOG.info("Building facets");
+		FacetBucket facets = new FacetBucket();
+		genCtx.buildFacets(facets);
 		
 		LOG.info("Got {} facets", facets.size());
 		RegFacet.handle(this, facets.getFacets(RegFacet.class));

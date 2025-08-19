@@ -13,17 +13,7 @@ import java.util.List;
  * TODO: flesh this out a bit more
  */
 @Facet
-public class EmiTagExclusionFacet {
-	public EmiTagExclusionFacet(Id itemTag) {
-		this.itemTag = itemTag;
-	}
-	
-	public EmiTagExclusionFacet(String itemTag) {
-		this(Id.parse(itemTag));
-	}
-	
-	Id itemTag;
-	
+public record EmiTagExclusionFacet(Id itemTag) {
 	public static void handle(DgenHelper dgen, List<EmiTagExclusionFacet> facets) {
 		JsonObject obj = new JsonObject();
 		

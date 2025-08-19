@@ -7,8 +7,8 @@ import agency.highlysuspect.packages.craftful.junk.ImmutablePackageContents;
 import agency.highlysuspect.packages.craftful.junk.PackageDispenseBehavior;
 import agency.highlysuspect.packages.craftful.junk.PackageStyle;
 import agency.highlysuspect.quatlib.craftless.facet.Gen;
-import agency.highlysuspect.quatlib.craftless.facet.facets.EmiTagExclusionFacet;
-import agency.highlysuspect.quatlib.craftless.facet.facets.TagFacet;
+import agency.highlysuspect.quatlib.craftless.facet.facets.EmiTagExclusionFacetBuilder;
+import agency.highlysuspect.quatlib.craftless.facet.facets.TagFacetBuilder;
 import agency.highlysuspect.quatlib.craftless.util.BlockEntityFactory;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
@@ -21,53 +21,46 @@ import java.util.function.Consumer;
 public class PackageGen implements PGen {
 	@Override
 	public void gen(Ctx ctx, Consumer<Gen> more) {
-		if(ctx.dgen != null) {
-			ctx.add(enUs()).block(PLatches.Blocks.PACKAGE).value("Package");
-			
-			ctx.soundsJson(PLatches.SoundEvents.INSERT_ONE)
-				.effect("block.calcite.place").volume(0.4);
-			ctx.add(enUs()).sound(PLatches.SoundEvents.INSERT_ONE).value("Item inserted");
-			
-			ctx.soundsJson(PLatches.SoundEvents.TAKE_ONE)
-				.effect("entity.item.pickup").volume(0.2);
-			ctx.add(enUs()).sound(PLatches.SoundEvents.TAKE_ONE).value("Item taken");
-			
-			ctx.soundsJson(PLatches.SoundEvents.INSERT_STACK)
-				.effect("block.calcite.place").volume(0.4).pitch(0.74);
-			ctx.add(enUs()).sound(PLatches.SoundEvents.INSERT_STACK).value("Items inserted");
-			
-			ctx.soundsJson(PLatches.SoundEvents.TAKE_STACK)
-				.effect("entity.item.pickup").volume(0.2);
-			ctx.add(enUs()).sound(PLatches.SoundEvents.TAKE_STACK).value("Items taken");
-			
-			ctx.soundsJson(PLatches.SoundEvents.INSERT_ALL)
-				.effect("block.bone_block.place").volume(0.8).pitch(0.7);
-			ctx.add(enUs()).sound(PLatches.SoundEvents.INSERT_ALL).value("Many items inserted");
-			
-			ctx.soundsJson(PLatches.SoundEvents.TAKE_ALL)
-				.effect("block.gilded_blackstone.break").volume(0.5).pitch(0.7);
-			ctx.add(enUs()).sound(PLatches.SoundEvents.TAKE_ALL).value("Many items taken");
-			
-			ctx.add(TagFacet.mineableAxe()).value(PLatches.Blocks.PACKAGE);
-			//TODO: un-hardcode tag names
-			ctx.add(TagFacet.block()).tag("packages:sticky").value("minecraft:slime_block");
-			ctx.add(TagFacet.block()).tag("packages:sticky").value("minecraft:honey_block");
-			ctx.add(new EmiTagExclusionFacet("packages:banned_from_package"));
-		}
+		ctx.lang(EN_US).block(PLatches.Blocks.PACKAGE, "Package");
+		
+		ctx.sound(PLatches.SoundEvents.INSERT_ONE)
+			.effect("block.calcite.place").volume(0.4)
+			.subtitle(EN_US, "Item inserted");
+		
+		ctx.sound(PLatches.SoundEvents.TAKE_ONE)
+			.effect("entity.item.pickup").volume(0.2)
+			.subtitle(EN_US, "Item taken");
+		
+		ctx.sound(PLatches.SoundEvents.INSERT_STACK)
+			.effect("block.calcite.place").volume(0.4).pitch(0.75)
+			.subtitle(EN_US, "Items inserted");
+		
+		ctx.sound(PLatches.SoundEvents.TAKE_STACK)
+			.effect("entity.item.pickup").volume(0.2)
+			.subtitle(EN_US, "Items taken");
+		
+		ctx.sound(PLatches.SoundEvents.INSERT_ALL)
+			.effect("block.bone_block.place").volume(0.8).pitch(0.7)
+			.subtitle(EN_US, "Many items inserted");
+		
+		ctx.sound(PLatches.SoundEvents.TAKE_ALL)
+			.effect("block.gilded_blackstone.break").volume(0.5).pitch(0.7)
+			.subtitle(EN_US, "Many items taken");
+		
+		ctx.add(TagFacetBuilder.mineableAxe()).value(PLatches.Blocks.PACKAGE);
+		
+		ctx.add(TagFacetBuilder.block("packages:sticky")).value("minecraft:slime_block");
+		ctx.add(TagFacetBuilder.block("packages:sticky")).value("minecraft:honey_block");
+		
+		ctx.add(new EmiTagExclusionFacetBuilder("packages:banned_from_package"));
 		
 		ctx.reg(PLatches.Blocks.PACKAGE, this::constructBlock);
 		ctx.reg(PLatches.Items.PACKAGE, this::constructItem);
-		ctx.blockEntity(PLatches.BlockEntityTypes.PACKAGE).factory(blockEntityFactory()).addBlocks(PLatches.Blocks.PACKAGE);
+		ctx.blockEntity(PLatches.BlockEntityTypes.PACKAGE).factory(blockEntityFactory()).blocks(PLatches.Blocks.PACKAGE);
 		
+		//1.21 data components
 		ctx.reg(PLatches.DataComponentTypes.PACKAGE_CONTENTS, () -> ImmutablePackageContents.DATA_COMPONENT_TYPE);
 		ctx.reg(PLatches.DataComponentTypes.PACKAGE_STYLE, () -> PackageStyle.DATA_COMPONENT_TYPE);
-		
-		simpleSoundEvent(ctx, PLatches.SoundEvents.INSERT_ONE);
-		simpleSoundEvent(ctx, PLatches.SoundEvents.TAKE_ONE);
-		simpleSoundEvent(ctx, PLatches.SoundEvents.INSERT_STACK);
-		simpleSoundEvent(ctx, PLatches.SoundEvents.TAKE_STACK);
-		simpleSoundEvent(ctx, PLatches.SoundEvents.INSERT_ALL);
-		simpleSoundEvent(ctx, PLatches.SoundEvents.TAKE_ALL);
 		
 		ctx.dispenser(PLatches.Items.PACKAGE).behavior(new PackageDispenseBehavior());
 	}

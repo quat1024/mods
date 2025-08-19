@@ -7,7 +7,7 @@ import agency.highlysuspect.quatlib.craftless.config.WritableConfig;
 import agency.highlysuspect.quatlib.craftless.facet.Id;
 import agency.highlysuspect.quatlib.craftless.facet.Reg;
 import agency.highlysuspect.quatlib.craftless.facet.RegType;
-import agency.highlysuspect.quatlib.craftless.facet.facets.RegFacet;
+import agency.highlysuspect.quatlib.craftless.facet.RegistryGetter;
 import agency.highlysuspect.quatlib.craftless.failure.FailureLogger;
 import agency.highlysuspect.quatlib.craftless.failure.FailureRoot;
 import agency.highlysuspect.quatlib.craftless.util.LogFacade;
@@ -15,7 +15,7 @@ import agency.highlysuspect.quatlib.craftless.util.LogFacade;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
-public abstract class PackagesBase implements RegFacet.RegistryGetter {
+public abstract class PackagesBase implements RegistryGetter {
 	public PackagesBase() {
 		INST = this;
 	}

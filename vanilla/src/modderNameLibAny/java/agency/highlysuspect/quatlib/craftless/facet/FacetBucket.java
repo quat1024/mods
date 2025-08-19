@@ -22,12 +22,13 @@ public class FacetBucket {
 	@Nullable
 	private static Class<?> getFacetKeyOrNull(Class<?> clazz) {
 		if(clazz == null) return null;
+		else if(Record.class.isAssignableFrom(clazz)) return clazz;
 		else if(clazz.isAnnotationPresent(Facet.class)) return clazz;
 		else return getFacetKeyOrNull(clazz.getSuperclass());
 	}
 	
 	private static Class<?> assertFacetKey(Class<?> clazz) {
-		if(!clazz.isAnnotationPresent(Facet.class)) throw new IllegalArgumentException("Not annotated with @Facet: " + clazz.getName());
+		if(!Record.class.isAssignableFrom(clazz) && !clazz.isAnnotationPresent(Facet.class)) throw new IllegalArgumentException("Not a facet key: " + clazz.getName());
 		return clazz;
 	}
 	
@@ -41,9 +42,9 @@ public class FacetBucket {
 	// handling facets
 	
 	public <T> List<T> getFacets(Class<T> facetKey) {
-		List<T> removed = (List<T>) facets.get(assertFacetKey(facetKey));
-		if(removed == null) return List.of();
-		else return removed;
+		List<T> f = (List<T>) facets.get(assertFacetKey(facetKey));
+		if(f == null) return List.of();
+		else return f;
 	}
 	
 	public int size() {

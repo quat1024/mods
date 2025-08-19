@@ -23,24 +23,27 @@ public abstract class Packages extends PackagesBase {
 		super.earlySetup();
 		
 		//TODO: gen testing
-		FacetBucket facets = new FacetBucket();
 		@Nullable DgenHelper dgen = QuatlibBase.inst().dgen.createHelper(MODID);
-		Gen.Ctx genCtx = new Gen.Ctx(facets, dgen);
+		Gen.Ctx genCtx = new Gen.Ctx(dgen);
 		
 		LOG.info("Running PackagesGen");
 		Gen.run(genCtx, new PackagesGen());
 		
-		LOG.info("Got {} facets", facets.size());
-		RegFacet.handle(this, facets.getFacets(RegFacet.class));
-		BlockEntityTypeFacet.handle(this, facets.getFacets(BlockEntityTypeFacet.class));
-		DispenserBehaviorFacet.handle(facets.getFacets(DispenserBehaviorFacet.class));
+		LOG.info("Building facets");
+		FacetBucket bucket = new FacetBucket();
+		genCtx.buildFacets(bucket);
+		
+		LOG.info("Got {} facets", bucket.size());
+		RegFacet.handle(this, bucket.getFacets(RegFacet.class));
+		BlockEntityTypeFacet.handle(this, bucket.getFacets(BlockEntityTypeFacet.class));
+		DispenserBehaviorFacet.handle(bucket.getFacets(DispenserBehaviorFacet.class));
 		
 		if(dgen != null) {
 			LOG.info("Handling datagen-relevant facets");
-			TagFacet.handle(dgen, facets.getFacets(TagFacet.class));
-			EmiTagExclusionFacet.handle(dgen, facets.getFacets(EmiTagExclusionFacet.class));
-			LangFacet.handle(dgen, facets.getFacets(LangFacet.class));
-			SoundEventFacet.handle(dgen, facets.getFacets(SoundEventFacet.class));
+			TagFacet.handle(dgen, bucket.getFacets(TagFacet.class));
+			EmiTagExclusionFacet.handle(dgen, bucket.getFacets(EmiTagExclusionFacet.class));
+			LangFacet.handle(dgen, bucket.getFacets(LangFacet.class));
+			SoundEventFacet.handle(dgen, bucket.getFacets(SoundEventFacet.class));
 		}
 		LOG.info("Done with gens");
 		

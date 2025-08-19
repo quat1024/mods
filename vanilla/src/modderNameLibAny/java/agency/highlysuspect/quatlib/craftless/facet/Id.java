@@ -50,7 +50,7 @@ public class Id implements Comparable<Id>, Idable {
 		return domain + "." + ns + "." + path.replace('/', '.');
 	}
 	
-	public String toSubtitle() {
+	public String toSubtitleKey() {
 		return ns + ".subtitle." + path.replace('/', '.');
 	}
 	
