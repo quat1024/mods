@@ -1,37 +1,45 @@
 package agency.highlysuspect.quatlib.craftless.config;
 
 import agency.highlysuspect.quatlib.craftless.config.sn.Sn;
+import agency.highlysuspect.quatlib.craftless.config.sn.SnCodec;
 import agency.highlysuspect.quatlib.craftless.config.sn.SnView;
+import agency.highlysuspect.quatlib.craftless.facet.Id;
 import agency.highlysuspect.quatlib.craftless.failure.CtxChain;
 import agency.highlysuspect.quatlib.craftless.failure.ReportedException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 
-public abstract class ConfigOpt<T> implements SectOrOpt {
-	public ConfigOpt(String name, T defaultValue, List<String> comment) {
+public class ConfigOpt<T> implements SectOrOpt {
+	public ConfigOpt(String name, T defaultValue, SnCodec<T> codec, List<String> comment) {
 		this.name = name;
-		this.defaultValue = defaultValue;
 		this.comment = comment;
+		this.defaultValue = defaultValue;
+		this.codec = codec;
 	}
 	
-	public ConfigOpt(String name, T defaultValue, String... comment) {
-		this(name, defaultValue, Arrays.asList(comment));
+	public ConfigOpt(String name, T defaultValue, SnCodec<T> codec, String... comment) {
+		this(name, defaultValue, codec, Arrays.asList(comment));
 	}
 	
 	private final String name;
 	private final List<String> comment;
 	private final T defaultValue;
+	private final SnCodec<T> codec;
 	
 	private final List<Validator<T>> validators = new ArrayList<>(1);
 	private final List<Corrector<T>> correctors = new ArrayList<>(1);
 	
 	/// SER AND DE
 	
-	public abstract Sn<?> write(T thing);
-	public abstract T parse(SnView sn, CtxChain ctx) throws ReportedException;
+	public Sn<?> write(T thing) {
+		return codec.write(thing);
+	}
+	
+	public T parse(SnView sn, CtxChain ctx) throws ReportedException {
+		return codec.parse(sn, ctx);
+	}
 	
 	/// CORRECTION - fixing the value in an unambiguous way and reporting a warning
 	
@@ -85,44 +93,19 @@ public abstract class ConfigOpt<T> implements SectOrOpt {
 	
 	public static class StringOpt extends ConfigOpt<String> {
 		public StringOpt(String name, String defaultValue, String... comment) {
-			super(name, defaultValue, comment);
-		}
-		
-		@Override
-		public Sn<?> write(String thing) {
-			return Sn.str(thing);
-		}
-		
-		@Override
-		public String parse(SnView sn, CtxChain ctx) throws ReportedException {
-			return sn.asString();
+			super(name, defaultValue, SnCodec.STR, comment);
 		}
 	}
 	
 	public static class BoolOpt extends ConfigOpt<Boolean> {
 		public BoolOpt(String name, Boolean defaultValue, String... comment) {
-			super(name, defaultValue, comment);
-		}
-		
-		@Override
-		public Sn<?> write(Boolean thing) {
-			return Sn.str(Boolean.toString(thing));
-		}
-		
-		@Override
-		public Boolean parse(SnView sn, CtxChain ctx) throws ReportedException {
-			String s = sn.asString().toLowerCase(Locale.ROOT).trim();
-			return switch(s) {
-				case "true" -> true;
-				case "false" -> false;
-				default -> throw ctx.detail("Expected 'true' or 'false' but got '" + s + "'").reportError();
-			};
+			super(name, defaultValue, SnCodec.BOOL, comment);
 		}
 	}
 	
 	public static class IntOpt extends ConfigOpt<Integer> {
 		public IntOpt(String name, Integer defaultValue, String... comment) {
-			super(name, defaultValue, comment);
+			super(name, defaultValue, SnCodec.INT, comment);
 			
 			addCorrector((thing, ctx) -> {
 				if(thing < min) {
@@ -165,22 +148,6 @@ public abstract class ConfigOpt<T> implements SectOrOpt {
 		}
 		
 		@Override
-		public Sn<?> write(Integer thing) {
-			return Sn.str(Integer.toString(thing));
-		}
-		
-		@Override
-		public Integer parse(SnView sn, CtxChain ctx) throws ReportedException {
-			String s = sn.asString();
-			
-			try {
-				return Integer.parseInt(s.trim());
-			} catch (Throwable e) {
-				throw ctx.cause(e).detail("Could not parse '" + s + "' as an integer").reportError();
-			}
-		}
-		
-		@Override
 		public List<String> getComment() {
 			if(min == Integer.MIN_VALUE && max == Integer.MAX_VALUE) return super.getComment();
 			
@@ -188,6 +155,32 @@ public abstract class ConfigOpt<T> implements SectOrOpt {
 			if(min != Integer.MIN_VALUE) c.add("Must be at least " + min + ".");
 			if(max != Integer.MAX_VALUE) c.add("Must be at most " + max + ".");
 			return c;
+		}
+	}
+	
+	public static class IdOpt extends ConfigOpt<Id> {
+		public IdOpt(String name, Id defaultValue, String... comment) {
+			super(name, defaultValue, SnCodec.ID, comment);
+		}
+		
+		private boolean ensureMinecraftParse = true;
+		
+		public IdOpt ensureMinecraftParse(boolean ensureMinecraftParse) {
+			this.ensureMinecraftParse = ensureMinecraftParse;
+			return this;
+		}
+		
+		@Override
+		public void validate(Id thing, CtxChain ctx) throws ReportedException {
+			super.validate(thing, ctx);
+			
+			if(ensureMinecraftParse) {
+				try {
+					thing.toMinecraft();
+				} catch (Exception e) {
+					throw ctx.cause(e).detail("Failed to parse " + thing + " as a Minecraft ResourceLocation").reportError();
+				}
+			}
 		}
 	}
 }

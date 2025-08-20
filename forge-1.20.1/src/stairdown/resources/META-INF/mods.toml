@@ -1,0 +1,20 @@
+modLoader = "javafml"
+loaderVersion = "[1,)"
+license = "${license}"
+issueTrackerURL = "${issues}"
+logoFile = "${modid}_banner.png"
+
+[[mods]]
+modId = "${modid}"
+version = "${version}"
+displayName = "${name}"
+description = "${description}"
+authors = "${author}"
+
+[[dependencies.${modid}]]
+modId="modder_name_lib"
+type="required"
+versionRange="*"
+ordering="AFTER"
+side="BOTH"
+mandatory=true

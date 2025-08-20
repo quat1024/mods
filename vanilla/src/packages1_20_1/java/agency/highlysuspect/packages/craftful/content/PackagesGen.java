@@ -21,7 +21,7 @@ public class PackagesGen implements PGen {
 		more.accept(new PackageMakerGen());
 		more.accept(new StickySyrupGen());
 		
-		ctx.add(enUs()).key("itemGroup.packages.group").value(PackagesBase.NAME);
+		ctx.lang(EN_US).key("itemGroup.packages.group").value(PackagesBase.NAME);
 		
 		ctx.reg(Latch.open(RegType.CREATIVE_TABS, new Id(Packages.MODID, "group")), () ->
 			QuatlibMc.inst().makeCreativeModeTabBuilder()

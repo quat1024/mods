@@ -20,5 +20,8 @@ modSetup.go {
 			legacyForgeMixinConfigs += "packages.mixins.json"
 			legacyForgeMixinConfigs += "packages.forge.mixins.json"
 		}
+		stairdown {
+		
+		}
 	}
 }

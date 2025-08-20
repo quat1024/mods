@@ -20,6 +20,10 @@ vanillaSetup.go {
 			versions += ["1.20.1", "1.21.1"]
 			vars.description = "512 items is all you need. The underpowered barrels mod."
 		}
+		stairdown {
+			versions += ["1.20.1"]
+			vars.description = "Custom variant blocks for modpack makers"
+		}
 	}
 }
 
@@ -54,6 +58,7 @@ configurations {
 	crowmapAnyCompileOnly.extendsFrom compileStubs
 	rebindNarratorAnyCompileOnly.extendsFrom compileStubs
 	packagesAnyCompileOnly.extendsFrom compileStubs
+	stairdownAnyCompileOnly.extendsFrom compileStubs
 }
 
 dependencies {

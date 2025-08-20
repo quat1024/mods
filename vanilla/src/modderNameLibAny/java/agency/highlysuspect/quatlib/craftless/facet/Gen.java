@@ -37,6 +37,7 @@ public interface Gen {
 		
 		public void buildFacets(FacetBuilder.BuildCtx ctx, FacetBucket bucket) {
 			for(FacetBuilder builder : facetBuilders) builder.build(ctx, bucket);
+			facetBuilders.clear();
 		}
 		
 		//TODO: explore whether this kinda thing is needed

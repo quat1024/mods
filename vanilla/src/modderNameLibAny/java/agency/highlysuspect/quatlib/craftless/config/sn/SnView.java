@@ -6,6 +6,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 public interface SnView {
@@ -36,6 +37,22 @@ public interface SnView {
 		boolean containsKey(String key);
 		SnView get(String key) throws ReportedException;
 		@Nullable SnView getOrNull(String key);
+		
+		default Optional<SnView> getOrEmpty(String key) {
+			return Optional.ofNullable(getOrNull(key));
+		}
+	}
+	
+	default Optional<ListView> asListOpt() {
+		return Optional.ofNullable(asListOrNull());
+	}
+	
+	default Optional<String> asStringOpt() {
+		return Optional.ofNullable(asStringOrNull());
+	}
+	
+	default Optional<MapView> asMapOpt() {
+		return Optional.ofNullable(asMapOrNull());
 	}
 	
 	//TODO: can this *extend* ContextChain? lol. save an allocation
