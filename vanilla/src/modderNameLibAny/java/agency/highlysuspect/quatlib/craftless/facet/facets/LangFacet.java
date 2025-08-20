@@ -1,6 +1,5 @@
 package agency.highlysuspect.quatlib.craftless.facet.facets;
 
-import agency.highlysuspect.quatlib.craftless.facet.Facet;
 import agency.highlysuspect.quatlib.craftless.facet.FileGenner;
 import agency.highlysuspect.quatlib.craftless.util.QuatUtil;
 import com.google.gson.JsonObject;
@@ -9,7 +8,6 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Comparator;
 import java.util.List;
 
-@Facet
 public record LangFacet(@NotNull String file, @NotNull String key, @NotNull String value) {
 	public static Comparator<LangFacet> BY_KEY = Comparator.comparing(LangFacet::key);
 	

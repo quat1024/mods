@@ -11,7 +11,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 import java.util.Objects;
 
-@Facet
 public record BlockEntityTypeFacet(Latch<BlockEntityType<?>> latch, @Nullable BlockEntityFactory<?> factory, List<Latch<? extends Block>> blocks) {
 	
 	@SuppressWarnings("unchecked")

@@ -18,7 +18,9 @@ public class EmiTagExclusionFacetBuilder implements FacetBuilder {
 	final Id itemTag;
 	
 	@Override
-	public void build(FacetBucket facets) {
+	public void build(FacetBuilder.BuildCtx ctx, FacetBucket facets) {
+		if(ctx.dgen == null) return; //not doing datagen
+		
 		facets.add(new EmiTagExclusionFacet(itemTag));
 	}
 }

@@ -81,9 +81,11 @@ public class SoundEventFacetBuilder implements FacetBuilder {
 	}
 	
 	@Override
-	public void build(FacetBucket facets) {
+	public void build(FacetBuilder.BuildCtx ctx, FacetBucket facets) {
 		//register the sound event
 		facets.add(new RegFacet(latch, creator));
+		
+		if(ctx.dgen == null) return; //not doing datagen
 		
 		//subtitles
 		if(subtitleKey != null)

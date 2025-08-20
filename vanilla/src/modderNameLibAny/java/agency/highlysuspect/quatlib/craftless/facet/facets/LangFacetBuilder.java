@@ -53,7 +53,9 @@ public class LangFacetBuilder implements FacetBuilder {
 	}
 	
 	@Override
-	public void build(FacetBucket facets) {
+	public void build(FacetBuilder.BuildCtx ctx, FacetBucket facets) {
+		if(ctx.dgen == null) return; //not doing datagen
+		
 		Objects.requireNonNull(this.key, this::toString);
 		Objects.requireNonNull(this.value, this::toString);
 		

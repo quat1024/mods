@@ -1,6 +1,5 @@
 package agency.highlysuspect.quatlib.craftless.facet.facets;
 
-import agency.highlysuspect.quatlib.craftless.facet.Facet;
 import agency.highlysuspect.quatlib.craftless.facet.Latch;
 import agency.highlysuspect.quatlib.craftless.facet.Reg;
 import agency.highlysuspect.quatlib.craftless.facet.RegistryGetter;
@@ -8,7 +7,6 @@ import agency.highlysuspect.quatlib.craftless.facet.RegistryGetter;
 import java.util.List;
 import java.util.function.Supplier;
 
-@Facet
 public record RegFacet(Latch<?> latch, Supplier<?> sup) {
 	public static void handle(RegistryGetter regGetter, List<RegFacet> facets) {
 		facets.forEach(facet -> doHandle(regGetter, facet));

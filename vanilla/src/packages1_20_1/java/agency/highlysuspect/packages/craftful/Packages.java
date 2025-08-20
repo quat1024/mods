@@ -31,7 +31,7 @@ public abstract class Packages extends PackagesBase {
 		
 		LOG.info("Building facets");
 		FacetBucket bucket = new FacetBucket();
-		genCtx.buildFacets(bucket);
+		genCtx.buildFacets(new FacetBuilder.BuildCtx(dgen), bucket);
 		
 		LOG.info("Got {} facets", bucket.size());
 		RegFacet.handle(this, bucket.getFacets(RegFacet.class));

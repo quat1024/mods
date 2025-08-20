@@ -41,7 +41,6 @@ public class TagFacetBuilder implements FacetBuilder {
 	public String value;
 	boolean optional;
 	
-	
 	public TagFacetBuilder value(String value) {
 		this.value = value;
 		return this;
@@ -65,7 +64,9 @@ public class TagFacetBuilder implements FacetBuilder {
 	}
 	
 	@Override
-	public void build(FacetBucket facets) {
+	public void build(FacetBuilder.BuildCtx ctx, FacetBucket facets) {
+		if(ctx.dgen == null) return; //not doing datagen
+		
 		if(type == null) throw new IllegalStateException("null type; " + this);
 		if(tag == null) throw new IllegalStateException("null tag;" + this);
 		if(value == null) throw new IllegalStateException("null value;" + this);

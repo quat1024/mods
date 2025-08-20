@@ -1,6 +1,5 @@
 package agency.highlysuspect.quatlib.craftless.facet.facets;
 
-import agency.highlysuspect.quatlib.craftless.facet.Facet;
 import agency.highlysuspect.quatlib.craftless.facet.Id;
 import agency.highlysuspect.quatlib.craftless.facet.dgen.DgenHelper;
 import agency.highlysuspect.quatlib.craftless.util.QuatUtil;
@@ -12,7 +11,6 @@ import java.util.List;
 /**
  * TODO: flesh this out a bit more
  */
-@Facet
 public record EmiTagExclusionFacet(Id itemTag) {
 	public static void handle(DgenHelper dgen, List<EmiTagExclusionFacet> facets) {
 		JsonObject obj = new JsonObject();

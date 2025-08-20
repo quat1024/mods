@@ -39,7 +39,7 @@ public class BlockEntityTypeFacetBuilder implements FacetBuilder {
 	}
 	
 	@Override
-	public void build(FacetBucket facets) {
+	public void build(FacetBuilder.BuildCtx ctx, FacetBucket facets) {
 		facets.add(new BlockEntityTypeFacet(latch, factory, blocks));
 	}
 }

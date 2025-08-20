@@ -1,6 +1,5 @@
 package agency.highlysuspect.quatlib.craftless.facet.facets;
 
-import agency.highlysuspect.quatlib.craftless.facet.Facet;
 import agency.highlysuspect.quatlib.craftless.facet.FileGenner;
 import agency.highlysuspect.quatlib.craftless.facet.Id;
 import agency.highlysuspect.quatlib.craftless.util.QuatUtil;
@@ -10,7 +9,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-@Facet
 public record SoundEventFacet(Id soundEventId, List<SoundEffectBuilder> effects, @Nullable String subtitleKey) {
 	public static void handle(FileGenner genner, List<SoundEventFacet> allSoundEvents) {
 		QuatUtil.collate(allSoundEvents, s -> s.soundEventId.ns).forEach((namespace, events) -> {

@@ -26,7 +26,7 @@ public class DispenserBehaviorFacetBuilder implements FacetBuilder {
 	}
 	
 	@Override
-	public void build(FacetBucket facets) {
+	public void build(FacetBuilder.BuildCtx ctx, FacetBucket facets) {
 		facets.add(new DispenserBehaviorFacet(latch, behavior));
 	}
 }

@@ -35,8 +35,8 @@ public interface Gen {
 		public final List<FacetBuilder> facetBuilders = new ArrayList<>();
 		public final @Nullable DgenHelper dgen;
 		
-		public void buildFacets(FacetBucket bucket) {
-			for(FacetBuilder builder : facetBuilders) builder.build(bucket);
+		public void buildFacets(FacetBuilder.BuildCtx ctx, FacetBucket bucket) {
+			for(FacetBuilder builder : facetBuilders) builder.build(ctx, bucket);
 		}
 		
 		//TODO: explore whether this kinda thing is needed

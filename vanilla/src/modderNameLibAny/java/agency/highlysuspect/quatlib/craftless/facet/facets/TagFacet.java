@@ -1,6 +1,5 @@
 package agency.highlysuspect.quatlib.craftless.facet.facets;
 
-import agency.highlysuspect.quatlib.craftless.facet.Facet;
 import agency.highlysuspect.quatlib.craftless.facet.Id;
 import agency.highlysuspect.quatlib.craftless.facet.TagType;
 import agency.highlysuspect.quatlib.craftless.facet.dgen.DgenHelper;
@@ -14,7 +13,6 @@ import java.util.List;
 import java.util.Map;
 
 //"stringly typed" tag values here
-@Facet
 public record TagFacet(TagType type, Id tag, String value, boolean optional) {
 	public static void handle(DgenHelper genner, List<TagFacet> allFacets) {
 		QuatUtil.collate(allFacets, f -> f.tag).forEach((tagId, facetsForTagId) -> {

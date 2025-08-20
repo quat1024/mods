@@ -22,7 +22,7 @@ public class RegFacetBuilder implements FacetBuilder {
 	Supplier<?> sup;
 	
 	@Override
-	public void build(FacetBucket facets) {
+	public void build(FacetBuilder.BuildCtx ctx, FacetBucket facets) {
 		Objects.requireNonNull(latch, this::toString);
 		Objects.requireNonNull(sup, this::toString);
 		
