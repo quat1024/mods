@@ -21,7 +21,7 @@ collect () {
 mktag () {
   VER=v$(TZ="America/New_York" date +%Y.%m.%d)
   echo "making a tag for version" $VER
-  git tag -a "$VER" -m "Marks release of version $VER."
+  git tag -a "$VER" -m "$VER."
 }
 
 help () {
@@ -29,7 +29,5 @@ help () {
   compgen -A function
 }
 
-echo "--- ${1} ---"
-eval "$@"
-
-# TZ="America/New_York" date +%y.%m.%d
+echo "--- ${1:-help} ---"
+eval "${@:-help}"
