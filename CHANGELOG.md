@@ -34,6 +34,7 @@ This isn't strictly needed on Neoforge, because you've always been able to confi
 * Stickiness might actually work on Forge!!!!! (lmao) it wasn't being enforced through the `IItemHandler`.
 * Slightly less willing to be placed vertically. You have to look up/down a bit farther.
 * Fix an issue where items which stacked to 16 could be deleted using Packages inventory interactions.
+* On Fabric, a nonnull `RenderMaterial` is passed when working with fabric-api, possibly fixing some clientside mod-compat issues.
 * On 1.20.1, migrate off of a deprecated `fabric-api` method for registering custom models.
 * On 1.21.1, `PackageBlockEntity` no longer implements vanilla `Container`! Instead, modloader-specific inventory mechanisms are used.
   * On NeoForge, the Package exposes an `ItemHandler` capability. On Fabric, the Package exposes an `ItemStorage` API. 
@@ -43,3 +44,5 @@ This isn't strictly needed on Neoforge, because you've always been able to confi
   * This feature needs more testing.
 
 On NeoForge, enable the "NeoForge Light Pipeline" in `Mods` -> `NeoForge` -> `Client settings` -> `NeoForge Light Pipeline`. This will improve the apperance of the Package Crafter.
+
+On Fabric 1.20.1, if you have Sodium remember to install Indium. No longer necessary as of Sodium for 1.21.1.

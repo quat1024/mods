@@ -5,6 +5,7 @@ import agency.highlysuspect.packages.craftful.content.PLatches;
 import agency.highlysuspect.quatlib.craftless.util.QuatUtil;
 import net.fabricmc.fabric.api.renderer.v1.Renderer;
 import net.fabricmc.fabric.api.renderer.v1.RendererAccess;
+import net.fabricmc.fabric.api.renderer.v1.material.RenderMaterial;
 import net.fabricmc.fabric.api.renderer.v1.mesh.Mesh;
 import net.fabricmc.fabric.api.renderer.v1.mesh.MeshBuilder;
 import net.fabricmc.fabric.api.renderer.v1.mesh.MutableQuadView;
@@ -47,6 +48,7 @@ public class FrapiMeshModelBakery implements PackageModelBakery<Mesh> {
 		
 		MeshBuilder meshBuilder = renderer.meshBuilder();
 		QuadEmitter emitter = meshBuilder.getEmitter();
+		RenderMaterial defaultMaterial = renderer.materialFinder().find();
 		
 		@Nullable BlockState frameState = frameBlock == null ? null : frameBlock.defaultBlockState();
 		@Nullable TextureAtlasSprite frameSprite = frameState == null ? null : mgr.getBlockModel(frameState).getParticleIcon();
@@ -57,8 +59,7 @@ public class FrapiMeshModelBakery implements PackageModelBakery<Mesh> {
 		RandomSource random = new LegacyRandomSource(42);
 		for(Direction cullFace : QuatUtil.DIRECTIONS_AND_NULL) {
 			for(BakedQuad quad : baseModel.getQuads(PLatches.Blocks.PACKAGE.get().defaultBlockState(), cullFace, random)) {
-				emitter.fromVanilla(quad, null, cullFace);
-				emitter.material(null);
+				emitter.fromVanilla(quad, defaultMaterial, cullFace);
 				
 				if(emitter.colorIndex() == 1) {
 					if(faceColor != null) {

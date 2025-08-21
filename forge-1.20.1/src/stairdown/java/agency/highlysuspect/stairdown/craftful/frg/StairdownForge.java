@@ -52,7 +52,6 @@ public class StairdownForge extends StairdownBase {
 	@Override
 	protected WritableConfig makeConfig(ConfigSection schema) {
 		Path config = FMLPaths.CONFIGDIR.get();
-		LOG.error("fddddddddd {}", config);
 		return new HalfDecentConfigFile(failures.context(), schema, config.resolve("stairdown-config.txt"), LOG, Util.ioPool());
 	}
 }
