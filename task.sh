@@ -20,8 +20,8 @@ collect () {
 
 mktag () {
   VER=v$(TZ="America/New_York" date +%Y.%m.%d)
-  echo "making a tag for version" $VER
-  git tag -a "$VER" -m "$VER."
+  echo "making a tag for version $VER"
+  git tag -a "$VER" -m "$VER"
 }
 
 help () {
