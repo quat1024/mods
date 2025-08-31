@@ -3,8 +3,10 @@ package agency.highlysuspect.packages.craftful.frg.client.model;
 import agency.highlysuspect.packages.craftful.Packages;
 import agency.highlysuspect.packages.craftful.block.PackageMakerBlockEntity;
 import agency.highlysuspect.packages.craftful.client.PackageModelBakery;
+import agency.highlysuspect.packages.craftful.client.PackagesClient;
+import agency.highlysuspect.packages.craftful.client.PropsClient;
+import agency.highlysuspect.packages.craftful.content.PLatches;
 import agency.highlysuspect.packages.craftful.junk.PackageMakerStyle;
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.ItemOverrides;
@@ -14,8 +16,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.client.model.BakedModelWrapper;
@@ -29,8 +29,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 import java.util.function.Function;
 
-;
-
 public class ForgePackageMakerModel implements IUnbakedGeometry<ForgePackageMakerModel> {
 	protected static final ModelProperty<PackageMakerStyle> STYLE_PROPERTY = new ModelProperty<>();
 	protected static final ResourceLocation BLOCK_MODEL_ID = Packages.rl("block/package_maker");
@@ -41,25 +39,32 @@ public class ForgePackageMakerModel implements IUnbakedGeometry<ForgePackageMake
 	}
 	
 	@Override
-	public BakedModel bake(IGeometryBakingContext context, ModelBaker bakery, Function<Material, TextureAtlasSprite> spriteGetter, ModelState modelState, ItemOverrides overrides) {
-		return new Baked(PackageModelBakery.finishBaking(bakery, spriteGetter, modelState, BLOCK_MODEL_ID, BakedQuadPackageModelBakery::new));
+	public BakedModel bake(IGeometryBakingContext context, ModelBaker bakery, Function<Material, TextureAtlasSprite> textureGetter, ModelState modelState, ItemOverrides overrides) {
+		//vanilla model
+		BakedModel base = bakery.bake(BLOCK_MODEL_ID, modelState, textureGetter);
+		
+		//texture bakery
+		PackageModelBakery<List<BakedQuad>> pmb = new BakedQuadPackageModelBakery(
+			base,
+			PLatches.Blocks.PACKAGE_MAKER.get().defaultBlockState(),
+			textureGetter.apply(PackageModelBakery.SPECIAL_FRAME),
+			textureGetter.apply(PackageModelBakery.SPECIAL_INNER)
+		);
+		if(PackagesClient.inst().config.get(PropsClient.CACHE_MESHES)) pmb = pmb.withCache();
+		
+		//actual bakedmodel
+		return new Baked(base, pmb);
 	}
 	
 	private static class Baked extends BakedModelWrapper<BakedModel> {
-		public Baked(PackageModelBakery<List<BakedQuad>> factory) {
-			super(factory.getBaseModel());
+		public Baked(BakedModel base, PackageModelBakery<List<BakedQuad>> factory) {
+			super(base);
 			this.factory = factory;
-			this.itemOverrideThing = new WeirdItemOverrideThing(factory) {
-				@Nullable
-				@Override
-				public BakedModel resolve(BakedModel originalModel, ItemStack stack, @Nullable ClientLevel level, @Nullable LivingEntity player, int idk) {
-					return itemModelMaker.bake((PackageMakerStyle) null);
-				}
-			};
+			this.itemOverrideThing = new WeirderItemOverrideThing(base, stack -> factory.bake((PackageMakerStyle) null));
 		}
 		
 		private final PackageModelBakery<List<BakedQuad>> factory;
-		private final WeirdItemOverrideThing itemOverrideThing;
+		private final ItemOverrides itemOverrideThing;
 		
 		@NotNull
 		@Override

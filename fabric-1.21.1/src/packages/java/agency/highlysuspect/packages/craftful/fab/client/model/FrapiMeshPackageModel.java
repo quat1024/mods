@@ -2,6 +2,9 @@ package agency.highlysuspect.packages.craftful.fab.client.model;
 
 import agency.highlysuspect.packages.craftful.Packages;
 import agency.highlysuspect.packages.craftful.client.PackageModelBakery;
+import agency.highlysuspect.packages.craftful.client.PackagesClient;
+import agency.highlysuspect.packages.craftful.client.PropsClient;
+import agency.highlysuspect.packages.craftful.content.PLatches;
 import agency.highlysuspect.packages.craftful.junk.PackageStyle;
 import net.fabricmc.fabric.api.renderer.v1.mesh.Mesh;
 import net.fabricmc.fabric.api.renderer.v1.model.ForwardingBakedModel;
@@ -40,13 +43,25 @@ public class FrapiMeshPackageModel implements UnbakedModel {
 	
 	@Nullable
 	@Override
-	public BakedModel bake(ModelBaker loader, Function<Material, TextureAtlasSprite> textureGetter, ModelState rotationContainer) {
-		return new Baked(PackageModelBakery.finishBaking(loader, textureGetter, rotationContainer, BLOCK_MODEL_ID, FrapiMeshModelBakery::new));
+	public BakedModel bake(ModelBaker bakery, Function<Material, TextureAtlasSprite> textureGetter, ModelState modelState) {
+		//vanilla model
+		BakedModel base = bakery.bake(BLOCK_MODEL_ID, modelState);
+		
+		//texture bakery
+		PackageModelBakery<Mesh> pmb = new FrapiMeshModelBakery(
+			base,
+			PLatches.Blocks.PACKAGE.get().defaultBlockState(),
+			textureGetter.apply(PackageModelBakery.SPECIAL_FRAME),
+			textureGetter.apply(PackageModelBakery.SPECIAL_INNER)
+		);
+		if(PackagesClient.inst().config.get(PropsClient.CACHE_MESHES)) pmb = pmb.withCache();
+		
+		return new Baked(base, pmb);
 	}
 	
 	private static class Baked extends ForwardingBakedModel {
-		public Baked(PackageModelBakery<Mesh> bakery) {
-			this.wrapped = bakery.getBaseModel();
+		public Baked(BakedModel base, PackageModelBakery<Mesh> bakery) {
+			this.wrapped = base;
 			this.bakery = bakery;
 		}
 		
