@@ -14,11 +14,11 @@ public class BakedQuadView implements IQuadView<BakedQuad> {
 	
 	private BakedQuad q;
 	
+	//SKETCHY CODE ALERT:
 	private static final int vertexStride = IQuadTransformer.STRIDE;
 	private static final int vertexColorOffset = IQuadTransformer.COLOR;
 	private static final int vertexUOffset = IQuadTransformer.UV0;
-	private static final int vertexVOffset = vertexUOffset + 1;
-	//the v is stored directly after the u.
+	private static final int vertexVOffset = vertexUOffset + 1; //the v is stored directly after the u.
 	//n.b. In vanilla there's something called "uv2",
 	//it's used for lightmap coords, nothing to do with texture uv
 	

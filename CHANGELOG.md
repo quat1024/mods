@@ -1,6 +1,12 @@
 # Unreleased
 
-No changes yet.
+## Modder Name Lib
+
+* (1.21.1) Includes a small amount of code for working with "retexturable models".
+
+## Packages
+
+* (1.21.1) Restructure the package and package-crafter retexturing logic. It's a lot simpler now.
 
 # v2025.08.21
 
