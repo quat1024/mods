@@ -23,6 +23,8 @@ public class BakedQuadPackageModelBakery extends PackageRetexturizer<BakedQuad> 
 		super(baseModel, defaultState, specialFrameSprite, specialInnerSprite);
 	}
 	
+	private final boolean swapRedAndBlue = PackagesClient.inst().config.get(PropsClient.FORGE_SWAP_RED_AND_BLUE);
+	
 	@Override
 	public @Nullable TextureAtlasSprite getParticleIcon(@Nullable Block b) {
 		if(b == null) return null;
@@ -33,7 +35,7 @@ public class BakedQuadPackageModelBakery extends PackageRetexturizer<BakedQuad> 
 	@Override
 	public List<BakedQuad> bake(@Nullable Object cacheKey, @Nullable DyeColor faceColor, @Nullable Block frameBlock, @Nullable Block innerBlock) {
 		ArrayList<BakedQuad> result = new ArrayList<>();
-		super.process(new BakedQuadView(PackagesClient.inst().config.get(PropsClient.FORGE_SWAP_RED_AND_BLUE)), faceColor, frameBlock, innerBlock, result::add);
+		super.process(new BakedQuadView(swapRedAndBlue), faceColor, frameBlock, innerBlock, result::add);
 		result.trimToSize();
 		return result;
 	}
