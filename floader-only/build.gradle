@@ -27,3 +27,7 @@ configurations {
 artifacts {
 	floaderOnlyElements tasks.jar
 }
+
+tasks.withType(JavaCompile).configureEach {
+	it.options.release = 8
+}
