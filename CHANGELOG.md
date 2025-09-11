@@ -1,5 +1,7 @@
 # Unreleased
 
+* In-game version number is now zero-padded, just like it is on modrinth. [GH#1](https://github.com/quat1024/mods/issues/1) 
+
 ## Modder Name Lib
 
 * (1.20.1) Fix Fabric 1.20.1 mods crashing on startup when using Java 17. Sorry about that. [GH#7](https://github.com/quat1024/mods/issues/7)

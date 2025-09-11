@@ -1,8 +1,12 @@
 import java.time.*
+import java.time.format.DateTimeFormatter
 
 LocalDateTime now = LocalDateTime.ofInstant(Instant.now(), ZoneId.of("-05:00")) // Imagine living in Oh*o?
-String ver = "${now.year}.${now.monthValue}.${now.dayOfMonth}${versionDisambig}"
-logger.lifecycle("The current version is: {}", ver);
+DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy.MM.dd")
+String ver = "${fmt.format(now)}${versionDisambig}"
+
+logger.lifecycle("The current version is: {}", ver)
+
 allprojects {
 	it.version = ver
 }
