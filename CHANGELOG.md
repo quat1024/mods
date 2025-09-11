@@ -1,3 +1,9 @@
+The changelog format is somewhat specific (see ChangelogFragment from the uploader)
+
+* first h1 must be exactly `# Unreleased`
+* anything written after that h1 but before the h2 will get included in the changelog of all mods
+* h2's must correspond exactly to the name of a mod
+
 # Unreleased
 
 * In-game version number is now zero-padded, just like it is on modrinth. [GH#1](https://github.com/quat1024/mods/issues/1) 

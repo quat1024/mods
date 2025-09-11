@@ -1,0 +1,23 @@
+plugins {
+	id "java"
+	id "application"
+}
+
+application {
+	mainClass = "Uploader"
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation "org.eclipse.jetty:jetty-server:12.1.1"
+	implementation "com.google.code.gson:gson:2.13.1"
+}
+
+tasks.withType(JavaExec).configureEach {
+	it.standardInput = System.in
+	it.environment("COLLECT_DIR", new File(project.rootDir, "collect").getAbsolutePath())
+	it.environment("SECRETS_TXT", new File(project.rootDir, "secrets.txt").getAbsolutePath())
+}

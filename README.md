@@ -46,6 +46,11 @@ Wishlist:
 * Make moddernamelib less "special" throughout the ecosystem. E.g. i should be able to make a second quatlib for my mods on very old versions
 * Automated publishing
 
+## Release process
+
+1. `./gradlew build`
+2. `./task.sh collect` - this picks all the built jars out of `whatever/build/libs/` and puts them in `./collect`
+
 ## Note
 
 Loom prints 10000 warnings about its inability to find refmap files when building a jar. This is expected; I had to forcibly tear out Loom's built-in mixin handling code, some later part of the code is unable to find those refmaps it's supposed to write.
