@@ -305,6 +305,12 @@ public class PackageContainer implements Container {
 	
 	@Override
 	public void setItem(int slot, ItemStack stack) {
+		//Mods *should* check canPlaceItem before calling setItem, so that two different item types
+		//don't end up in the same Package (which results in dupe bugs and other silliness).
+		//If we are being called with an invalid item, though, not much we can do at this point
+		//besides delete the item to prevent that situation. See https://github.com/quat1024/mods/issues/8
+		if(!canPlaceItem(slot, stack)) return;
+		
 		inv.set(slot, stack);
 		setChanged();
 	}

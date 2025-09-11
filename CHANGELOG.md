@@ -2,12 +2,13 @@
 
 ## Modder Name Lib
 
-* (1.20.1) Fix Fabric 1.20.1 mods crashing on startup when using Java 17. Sorry about that.
+* (1.20.1) Fix Fabric 1.20.1 mods crashing on startup when using Java 17. Sorry about that. [GH#7](https://github.com/quat1024/mods/issues/7)
 * (1.21.1) Include a small amount of code for working with "retexturable models".
 
 ## Packages
 
-* (1.21.1) Restructure the package and package-crafter retexturing logic. It's a lot simpler now (an uses some of the new moddernamelib code).
+* (1.20.1) Fix a scenario where if a mod forgets to call `Package#canPlaceItem`, it can lead to a dupe bug. It will now void the offending items instead (there isn't much else I can do). [GH#8](https://github.com/quat1024/mods/issues/8)
+* (1.21.1) Restructure the package and package-crafter retexturing logic. It's a lot simpler now (and uses some of the new moddernamelib code).
   * This will come to 1.20.1 at a later time
 
 # v2025.08.21
