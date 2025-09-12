@@ -75,13 +75,13 @@ public class FrapiMeshPackageModel implements UnbakedModel {
 		@Override
 		public void emitBlockQuads(BlockAndTintGetter blockView, BlockState state, BlockPos pos, Supplier<RandomSource> randomSupplier, RenderContext context) {
 			if(blockView.getBlockEntityRenderData(pos) instanceof PackageStyle style) {
-				context.meshConsumer().accept(bakery.bake(style));
+				bakery.bake(style).outputTo(context.getEmitter());
 			}
 		}
 		
 		@Override
 		public void emitItemQuads(ItemStack stack, Supplier<RandomSource> randomSupplier, RenderContext context) {
-			context.meshConsumer().accept(bakery.bake(stack.getOrDefault(PackageStyle.DATA_COMPONENT_TYPE, PackageStyle.ERROR_LOL)));
+			bakery.bake(stack.getOrDefault(PackageStyle.DATA_COMPONENT_TYPE, PackageStyle.ERROR_LOL)).outputTo(context.getEmitter());
 		}
 	}
 }

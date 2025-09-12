@@ -6,7 +6,9 @@ The changelog format is somewhat specific (see ChangelogFragment from the upload
 
 # Unreleased
 
-Nothing yet.
+## Packages
+
+* Remove usage of a deprecated fabric-rendering-api method.
 
 # v2025.09.11
 
