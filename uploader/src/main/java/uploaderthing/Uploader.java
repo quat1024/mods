@@ -41,24 +41,18 @@ public class Uploader {
 		ChangelogFragment changelog = new ChangelogFragment(collectDir.resolve("CHANGELOG.md"));
 		
 		//sign in to modrinth
-//		ModrinthApi modrinth = new ModrinthApi(ModrinthApi.PRODUCTION, secrets);
-//		modrinth.getOauthCode();
-//		modrinth.getAccessToken();
-//		modrinth.dumpUserData();
-		ModrinthApi modrinth = null;
+		ModrinthApi modrinth = new ModrinthApi(ModrinthApi.PRODUCTION, secrets);
+		modrinth.getOauthCode();
+		modrinth.getAccessToken();
+		modrinth.dumpUserData();
+//		ModrinthApi modrinth = null;
+		LatestModrinthVersionCache modrinthVersionCache = new LatestModrinthVersionCache(modrinth);
 		
 		//sign in to curseforge
 		CursefrogApi froge = new CursefrogApi(secrets);
 		GameVersionsMap curseWeird = froge.getGameVersions();
-//		froge.getVersionTypes();
-//		froge.getGameDependencies();
 		
 //		System.exit(0);
-
-//		String latestFabricapi = modrinth.getLatestVersion(new FabricApi(), Loader.FABRIC, "1.21.1");
-//		System.out.println("Latest version of fabric api is: " + latestFabricapi);
-		
-		LatestModrinthVersionCache modrinthVersionCache = new LatestModrinthVersionCache(modrinth);
 		
 		for(Path jar : readDirSorted(collectDir, "*.jar")) {
 			ModMeta meta = new ModMeta(jar);

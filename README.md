@@ -51,13 +51,15 @@ Wishlist:
 1. `./task.sh build` (or just `./gradlew build`)
    * compile everything
 2. `./task.sh collect`
-   * gets the changelog and gets all built jars out of `whatever-1.21.1/build/libs/`, and puts them in `./collect`, the staging area
+   * gets the changelog + all built jars out of `whatever-1.xx.x/build/libs/`, and dumps them in `./collect`, the staging area
+   * stop here if you just want to build the mods locally or play with them yourself
 3. `./task.sh upload` (or just `./gradlew :uploader:run`)
-   * publish the mods to curseforge and modrinth (WIP)
-   * requires some publishing secrets in secrets.txt (also WIP, should be thru env variables tbh...)
-4`./task.sh mktag`
-  * creates a Git tag with the current date
-  * remember to upload it with `git push --tags`
+   * publish the mods to curseforge and modrinth
+   * requires some publishing secrets in secrets.txt (WIP, should be thru env variables tbh...)
+4. `./task.sh mktag`
+   * create a Git tag with the current date
+5. push
+   * `git push && git push --tags`
 
 ## Note
 
