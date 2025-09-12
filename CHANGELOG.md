@@ -6,6 +6,10 @@ The changelog format is somewhat specific (see ChangelogFragment from the upload
 
 # Unreleased
 
+Nothing yet.
+
+# v2025.09.11
+
 * In-game version number is now zero-padded, just like it is on mod hosting platforms. [GH#1](https://github.com/quat1024/mods/issues/1) 
 * Update bundled copy of ModderNameLib to 2025.09.11.
 

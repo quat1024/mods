@@ -44,7 +44,6 @@ Wishlist:
 
 * Add more things to the [datagen system](https://notes.highlysuspect.agency/another-datagen.html)
 * Make moddernamelib less "special" throughout the ecosystem. E.g. i should be able to make a second quatlib for my mods on very old versions
-* Automated publishing
 
 ## Release process
 
