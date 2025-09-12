@@ -12,7 +12,8 @@ public record RegFacet(Latch<?> latch, Supplier<?> sup) {
 		facets.forEach(facet -> doHandle(regGetter, facet));
 	}
 	
-	//RegFacet2 is type-erased but this definitely isn't, so we need some type football
+	//Need some type football because i'm type-erased but the registry system is not
+	//TODO don't type erase so hard
 	@SuppressWarnings("unchecked")
 	private static <T, X extends T> void doHandle(RegistryGetter getter, RegFacet facet) {
 		Reg<T> reg = (Reg<T>) getter.getReg(facet.latch.type);

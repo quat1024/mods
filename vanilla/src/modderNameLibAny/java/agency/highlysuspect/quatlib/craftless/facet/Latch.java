@@ -10,14 +10,11 @@ import java.util.function.Supplier;
  * Like Holder but not mojang's
  */
 public class Latch<T> implements Supplier<@NotNull T>, Idable {
-	private Latch(RegType<? super T> type, Id id, @Nullable T thing) {
+	//Not public; construct through LatchPool
+	Latch(RegType<? super T> type, Id id, @Nullable T thing) {
 		this.type = Objects.requireNonNull(type, "null type");
 		this.id = Objects.requireNonNull(id, "null id");
 		this.thing = thing;
-	}
-	
-	public static <T> Latch<T> open(RegType<? super T> type, Id id) {
-		return new Latch<>(type, id, null);
 	}
 	
 	public final RegType<? super T> type;
@@ -34,6 +31,13 @@ public class Latch<T> implements Supplier<@NotNull T>, Idable {
 		if(thing != null) throw new IllegalStateException("tried to shut latch twice: " + this);
 		if(registered == null) throw new IllegalArgumentException("tried to shut latch with null thing: " + this);
 		thing = registered;
+	}
+	
+	//Intended to downcast a Latch<Object> or Latch<Block> (from version-independent code) into a Latch<MyCoolBlock>
+	//Totally unchecked!
+	@SuppressWarnings("unchecked")
+	public <X extends T> Latch<X> downcast() {
+		return (Latch<X>) this;
 	}
 	
 	@Override

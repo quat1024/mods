@@ -1,9 +1,6 @@
 package agency.highlysuspect.stairdown.craftful.frg;
 
-import agency.highlysuspect.quatlib.craftless.facet.Gen;
-import agency.highlysuspect.quatlib.craftless.facet.Id;
-import agency.highlysuspect.quatlib.craftless.facet.Latch;
-import agency.highlysuspect.quatlib.craftless.facet.RegType;
+import agency.highlysuspect.quatlib.craftless.facet.*;
 import agency.highlysuspect.stairdown.craftless.StairdownBase;
 import agency.highlysuspect.stairdown.craftless.Variant;
 import net.minecraft.world.item.BlockItem;
@@ -27,27 +24,29 @@ public class VariantGen implements Gen {
 	public void gen(Ctx ctx, Consumer<Gen> more) {
 		//todo use the "more" argument probably
 		
+		LatchPool latches = LatchPool.INST;
+		
 		if(variant.stair) {
-			Latch<StairBlock> stairBlock = Latch.open(RegType.BLOCKS, new Id(StairdownBase.MODID, variant.idPrefix + "_stairs"));
+			Latch<StairBlock> stairBlock = latches.get(RegType.BLOCKS, new Id(StairdownBase.MODID, variant.idPrefix + "_stairs"));
 			ctx.reg(stairBlock, () -> new StairBlock(Blocks.OAK_WOOD::defaultBlockState, BlockBehaviour.Properties.copy(Blocks.OAK_STAIRS)));
 			
-			Latch<BlockItem> stairItem = Latch.open(RegType.ITEMS, stairBlock.id);
+			Latch<BlockItem> stairItem = latches.get(RegType.ITEMS, stairBlock.id);
 			ctx.reg(stairItem, () -> new BlockItem(stairBlock.get(), new Item.Properties()));
 		}
 		
 		if(variant.slab) {
-			Latch<SlabBlock> slabBlock = Latch.open(RegType.BLOCKS, new Id(StairdownBase.MODID, variant.idPrefix + "_slab"));
+			Latch<SlabBlock> slabBlock = latches.get(RegType.BLOCKS, new Id(StairdownBase.MODID, variant.idPrefix + "_slab"));
 			ctx.reg(slabBlock, () -> new SlabBlock(BlockBehaviour.Properties.copy(Blocks.OAK_SLAB)));
 			
-			Latch<BlockItem> slabItem = Latch.open(RegType.ITEMS, slabBlock.id);
+			Latch<BlockItem> slabItem = latches.get(RegType.ITEMS, slabBlock.id);
 			ctx.reg(slabItem, () -> new BlockItem(slabBlock.get(), new Item.Properties()));
 		}
 		
 		if(variant.wall) {
-			Latch<SlabBlock> wallBlock = Latch.open(RegType.BLOCKS, new Id(StairdownBase.MODID, variant.idPrefix + "_wall"));
+			Latch<SlabBlock> wallBlock = latches.get(RegType.BLOCKS, new Id(StairdownBase.MODID, variant.idPrefix + "_wall"));
 			ctx.reg(wallBlock, () -> new WallBlock(BlockBehaviour.Properties.copy(Blocks.OAK_SLAB)));
 			
-			Latch<BlockItem> wallItem = Latch.open(RegType.ITEMS, wallBlock.id);
+			Latch<BlockItem> wallItem = latches.get(RegType.ITEMS, wallBlock.id);
 			ctx.reg(wallItem, () -> new BlockItem(wallBlock.get(), new Item.Properties()));
 		}
 	}

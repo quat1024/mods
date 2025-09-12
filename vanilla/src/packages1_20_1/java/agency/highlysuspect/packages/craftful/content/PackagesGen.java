@@ -5,7 +5,7 @@ import agency.highlysuspect.packages.craftless.PackagesBase;
 import agency.highlysuspect.quatlib.craftful.QuatlibMc;
 import agency.highlysuspect.quatlib.craftless.facet.Gen;
 import agency.highlysuspect.quatlib.craftless.facet.Id;
-import agency.highlysuspect.quatlib.craftless.facet.Latch;
+import agency.highlysuspect.quatlib.craftless.facet.LatchPool;
 import agency.highlysuspect.quatlib.craftless.facet.RegType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
@@ -23,7 +23,7 @@ public class PackagesGen implements PGen {
 		
 		ctx.lang(EN_US).key("itemGroup.packages.group").value(PackagesBase.NAME);
 		
-		ctx.reg(Latch.open(RegType.CREATIVE_TABS, new Id(Packages.MODID, "group")), () ->
+		ctx.reg(LatchPool.INST.get(RegType.CREATIVE_TABS, new Id(Packages.MODID, "group")), () ->
 			QuatlibMc.inst().makeCreativeModeTabBuilder()
 				.title(Component.translatable("itemGroup.packages.group"))
 				.icon(() -> {

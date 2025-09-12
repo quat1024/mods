@@ -21,10 +21,6 @@ public class RegType<T> {
 		this.displayName = displayName;
 	}
 	
-	public <X extends T> Latch<X> latch(Id id) {
-		return Latch.open(this, id);
-	}
-	
 	@Override
 	public String toString() {
 		return "RegType<" + displayName + ">";
