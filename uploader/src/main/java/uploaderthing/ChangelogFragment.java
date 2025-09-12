@@ -1,3 +1,7 @@
+package uploaderthing;
+
+import uploaderthing.meta.ModMeta;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -21,10 +25,14 @@ public class ChangelogFragment {
 	//asterisk, minecraft version number in parenthesis, and space
 //	final Pattern VERSION_TAG = Pattern.compile("\\* \\((1\\.[0-9.]+)\\) ");
 	
+	public List<String> getChangelog(ModMeta meta) {
+		return getChangelog(meta.name, meta.minecraftVersion, meta.version);
+	}
+	
 	public List<String> getChangelog(String modName, String minecraftVersion, String modVersion) {
 		List<String> log = new ArrayList<>();
 		
-		log.add("# " + modName + " v" + modVersion + " for Minecraft " + minecraftVersion);
+		log.add("## " + modName + " v" + modVersion + " for Minecraft " + minecraftVersion);
 		log.add("");
 		
 		String currentHeader = null;

@@ -48,8 +48,16 @@ Wishlist:
 
 ## Release process
 
-1. `./gradlew build`
-2. `./task.sh collect` - this picks all the built jars out of `whatever/build/libs/` and puts them in `./collect`
+1. `./task.sh build` (or just `./gradlew build`)
+   * compile everything
+2. `./task.sh collect`
+   * gets the changelog and gets all built jars out of `whatever-1.21.1/build/libs/`, and puts them in `./collect`, the staging area
+3. `./task.sh upload` (or just `./gradlew :uploader:run`)
+   * publish the mods to curseforge and modrinth (WIP)
+   * requires some publishing secrets in secrets.txt (also WIP, should be thru env variables tbh...)
+4`./task.sh mktag`
+  * creates a Git tag with the current date
+  * remember to upload it with `git push --tags`
 
 ## Note
 

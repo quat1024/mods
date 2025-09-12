@@ -3,6 +3,10 @@ set -eu
 
 # little busybox script. see https://github.com/adriancooney/Taskfile
 
+build () {
+  ./gradlew build
+}
+
 collect () {
   rm -rf collect
   mkdir collect
@@ -22,6 +26,10 @@ mktag () {
   VER=v$(TZ="America/New_York" date +%Y.%m.%d)
   echo "making a tag for version $VER"
   git tag -a "$VER" -m "$VER"
+}
+
+upload () {
+  ./gradlew :uploader:run
 }
 
 help () {

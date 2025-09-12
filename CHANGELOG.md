@@ -6,12 +6,14 @@ The changelog format is somewhat specific (see ChangelogFragment from the upload
 
 # Unreleased
 
-* In-game version number is now zero-padded, just like it is on modrinth. [GH#1](https://github.com/quat1024/mods/issues/1) 
+* In-game version number is now zero-padded, just like it is on mod hosting platforms. [GH#1](https://github.com/quat1024/mods/issues/1) 
+* Update bundled copy of ModderNameLib to 2025.09.11.
 
-## Modder Name Lib
+## ModderNameLib
 
 * (1.20.1) Fix Fabric 1.20.1 mods crashing on startup when using Java 17. Sorry about that. [GH#7](https://github.com/quat1024/mods/issues/7)
 * (1.21.1) Include a small amount of code for working with "retexturable models".
+  * This will come to 1.20.1 at a later time.
 
 ## Packages
 

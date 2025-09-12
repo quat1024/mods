@@ -4,7 +4,7 @@ plugins {
 }
 
 application {
-	mainClass = "Uploader"
+	mainClass = "uploaderthing.Uploader"
 }
 
 repositories {
@@ -12,8 +12,13 @@ repositories {
 }
 
 dependencies {
-	implementation "org.eclipse.jetty:jetty-server:12.1.1"
 	implementation "com.google.code.gson:gson:2.13.1"
+	
+	//for the oauth redirect url
+	implementation "org.eclipse.jetty:jetty-server:12.1.1"
+	
+	//java's httpclient kinda sucks
+	implementation "com.github.mizosoft.methanol:methanol:1.8.3"
 }
 
 tasks.withType(JavaExec).configureEach {
