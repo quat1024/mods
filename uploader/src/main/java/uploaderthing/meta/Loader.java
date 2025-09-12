@@ -13,4 +13,12 @@ public enum Loader {
 	public static Loader from(String s) {
 		return Loader.valueOf(s.toUpperCase(Locale.ROOT));
 	}
+	
+	public String toCurseforgeGameVersionName() {
+		return switch(this)  {
+			case FABRIC -> "Fabric";
+			case NEOFORGE -> "NeoForge";
+			case FORGE -> "Forge";
+		};
+	}
 }

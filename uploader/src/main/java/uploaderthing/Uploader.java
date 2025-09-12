@@ -1,5 +1,9 @@
 package uploaderthing;
 
+import uploaderthing.froge.CurseforgeUploadResponse;
+import uploaderthing.froge.CursefrogApi;
+import uploaderthing.froge.GameVersionsMap;
+import uploaderthing.froge.PublishableCurseforgeProject;
 import uploaderthing.meta.ModMeta;
 import uploaderthing.meta.PublishableProject;
 import uploaderthing.mods.Crowmap;
@@ -20,6 +24,8 @@ import java.nio.file.Paths;
 import java.util.*;
 
 public class Uploader {
+	static boolean yesToAll = false;
+	
 	public static void main(String[] args) throws Exception {
 		String a = System.getenv("COLLECT_DIR");
 		System.out.println("COLLECT_DIR: " + a);
@@ -35,11 +41,19 @@ public class Uploader {
 		ChangelogFragment changelog = new ChangelogFragment(collectDir.resolve("CHANGELOG.md"));
 		
 		//sign in to modrinth
-		ModrinthApi modrinth = new ModrinthApi(ModrinthApi.PRODUCTION, secrets);
+//		ModrinthApi modrinth = new ModrinthApi(ModrinthApi.PRODUCTION, secrets);
+//		modrinth.getOauthCode();
+//		modrinth.getAccessToken();
+//		modrinth.dumpUserData();
+		ModrinthApi modrinth = null;
 		
-		modrinth.getOauthCode();
-		modrinth.getAccessToken();
-		modrinth.dumpUserData();
+		//sign in to curseforge
+		CursefrogApi froge = new CursefrogApi(secrets);
+		GameVersionsMap curseWeird = froge.getGameVersions();
+//		froge.getVersionTypes();
+//		froge.getGameDependencies();
+		
+//		System.exit(0);
 
 //		String latestFabricapi = modrinth.getLatestVersion(new FabricApi(), Loader.FABRIC, "1.21.1");
 //		System.out.println("Latest version of fabric api is: " + latestFabricapi);
@@ -47,11 +61,8 @@ public class Uploader {
 		LatestModrinthVersionCache modrinthVersionCache = new LatestModrinthVersionCache(modrinth);
 		
 		for(Path jar : readDirSorted(collectDir, "*.jar")) {
-			char response = ask("Upload " + jar.getFileName() + "? (y/n) ");
-			if(response == 'q') break;
-			if(response != 'y') continue;
-			
 			ModMeta meta = new ModMeta(jar);
+			if(meta.modid == null) continue;
 			
 			List<String> thisChangelog = changelog.getChangelog(meta);
 			System.out.println("Changelog:\n----");
@@ -59,22 +70,33 @@ public class Uploader {
 			System.out.println("----");
 			
 			PublishableProject publishable = getPublishableProject(meta.modid);
+			if(publishable == null) continue;
 			
 			System.out.println("Scanned metadata: " + meta);
 			
-			response = ask("Is this OK? (y/n) ");
-			if(response != 'y') continue;
+			char response = ask("Upload " + jar.getFileName() + "? (y/n)");
+			if(response == 'q') break;
+			else if(response == 'Y') yesToAll = true;
+			else if(response != 'y') continue;
+			
+			UploadBundle up = new UploadBundle();
+			up.meta = meta;
+			up.changelog = thisChangelog;
+			up.jar = jar;
 			
 			//upload modrinth project
-			if(publishable instanceof PublishableModrinthProject pmp) {
+			if(modrinth != null && publishable instanceof PublishableModrinthProject pmp) {
 				System.out.println("Uploading to modrinth.");
-				UploadBundle up = new UploadBundle();
-				up.meta = meta;
 				up.proj = pmp;
-				up.changelog = thisChangelog;
-				up.jar = jar;
 				ModrinthUploadResponse resp = modrinth.uploadProject(up, modrinthVersionCache);
 				modrinthVersionCache.put(pmp, up.meta.loader, up.meta.minecraftVersion, resp);
+			}
+			
+			if(froge != null && publishable instanceof PublishableCurseforgeProject pcf) {
+				System.out.println("Uploading to curseforge.");
+				up.proj = pcf;
+				CurseforgeUploadResponse resp = froge.uploadProject(up, curseWeird);
+				System.out.println("Uploaded: " + resp);
 			}
 		}
 	}
@@ -88,7 +110,7 @@ public class Uploader {
 			case "crowmap" -> Crowmap.INST;
 			case "packages" -> Packages.INST;
 			case "rebind_narrator" -> RebindNarrator.INST;
-			default -> throw new IllegalArgumentException("cant find publish metadata for modid " + modid);
+			default -> null;
 		};
 	}
 	
@@ -110,9 +132,11 @@ public class Uploader {
 	}
 	
 	public static char ask(String question) {
+		if(yesToAll) return 'y';
+		
 		while(true) {
 			System.out.print(question);
-			String response = new Scanner(System.in).nextLine().trim().toLowerCase(Locale.ROOT);
+			String response = new Scanner(System.in).nextLine().trim();
 			if(response.isEmpty()) continue;
 			return response.charAt(0);
 		}
