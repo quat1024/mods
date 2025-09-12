@@ -6,9 +6,14 @@ The changelog format is somewhat specific (see ChangelogFragment from the upload
 
 # Unreleased
 
+## ModderNameLib
+
+* (1.20.1) Backport the "retexturable model" code from 1.21.1
+
 ## Packages
 
 * Remove usage of a deprecated fabric-rendering-api method.
+* (1.20.1) Backport the improved model retexturing engine from 1.21.1
 
 # v2025.09.11
 

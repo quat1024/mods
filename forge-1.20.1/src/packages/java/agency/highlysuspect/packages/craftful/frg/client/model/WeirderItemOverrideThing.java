@@ -1,8 +1,5 @@
 package agency.highlysuspect.packages.craftful.frg.client.model;
 
-import agency.highlysuspect.packages.craftful.client.PackageModelBakery;
-import agency.highlysuspect.packages.craftful.client.PackagesClient;
-import agency.highlysuspect.packages.craftful.client.PropsClient;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.RenderType;
@@ -12,10 +9,8 @@ import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.client.model.BakedModelWrapper;
 import net.minecraftforge.client.model.data.ModelData;
@@ -23,35 +18,27 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.function.Function;
 
-public abstract class WeirdItemOverrideThing extends ItemOverrides {
-	public WeirdItemOverrideThing(PackageModelBakery<List<BakedQuad>> bakery) {
-		PackageModelBakery<BakedModel> bakeybake = new PackageModelBakery<>() {
-			@Override
-			public BakedModel getBaseModel() {
-				return bakery.getBaseModel();
-			}
-			
-			@Override
-			public BakedModel bake(@Nullable Object cacheKey, @Nullable DyeColor faceColor, @Nullable Block frameBlock, @Nullable Block innerBlock) {
-				return new EpicModel(getBaseModel(), bakery.bake(cacheKey, faceColor, frameBlock, innerBlock));
-			}
-		};
-		
-		if(PackagesClient.inst().config.get(PropsClient.CACHE_MESHES)) bakeybake = new PackageModelBakery.Caching<>(bakeybake);
-		this.itemModelMaker = bakeybake;
+public class WeirderItemOverrideThing extends ItemOverrides {
+	public WeirderItemOverrideThing(BakedModel base, Function<ItemStack, List<BakedQuad>> baker) {
+		this.base = base;
+		this.baker = baker;
 	}
 	
-	protected final PackageModelBakery<BakedModel> itemModelMaker;
+	private final BakedModel base;
+	private final Function<ItemStack, List<BakedQuad>> baker;
 	
-	//This is the magic method from ItemOverrides. Implementations should draw models out of itemModelMaker.
+	//The magic method from ItemOverrides
 	@Nullable
 	@Override
-	public abstract BakedModel resolve(BakedModel originalModel, ItemStack stack, @Nullable ClientLevel level, @Nullable LivingEntity player, int idk);
+	public BakedModel resolve(BakedModel originalModel, ItemStack stack, @Nullable ClientLevel level, @Nullable LivingEntity player, int idk) {
+		return new FixedQuadListModel(base, baker.apply(stack));
+	}
 	
-	private static class EpicModel extends BakedModelWrapper<BakedModel> {
-		public EpicModel(BakedModel originalModel, List<BakedQuad> quads) {
-			super(originalModel);
+	private static class FixedQuadListModel extends BakedModelWrapper<BakedModel> {
+		public FixedQuadListModel(BakedModel base, List<BakedQuad> quads) {
+			super(base);
 			this.quads = quads;
 		}
 		
