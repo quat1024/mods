@@ -6,6 +6,10 @@ The changelog format is somewhat specific (see ChangelogFragment from the upload
 
 # Unreleased
 
+Nothing yet.
+
+# v2025.09.12
+
 ## ModderNameLib
 
 * "Latches", a datatype MNL uses to refer to things it's going to register, are now deduplicated
