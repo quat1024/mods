@@ -15,6 +15,7 @@ The changelog format is somewhat specific (see ChangelogFragment from the upload
 
 * Remove usage of a deprecated fabric-rendering-api method
 * (1.20.1) Backport the improved model retexturing engine from 1.21.1
+* (1.20.1) Fix horrible dupe bug lmao
 
 # v2025.09.11
 

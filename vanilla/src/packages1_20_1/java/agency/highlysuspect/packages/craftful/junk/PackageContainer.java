@@ -309,10 +309,29 @@ public class PackageContainer implements Container {
 		//don't end up in the same Package (which results in dupe bugs and other silliness).
 		//If we are being called with an invalid item, though, not much we can do at this point
 		//besides delete the item to prevent that situation. See https://github.com/quat1024/mods/issues/8
-		if(!canPlaceItem(slot, stack)) return;
 		
-		inv.set(slot, stack);
-		setChanged();
+		//Ah shit !
+		//Just checking canPlaceItem isn't a good idea since it returns "false" for nonempty packages
+		//due to the fix for the hopper thing. Also we should always be permitted to remove items from
+		//a package b/c otherwise rejecting an operation instantly leads to a new, different dupe bug.
+		//Need something a little more elaborate
+		
+		//if stack is empty, items are being removed from the package, which is fine
+		//if stack is nonempty, it must match the existing contents of the package
+		boolean ok = stack.isEmpty() || (matches(stack) && allowedInPackageAtAll(stack));
+		if(!ok) {
+			//..unless items are being removed from the slot, then allow it.
+			//otherwise if i reject this operation, my caller will *think* the item was removed
+			//but i will not have actually removed it, instantly creating a dupe bug
+			//(the itemstack.empty check is also a way to allow removals)
+			ItemStack here = inv.get(slot);
+			ok = ItemStack.isSameItemSameTags(here, stack) && here.getCount() > stack.getCount();
+		}
+		
+		if(ok) {
+			inv.set(slot, stack);
+			setChanged();
+		}
 	}
 	
 	@Override
