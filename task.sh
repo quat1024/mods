@@ -4,7 +4,7 @@ set -eu
 # little busybox script. see https://github.com/adriancooney/Taskfile
 
 build () {
-  ./gradlew build
+  ./gradlew clean build
 }
 
 collect () {

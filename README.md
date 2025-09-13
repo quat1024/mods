@@ -47,7 +47,7 @@ Wishlist:
 
 ## Release process
 
-1. `./task.sh build` (or just `./gradlew build`)
+1. `./task.sh build` (or just `./gradlew clean build`)
    * compile everything
 2. `./task.sh collect`
    * gets the changelog + all built jars out of `whatever-1.xx.x/build/libs/`, and dumps them in `./collect`, the staging area
@@ -59,6 +59,8 @@ Wishlist:
    * create a Git tag with the current date
 5. push
    * `git push && git push --tags`
+
+Also remember to update the changelogs on notes.hsa (just do that manually)
 
 ## Note
 
