@@ -25,4 +25,11 @@ public class RegType<T> {
 	public String toString() {
 		return "RegType<" + displayName + ">";
 	}
+	
+	//Latches should be created through the LatchPool now.
+	//Keeping around for binary compat
+	@Deprecated(forRemoval = true)
+	public <X extends T> Latch<X> latch(Id id) {
+		return LatchPool.INST.get(this, id);
+	}
 }

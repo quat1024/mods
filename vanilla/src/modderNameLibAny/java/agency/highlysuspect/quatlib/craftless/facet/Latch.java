@@ -17,6 +17,13 @@ public class Latch<T> implements Supplier<@NotNull T>, Idable {
 		this.thing = thing;
 	}
 	
+	//Latches should be created through the LatchPool now.
+	//Keeping around for binary compat
+	@Deprecated(forRemoval = true)
+	public static <T> Latch<T> open(RegType<? super T> type, Id id) {
+		return LatchPool.INST.get(type, id);
+	}
+	
 	public final RegType<? super T> type;
 	public final Id id;
 	private @Nullable T thing;
